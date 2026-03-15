@@ -37,7 +37,7 @@ app.get("/", async (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valeinsiva Profile</title>
+    <title>Valeinsiva | Profile</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -45,34 +45,52 @@ app.get("/", async (req, res) => {
 
         body {
             margin: 0;
+            padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #050505;
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
         }
 
+        /* Hareketli Estetik Arka Plan */
+        .bg-animate {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(125deg, #050505, #0a0a15, #120b1e, #050505);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Ana Kart - Ultra Şeffaf */
         .main-card {
-            width: 400px;
-            background: rgba(255, 255, 255, 0.01);
-            backdrop-filter: blur(30px);
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 40px 25px;
+            width: 380px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 45px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 50px 30px;
             text-align: center;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+            position: relative;
         }
-
-        .header { margin-bottom: 20px; }
 
         .avatar-box {
             position: relative;
-            width: 110px;
-            height: 110px;
-            margin: 0 auto 15px;
+            width: 115px;
+            height: 115px;
+            margin: 0 auto 20px;
         }
 
         .avatar {
@@ -80,9 +98,10 @@ app.get("/", async (req, res) => {
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* Aktiflik Durum Işığı */
         .status-dot {
             position: absolute;
             bottom: 8px;
@@ -90,85 +109,109 @@ app.get("/", async (req, res) => {
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            border: 4px solid #050505;
+            border: 4px solid #080808;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .online { background: #23a55a; box-shadow: 0 0 15px #23a55a; }
-        .idle { background: #f0b232; box-shadow: 0 0 15px #f0b232; }
-        .dnd { background: #f23f43; box-shadow: 0 0 15px #f23f43; }
-        .offline { background: #80848e; }
+        .online { background: #23a55a; box-shadow: 0 0 20px #23a55a; }
+        .idle { background: #f0b232; box-shadow: 0 0 20px #f0b232; }
+        .dnd { background: #f23f43; box-shadow: 0 0 20px #f23f43; }
+        .offline { background: #80848e; box-shadow: none; }
 
-        h1 { font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px; }
-        .nickname { font-size: 14px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+        h1 { font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -1.5px; }
+        .nickname { font-size: 14px; color: rgba(255,255,255,0.35); margin-top: 5px; }
 
-        /* Aktivite Alanı (Spotify / Oyun) */
+        /* Aktivite (Spotify/Game) Tasarımı */
         #activities {
-            margin: 25px 0;
-            min-height: 0;
+            margin: 30px 0;
+            min-height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .activity-card {
+            width: 100%;
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 15px;
+            border-radius: 22px;
+            padding: 16px;
             display: flex;
             align-items: center;
             gap: 15px;
             text-align: left;
             border: 1px solid rgba(255,255,255,0.05);
-            animation: fadeIn 0.5s ease;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .activity-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
             object-fit: cover;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
         }
 
         .activity-info { flex: 1; overflow: hidden; }
-        .activity-name { font-weight: 700; font-size: 14px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-        .activity-details { font-size: 12px; color: rgba(255,255,255,0.5); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .activity-name { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 2px; }
+        .activity-details { font-size: 12px; color: rgba(255,255,255,0.5); }
 
+        /* Hareketli Spotify Barı */
         .progress-bar {
             height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            margin-top: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
         }
-        .progress-fill { height: 100%; background: #1db954; width: 0%; border-radius: 2px; }
+        .progress-fill {
+            height: 100%;
+            background: #1db954;
+            width: 0%;
+            transition: width 1s linear;
+            box-shadow: 0 0 10px #1db954;
+        }
 
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 35px;
             margin-top: 10px;
         }
 
         .social-links a {
             color: white;
-            font-size: 28px;
-            opacity: 0.4;
-            transition: 0.3s;
+            font-size: 30px;
+            opacity: 0.35;
+            transition: 0.4s;
         }
 
-        .social-links a:hover { opacity: 1; transform: translateY(-3px); }
+        .social-links a:hover {
+            opacity: 1;
+            transform: translateY(-5px);
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
+        }
 
         .footer-meta {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 40px;
+            padding-top: 25px;
             border-top: 1px solid rgba(255,255,255,0.03);
             display: flex;
             justify-content: center;
             gap: 20px;
             font-size: 12px;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.15);
+            letter-spacing: 0.5px;
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+    <div class="bg-animate"></div>
 
     <div class="main-card">
         <div class="header">
@@ -180,67 +223,79 @@ app.get("/", async (req, res) => {
             <div class="nickname">@valeinsiva.</div>
         </div>
 
-        <div id="activities"></div>
+        <div id="activities">
+            </div>
 
         <div class="social-links">
             <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
-            <a href="https://GİTMESİNİ_İSTEDİĞİN_LİNK.com" target="_blank"><i class="fa-solid fa-globe"></i></a>
+            <a href="https://valeinsiva.com.tr" target="_blank"><i class="fa-solid fa-globe"></i></a>
         </div>
 
         <div class="footer-meta">
             <span><i class="fa-solid fa-eye"></i> ${views}</span>
-            <span><i class="fa-solid fa-location-dot"></i> Dünya</span>
+            <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
         </div>
     </div>
 
     <script>
         const socket = io();
-        
+        let spotifyInterval;
+
         socket.on("presence", data => {
             const user = data.discord_user;
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
             document.getElementById("status").className = "status-dot " + data.discord_status;
 
-            const activityContainer = document.getElementById("activities");
-            activityContainer.innerHTML = "";
-
-            // ÖNCELİK 1: Spotify
+            const container = document.getElementById("activities");
+            
+            // Spotify Kontrolü
             if (data.spotify) {
                 const s = data.spotify;
-                const total = s.timestamps.end - s.timestamps.start;
-                const current = Date.now() - s.timestamps.start;
-                const prg = Math.min((current / total) * 100, 100);
-
-                activityContainer.innerHTML = \`
+                container.innerHTML = \`
                     <div class="activity-card">
                         <img src="\${s.album_art_url}" class="activity-img">
                         <div class="activity-info">
                             <div class="activity-name">\${s.song}</div>
                             <div class="activity-details">\${s.artist}</div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: \${prg}%"></div></div>
+                            <div class="progress-bar"><div id="spotifyProgress" class="progress-fill"></div></div>
                         </div>
-                        <i class="fa-brands fa-spotify" style="color: #1db954; font-size: 20px;"></i>
+                        <i class="fa-brands fa-spotify" style="color:#1db954; font-size:20px; align-self:flex-start"></i>
                     </div>\`;
-            } 
-            // ÖNCELİK 2: Oyunlar (Steam, PlayStation vs.)
-            else if (data.activities && data.activities.length > 0) {
-                const act = data.activities.find(a => a.type === 0); // Playing tipi
-                if (act) {
-                    let icon = '<i class="fa-solid fa-gamepad"></i>';
-                    if (act.name.toLowerCase().includes("playstation")) icon = '<i class="fa-brands fa-playstation"></i>';
-                    if (act.name.toLowerCase().includes("steam")) icon = '<i class="fa-brands fa-steam"></i>';
+                
+                // İlerleme Çubuğu Animasyonu
+                clearInterval(spotifyInterval);
+                spotifyInterval = setInterval(() => {
+                    const total = s.timestamps.end - s.timestamps.start;
+                    const current = Date.now() - s.timestamps.start;
+                    const prg = Math.min((current / total) * 100, 100);
+                    const bar = document.getElementById("spotifyProgress");
+                    if(bar) bar.style.width = prg + "%";
+                }, 1000);
 
-                    activityContainer.innerHTML = \`
+            } 
+            // Oyun Kontrolü
+            else if (data.activities && data.activities.length > 0) {
+                const game = data.activities.find(a => a.type === 0);
+                if (game) {
+                    let icon = '<i class="fa-solid fa-gamepad"></i>';
+                    if(game.name.toLowerCase().includes("playstation")) icon = '<i class="fa-brands fa-playstation"></i>';
+                    
+                    container.innerHTML = \`
                         <div class="activity-card">
-                            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <div style="width:55px; height:55px; background:rgba(255,255,255,0.05); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px">
                                 \${icon}
                             </div>
                             <div class="activity-info">
-                                <div class="activity-name">\${act.name}</div>
-                                <div class="activity-details">\${act.details || 'Oynuyor'}</div>
+                                <div class="activity-name">\${game.name}</div>
+                                <div class="activity-details">\${game.details || 'Şu an oynuyor'}</div>
                             </div>
                         </div>\`;
+                } else {
+                    container.innerHTML = "";
                 }
+            } else {
+                container.innerHTML = "";
+                clearInterval(spotifyInterval);
             }
         });
     </script>
@@ -249,4 +304,4 @@ app.get("/", async (req, res) => {
     `);
 });
 
-server.listen(3000, () => console.log("Profil aktif!"));
+server.listen(3000, () => console.log("Modern Valeinsiva Portfolyo Hazır!"));
