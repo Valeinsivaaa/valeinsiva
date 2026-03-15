@@ -53,6 +53,10 @@ app.get("/", (req, res) => {
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
 
+        :root {
+            --profile-color: #5865F2; /* Dinamik olarak değişecek */
+        }
+
         body {
             margin: 0; padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -61,92 +65,111 @@ app.get("/", (req, res) => {
             height: 100vh; overflow: hidden;
         }
 
-        .bg-animate {
+        /* HAREKETLİ ARKA PLAN */
+        .bg-wrap {
             position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(125deg, #050505 0%, #0d0d1a 30%, #1a0b2e 70%, #050505 100%);
-            background-size: 400% 400%; animation: gradientMove 12s ease infinite;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+            overflow: hidden;
         }
-        @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 
+        .bubble {
+            position: absolute; border-radius: 50%;
+            background: var(--profile-color); opacity: 0.1;
+            filter: blur(40px); animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(1); opacity: 0; }
+            50% { opacity: 0.15; }
+            100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+
+        /* ANA KART - DISCORD PROFIL TEMASIYLA AYNI */
         .main-card {
-            width: 380px; background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(60px); border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            width: 400px; 
+            background: linear-gradient(180deg, rgba(20,20,20,0.8) 0%, rgba(5,5,5,0.95) 100%);
+            backdrop-filter: blur(30px); border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 50px -10px var(--profile-color);
             position: relative; overflow: hidden;
+            transition: box-shadow 1s ease;
         }
 
-        .banner-box { width: 100%; height: 110px; background: rgba(255,255,255,0.02); overflow: hidden; }
-        #banner { width: 100%; height: 100%; object-fit: cover; }
+        /* BANNER - GÖNDERDİĞİN RESİM */
+        .banner-box { width: 100%; height: 140px; position: relative; overflow: hidden; }
+        .banner-img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            filter: brightness(0.7);
+        }
 
-        .profile-content { padding: 0 25px 25px; text-align: center; }
+        .profile-content { padding: 0 25px 30px; text-align: center; }
 
         .avatar-wrap {
-            position: relative; width: 100px; height: 100px;
-            margin: -55px auto 10px; z-index: 10;
+            position: relative; width: 110px; height: 110px;
+            margin: -60px auto 15px; z-index: 10;
         }
-        .avatar { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #080808; object-fit: cover; }
-        .decor-img { position: absolute; inset: -15%; width: 130%; height: 130%; z-index: 11; pointer-events: none; }
+        .avatar { 
+            width: 100%; height: 100%; border-radius: 50%; 
+            border: 6px solid #0a0a0a; object-fit: cover; 
+        }
+        .decor-img { position: absolute; inset: -18%; width: 136%; height: 136%; z-index: 11; }
 
         .status {
-            position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px;
-            border-radius: 50%; border: 4px solid #080808; z-index: 12;
+            position: absolute; bottom: 8px; right: 8px; width: 22px; height: 22px;
+            border-radius: 50%; border: 4px solid #0a0a0a; z-index: 12;
         }
-        .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
-
-        /* ROZETLER (BADGES) - DINAMIK */
-        .badges-container {
-            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; height: 22px;
-        }
-        .badge-icon {
-            width: 20px; height: 20px; object-fit: contain;
-        }
+        .online { background: #23a55a; box-shadow: 0 0 10px #23a55a; }
+        .idle { background: #f0b232; box-shadow: 0 0 10px #f0b232; }
+        .dnd { background: #f23f43; box-shadow: 0 0 10px #f23f43; }
+        .offline { background: #80848e; }
 
         .display-name {
-            font-size: 32px; font-weight: 800; margin: 0;
-            color: #ffffff; letter-spacing: -1px;
+            font-size: 30px; font-weight: 800; margin: 0;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         
-        .username { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 15px; }
+        .username { font-size: 15px; color: rgba(255,255,255,0.4); margin-bottom: 20px; font-weight: 300; }
 
-        .act-stack { margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
-
+        /* KARTLAR */
+        .act-stack { display: flex; flex-direction: column; gap: 12px; }
         .card {
-            background: rgba(255, 255, 255, 0.04); border-radius: 20px;
-            padding: 14px; display: flex; align-items: center; gap: 15px;
-            border: 1px solid rgba(255,255,255,0.08); text-align: left;
+            background: rgba(255, 255, 255, 0.03); border-radius: 18px;
+            padding: 15px; display: flex; align-items: center; gap: 15px;
+            border: 1px solid rgba(255,255,255,0.05); text-align: left;
+            transition: 0.3s;
         }
-        .card-img { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; }
+        .card:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+
+        .card-img { width: 55px; height: 55px; border-radius: 12px; }
         .card-info { flex: 1; overflow: hidden; }
-        .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+        .card-title { font-weight: 700; font-size: 14px; color: #fff; }
+        .card-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px; }
 
-        .spotify-time-info {
-            display: flex; justify-content: space-between; font-size: 10px;
-            color: rgba(255,255,255,0.4); margin-top: 8px; font-family: monospace;
-        }
-        .s-bar-container { height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 4px; overflow: hidden; }
-        .s-bar-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 8px rgba(29, 185, 84, 0.5); }
+        /* SPOTIFY */
+        .s-bar-container { height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+        .s-bar-fill { height: 100%; background: var(--profile-color); width: 0%; transition: width 0.5s linear; }
+        .time-box { display: flex; justify-content: space-between; font-size: 10px; margin-top: 5px; color: rgba(255,255,255,0.3); font-family: monospace; }
 
-        .socials { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
-        .socials i { font-size: 24px; color: white; opacity: 0.4; transition: 0.3s; }
-        .socials i:hover { opacity: 1; transform: scale(1.1); }
+        .socials { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+        .socials a { color: white; opacity: 0.4; font-size: 22px; transition: 0.3s; }
+        .socials a:hover { opacity: 1; color: var(--profile-color); transform: translateY(-3px); }
 
-        .footer { margin-top: 25px; font-size: 11px; color: rgba(255,255,255,0.2); display: flex; justify-content: center; gap: 20px; }
+        .footer { margin-top: 30px; font-size: 11px; color: rgba(255,255,255,0.2); display: flex; justify-content: center; gap: 20px; }
     </style>
 </head>
 <body>
-    <div class="bg-animate"></div>
+    <div class="bg-wrap" id="bubble-bg"></div>
     <div class="main-card">
-        <div class="banner-box"><img id="banner"></div>
+        <div class="banner-box">
+            <img src="https://i.ibb.co/Xky9n7z/1000055682.jpg" class="banner-img" id="banner">
+        </div>
         <div class="profile-content">
             <div class="avatar-wrap">
                 <img id="avatar" class="avatar">
                 <img id="decor" class="decor-img" style="display:none;">
                 <div id="status" class="status offline"></div>
             </div>
-
-            <div id="badges" class="badges-container"></div>
             
             <div id="display-name" class="display-name">Valeinsiva</div>
             <div class="username">@valeinsiva.</div>
@@ -172,65 +195,69 @@ app.get("/", (req, res) => {
         const socket = io();
         let lastG = ""; let lastS = "";
 
-        const BADGE_URLS = {
-            NITRO: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png",
-            HYPESQUAD_BRAVERY: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png",
-            BOOST: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png",
-            ACTIVE_DEVELOPER: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png"
-        };
+        // Arka plan kürelerini oluştur
+        const bg = document.getElementById('bubble-bg');
+        for(let i=0; i<15; i++) {
+            let b = document.createElement('div');
+            b.className = 'bubble';
+            let size = Math.random() * 200 + 50;
+            b.style.width = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left = Math.random() * 100 + 'vw';
+            b.style.animationDelay = Math.random() * 20 + 's';
+            b.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            bg.appendChild(b);
+        }
 
         function formatTime(ms) {
-            const totalSec = Math.floor(ms / 1000);
-            const m = Math.floor(totalSec / 60);
-            const s = totalSec % 60;
-            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+            const s = Math.floor((ms / 1000) % 60);
+            const m = Math.floor((ms / (1000 * 60)) % 60);
+            return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
         }
 
         socket.on("presence", data => {
             const u = data.discord_user;
+            
+            // Profil Rengini Ayarla (Theme Color varsa onu kullan)
+            const themeColor = data.discord_user.accent_color ? '#' + data.discord_user.accent_color.toString(16) : '#5865F2';
+            document.documentElement.style.setProperty('--profile-color', themeColor);
+
             document.getElementById("display-name").innerText = u.display_name || u.username;
-
-            // Rozetleri ID üzerinden çekip oluşturma
-            const badgeBox = document.getElementById("badges");
-            badgeBox.innerHTML = "";
-            // Örnek: Manuel ekleme yerine data.public_flags üzerinden de gidilebilir
-            // Şimdilik istediğin 4 rozeti garantili PNG olarak basıyoruz:
-            Object.values(BADGE_URLS).forEach(url => {
-                const img = document.createElement("img");
-                img.src = url;
-                img.className = "badge-icon";
-                badgeBox.appendChild(img);
-            });
-
-            // Banner & Avatar
-            const b = document.getElementById("banner");
-            if(u.banner) {
-                b.src = \`https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.\${u.banner.startsWith("a_")?"gif":"png"}?size=600\`;
-            }
-
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            
             const d = document.getElementById("decor");
             if(u.avatar_decoration_data) {
                 d.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
                 d.style.display = "block";
-            }
+            } else { d.style.display = "none"; }
 
             document.getElementById("status").className = "status " + data.discord_status;
 
-            // Oyun & Spotify (Düzeltilmiş Sayaç)
+            // Oyun Kartı
             const gZone = document.getElementById("game-zone");
             const game = data.activities.find(a => a.type === 0);
             if(game) {
                 if(lastG !== game.name) {
-                    gZone.innerHTML = \`<div class="card"><div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px"><i class="fa-solid fa-gamepad"></i></div><div class="card-info"><div class="card-title">\${game.name}</div><div class="card-sub">\${game.details || 'Oynuyor'}</div></div><i class="fa-brands fa-playstation" style="color:#00439c; font-size:22px;"></i></div>\`;
+                    gZone.innerHTML = \`<div class="card"><div style="width:55px; height:55px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px"><i class="fa-solid fa-gamepad"></i></div><div class="card-info"><div class="card-title">\${game.name}</div><div class="card-sub">\${game.details || 'Oynuyor'}</div></div><i class="fa-brands fa-playstation" style="color:#00439c; font-size:24px;"></i></div>\`;
                     lastG = game.name;
                 }
             } else { gZone.innerHTML = ""; lastG = ""; }
 
+            // Spotify Kartı
             const sZone = document.getElementById("spotify-zone");
             if(data.spotify) {
                 if(lastS !== data.spotify.track_id) {
-                    sZone.innerHTML = \`<div class="card"><img src="\${data.spotify.album_art_url}" class="card-img"><div class="card-info"><div class="card-title">\${data.spotify.song}</div><div class="card-sub">\${data.spotify.artist}</div><div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div><div class="spotify-time-info"><span id="s-start">00:00</span><span id="s-end">00:00</span></div></div><i class="fa-brands fa-spotify" style="color:#1db954; font-size:22px;"></i></div>\`;
+                    sZone.innerHTML = \`
+                        <div class="card">
+                            <img src="\${data.spotify.album_art_url}" class="card-img">
+                            <div class="card-info">
+                                <div class="card-title">\${data.spotify.song}</div>
+                                <div class="card-sub">\${data.spotify.artist}</div>
+                                <div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div>
+                                <div class="time-box"><span id="s-start">00:00</span><span id="s-end">00:00</span></div>
+                            </div>
+                            <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px;"></i>
+                        </div>\`;
                     lastS = data.spotify.track_id;
                 }
                 const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
