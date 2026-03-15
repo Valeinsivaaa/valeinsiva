@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -19,15 +20,20 @@ const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com";
 let stats = { views: 0, likes: 0 };
 let cachedData = null;
 
+// Tarayıcıların otomatik favicon isteği atıp sayacı artırmasını engeller
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
         const headers = { Authorization: `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
         const getRes = await axios.get(url, { headers }).catch(() => null);
+        
         if (!isUpdate && getRes) {
             stats = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
             return;
         }
+        
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(stats, null, 2)).toString('base64');
@@ -36,6 +42,7 @@ async function syncWithGithub(isUpdate = false) {
     } catch (e) { console.error("GitHub Sync Error"); }
 }
 
+// Lanyard Verisi Çekme
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
@@ -46,15 +53,22 @@ setInterval(async () => {
 
 syncWithGithub();
 
+// API: Beğeni Artırma
 app.get("/api/like", async (req, res) => {
     stats.likes++;
     res.json({ success: true, likes: stats.likes });
     await syncWithGithub(true); 
 });
 
-app.get("/", async (req, res) => {
+// API: Görüntülenme Artırma (Sadece gerçek kullanıcı girdiğinde tetiklenir)
+app.get("/api/view", async (req, res) => {
     stats.views++;
-    syncWithGithub(true);
+    await syncWithGithub(true);
+    res.json({ success: true, views: stats.views });
+});
+
+app.get("/", async (req, res) => {
+    // Backend'de doğrudan artış yapmıyoruz, Frontend'den tetikleyeceğiz.
     res.send(`
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -88,7 +102,6 @@ app.get("/", async (req, res) => {
         .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; text-align:center; font-size:10px; }
         .social-link:hover { opacity:1; transform:translateY(-3px); color:var(--profile-color); }
 
-        /* Buton Stilleri */
         .like-btn, .theme-toggle { 
             position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; 
             display:flex; align-items:center; justify-content:center; cursor:pointer; 
@@ -98,21 +111,7 @@ app.get("/", async (req, res) => {
         .like-btn { left:25px; }
         .theme-toggle { right:25px; }
         .like-btn:hover, .theme-toggle:hover { transform: scale(1.1); }
-
-        /* Like Animasyonu */
         .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); box-shadow: 0 0 15px rgba(255, 71, 87, 0.2); }
-        .like-btn.liked i { animation: heartBeat 0.6s linear; }
-        @keyframes heartBeat {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.4); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        /* Tema Animasyonu */
-        .theme-toggle i { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .theme-toggle.rotating i { transform: rotate(360deg); }
     </style>
 </head>
 <body>
@@ -139,7 +138,7 @@ app.get("/", async (req, res) => {
             </div>
 
             <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6;">
-                <div><i class="fa-solid fa-eye"></i> ${stats.views}</div>
+                <div><i class="fa-solid fa-eye"></i> <span id="view-count">${stats.views}</span></div>
                 <div><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
                 <div><i class="fa-solid fa-location-dot"></i> Türkiye</div>
             </div>
@@ -149,6 +148,18 @@ app.get("/", async (req, res) => {
     <script>
         const socket = io();
         let currentPresence = null;
+
+        // --- GÖRÜNTÜLENME SAYACI (FIX) ---
+        window.addEventListener('load', () => {
+            if (!sessionStorage.getItem('viewed')) {
+                fetch('/api/view')
+                    .then(r => r.json())
+                    .then(data => {
+                        sessionStorage.setItem('viewed', 'true');
+                        document.getElementById('view-count').innerText = data.views;
+                    });
+            }
+        });
 
         function formatTime(ms) {
             const s = Math.floor(ms / 1000);
@@ -189,10 +200,8 @@ app.get("/", async (req, res) => {
             if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
             document.getElementById("status").className = "status " + data.discord_status;
 
-            const activitiesChanged = JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
-                                     JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify);
-
-            if (activitiesChanged) {
+            if (JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
+                JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify)) {
                 let actsHTML = "";
                 if(data.spotify) {
                     actsHTML += \`
@@ -227,9 +236,6 @@ app.get("/", async (req, res) => {
             currentPresence = data;
         });
 
-        // --- ANIMASYONLU BUTON FONKSIYONLARI ---
-
-        // Like Butonu
         document.getElementById("like-btn").onclick = function() {
             if(this.classList.contains('liked')) return;
             fetch('/api/like').then(r => r.json()).then(data => {
@@ -238,16 +244,11 @@ app.get("/", async (req, res) => {
             });
         };
         
-        // Tema Butonu (Aydan Güneşe Geçiş)
         document.getElementById("theme-btn").onclick = function() {
             const html = document.documentElement;
             const isDark = html.getAttribute("data-theme") === "dark";
             const icon = this.querySelector("i");
-            
-            // Animasyon Sınıfını Ekle
             this.classList.add('rotating');
-            
-            // Dönüşün ortasında ikonu değiştir
             setTimeout(() => {
                 if (isDark) {
                     html.setAttribute("data-theme", "light");
@@ -257,14 +258,9 @@ app.get("/", async (req, res) => {
                     icon.className = "fa-solid fa-moon";
                 }
             }, 250);
-
-            // Animasyon bitince sınıfı temizle
-            setTimeout(() => {
-                this.classList.remove('rotating');
-            }, 500);
+            setTimeout(() => this.classList.remove('rotating'), 500);
         };
 
-        // Arka Plan Orbları
         const bg = document.getElementById('bg-canvas');
         for(let i=0; i<5; i++){
             let o = document.createElement('div'); o.className='orb';
@@ -278,4 +274,6 @@ app.get("/", async (req, res) => {
     `);
 });
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000, () => {
+    console.log("Server running...");
+});
