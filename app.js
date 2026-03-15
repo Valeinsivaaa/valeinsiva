@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valeinsiva | Portfolio</title>
+    <title>Valeinsiva | Profile</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -58,244 +58,187 @@ app.get("/", (req, res) => {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #050505; color: white;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow-y: auto; padding: 40px 0;
+            height: 100vh; overflow: hidden;
         }
 
         .bg-animate {
             position: fixed; inset: 0; z-index: -1;
             background: linear-gradient(125deg, #050505 0%, #0d0d1a 30%, #1a0b2e 70%, #050505 100%);
-            background-size: 400% 400%; animation: gradientMove 12s ease-in-out infinite;
+            background-size: 400% 400%; animation: gradientMove 12s ease infinite;
         }
         @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 
-        .container { width: 380px; display: flex; flex-direction: column; gap: 20px; position: relative; }
-
         .main-card {
-            background: rgba(255, 255, 255, 0.015);
-            backdrop-filter: blur(45px); border-radius: 30px;
+            width: 380px; background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(55px); border-radius: 35px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
             position: relative; overflow: hidden;
         }
 
-        .banner-container {
-            width: 100%; height: 100px; position: relative;
-            background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        .banner-box { width: 100%; height: 110px; background: rgba(255,255,255,0.02); overflow: hidden; }
         #banner { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        .content { padding: 0 25px 25px; position: relative; text-align: center; }
+        .profile-content { padding: 0 25px 25px; text-align: center; }
 
-        .avatar-area {
-            position: relative; width: 95px; height: 95px;
-            margin: -50px auto 15px; z-index: 10;
+        .avatar-wrap {
+            position: relative; width: 100px; height: 100px;
+            margin: -55px auto 10px; z-index: 10;
         }
-        .avatar {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 4px solid #080808; object-fit: cover;
-            position: relative; z-index: 1;
+        .avatar { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #080808; object-fit: cover; }
+        .decor-img { position: absolute; inset: -15%; width: 130%; height: 130%; z-index: 11; pointer-events: none; }
+
+        .status {
+            position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px;
+            border-radius: 50%; border: 4px solid #080808; z-index: 12;
         }
-        .avatar-decor {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 120%; height: 120%; z-index: 2; pointer-events: none;
+        .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
+
+        /* ROZETLER (BADGES) */
+        .badges-container {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px;
+        }
+        .badge-icon {
+            width: 22px; height: 22px; object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
         }
 
-        .status-dot {
-            position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px;
-            border-radius: 50%; border: 3px solid #080808; z-index: 3;
+        /* VAMPİR / ÇİZGİ FİLM YAZI STİLİ */
+        .display-name {
+            font-size: 28px; font-weight: 800; margin: 0;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #fff 30%, #a2a2a2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 12px rgba(255,255,255,0.4));
+            font-style: italic;
+            text-transform: capitalize;
         }
-        .online { background: #23a55a; box-shadow: 0 0 15px #23a55a; }
-        .idle { background: #f0b232; box-shadow: 0 0 15px #f0b232; }
-        .dnd { background: #f23f43; box-shadow: 0 0 15px #f23f43; }
-        .offline { background: #80848e; }
+        
+        .username { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
 
-        h1 { font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: #fff; }
-        .sub-nick { font-size: 13px; color: rgba(255,255,255,0.3); margin: 5px 0 15px; }
+        .act-stack { margin: 18px 0; display: flex; flex-direction: column; gap: 10px; }
 
-        /* Aktivite Alanları */
-        #game-zone, #spotify-zone { margin-bottom: 20px; text-align: left; }
-
-        /* Aktivite Kartı Temeli */
-        .act-card {
-            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
-            padding: 15px; display: flex; align-items: center; gap: 15px;
-            border: 1px solid rgba(255,255,255,0.05); position: relative;
+        .card {
+            background: rgba(255, 255, 255, 0.035); border-radius: 20px;
+            padding: 14px; display: flex; align-items: center; gap: 15px;
+            border: 1px solid rgba(255,255,255,0.06); text-align: left;
         }
-        .act-img { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .act-text { flex: 1; overflow: hidden; }
-        .act-main { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #eee; }
-        .act-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
-        .time-counter { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 5px; font-weight: 600; }
+        .card-img { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; }
+        .card-info { flex: 1; overflow: hidden; }
+        .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
 
-        /* Spotify Bar */
-        .spotify-timer {
-            display: flex; align-items: center; gap: 8px; margin-top: 8px;
-            font-size: 10px; color: rgba(255,255,255,0.4);
-        }
-        .p-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-        .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 10px #1db954; transition: width 1s linear; }
+        .s-bar-container { height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .s-bar-fill { height: 100%; background: #1db954; width: 0%; transition: width 1s linear; }
 
-        .socials { display: flex; justify-content: center; gap: 25px; margin-top: 5px; }
-        .socials a { color: white; font-size: 22px; opacity: 0.3; transition: 0.3s; }
-        .socials a:hover { opacity: 1; transform: scale(1.2); }
+        .socials { display: flex; justify-content: center; gap: 30px; margin-top: 5px; }
+        .socials i { font-size: 24px; color: white; opacity: 0.3; transition: 0.3s; }
+        .socials i:hover { opacity: 1; transform: scale(1.1); }
 
-        .footer { margin-top: 20px; display: flex; justify-content: center; gap: 15px; font-size: 11px; color: rgba(255,255,255,0.2); }
+        .footer { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.15); display: flex; justify-content: center; gap: 20px; }
     </style>
 </head>
 <body>
     <div class="bg-animate"></div>
-    <div class="container">
-        <div class="main-card">
-            <div class="banner-container">
-                <img id="banner" src="" alt="">
+    <div class="main-card">
+        <div class="banner-box"><img id="banner"></div>
+        <div class="profile-content">
+            <div class="avatar-wrap">
+                <img id="avatar" class="avatar">
+                <img id="decor" class="decor-img" style="display:none;">
+                <div id="status" class="status offline"></div>
             </div>
-            <div class="content">
-                <div class="avatar-area">
-                    <img id="avatar" class="avatar" src="">
-                    <img id="decor" class="avatar-decor" src="" style="display:none;">
-                    <div id="status" class="status-dot offline"></div>
-                </div>
-                <h1>Valeinsiva</h1>
-                <div class="sub-nick">@valeinsiva.</div>
-                
+
+            <div class="badges-container">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png" class="badge-icon" title="Nitro">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png" class="badge-icon" title="HypeSquad">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png" class="badge-icon" title="Server Booster">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png" class="badge-icon" title="Quest Completed">
+            </div>
+            
+            <div id="display-name" class="display-name">Valeinsiva</div>
+            <div class="username">@valeinsiva.</div>
+
+            <div class="act-stack">
                 <div id="game-zone"></div>
                 <div id="spotify-zone"></div>
+            </div>
 
-                <div class="socials">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
-                    <a href="https://valeinsiva.com.tr" target="_blank"><i class="fa-solid fa-globe"></i></a>
-                </div>
-                
-                <div class="footer">
-                    <span><i class="fa-solid fa-eye"></i> ${views.toLocaleString()}</span>
-                    <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
-                </div>
+            <div class="socials">
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
+                <a href="https://valeinsiva.com.tr" target="_blank"><i class="fa-solid fa-globe"></i></a>
+            </div>
+
+            <div class="footer">
+                <span><i class="fa-solid fa-eye"></i> ${views.toLocaleString()}</span>
+                <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
             </div>
         </div>
     </div>
 
     <script>
         const socket = io();
-        let lastGameId = "";
-        let lastSpotifyId = "";
-
-        function formatHMS(ms) {
-            const totalSec = Math.floor(ms / 1000);
-            const h = Math.floor(totalSec / 3600);
-            const m = Math.floor((totalSec % 3600) / 60);
-            const s = totalSec % 60;
-            return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
-        }
+        let lastG = ""; let lastS = "";
 
         socket.on("presence", data => {
-            const user = data.discord_user;
+            const u = data.discord_user;
+            document.getElementById("display-name").innerText = u.display_name || u.username;
 
-            // Banner Düzeltme
-            const banner = document.getElementById("banner");
-            if (user.banner) {
-                const ext = user.banner.startsWith("a_") ? "gif" : "png";
-                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.\${ext}?size=1024\`;
-                banner.onerror = () => { banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.png?size=1024\`; };
-                banner.style.display = "block";
+            const b = document.getElementById("banner");
+            if(u.banner) {
+                b.src = \`https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.\${u.banner.startsWith("a_")?"gif":"png"}?size=600\`;
+                b.style.display = "block";
             }
 
-            // Avatar & Dekor
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
-            const decor = document.getElementById("decor");
-            const d = user.avatar_decoration_data || user.avatar_decoration;
-            if (d) {
-                decor.src = d.asset ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${d.asset}.png\` : d;
-                decor.style.display = "block";
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            const d = document.getElementById("decor");
+            if(u.avatar_decoration_data) {
+                d.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
+                d.style.display = "block";
             }
 
-            document.getElementById("status").className = "status-dot " + data.discord_status;
+            document.getElementById("status").className = "status " + data.discord_status;
 
-            // --- OYUN KONTROLÜ ---
-            const gameZone = document.getElementById("game-zone");
-            let gameHTML = "";
-            let currentGameId = "none";
+            // Oyun Kartı (SABİT PLAYSTATION LOGOSU)
+            const gZone = document.getElementById("game-zone");
             const game = data.activities.find(a => a.type === 0);
-
-            if (game) {
-                currentGameId = game.name;
-                const isPS = game.name.toLowerCase().includes("playstation") || (game.assets && game.assets.large_text && game.assets.large_text.toLowerCase().includes("playstation"));
-                
-                let iconHTML = "";
-                if (game.assets && game.assets.large_image) {
-                    const iconUrl = game.assets.large_image.startsWith("mp:") ? 
-                        "https://images-ext-1.discordapp.net/external/" + game.assets.large_image.split("https/")[1] :
-                        \`https://cdn.discordapp.com/app-assets/\${game.application_id}/\${game.assets.large_image}.png\`;
-                    iconHTML = \`<img src="\${iconUrl}" class="act-img">\`;
-                } else {
-                    iconHTML = \`<div style="width:55px; height:55px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px"><i class="fa-solid fa-gamepad"></i></div>\`;
-                }
-                
-                gameHTML = \`
-                    <div class="act-card">
-                        \${iconHTML}
-                        <div class="act-text">
-                            <div class="act-main">\${game.name}</div>
-                            <div class="act-sub">\${game.details || 'Oynuyor'}</div>
-                            <div class="time-counter" id="game-time">00:00 süredir</div>
-                        </div>
-                        \${isPS ? '<i class="fa-brands fa-playstation" style="color:#00439c; font-size:20px; align-self:flex-start"></i>' : ''}
-                    </div>\`;
-            }
-
-            if (lastGameId !== currentGameId) {
-                gameZone.innerHTML = gameHTML;
-                lastGameId = currentGameId;
-            }
-
-            // Canlı Oyun Süresi
-            if (game && game.timestamps && game.timestamps.start) {
-                const el = document.getElementById("game-time");
-                if (el) el.innerText = formatHMS(Date.now() - game.timestamps.start) + " süredir oynuyor";
-            }
-
-            // --- SPOTIFY KONTROLÜ ---
-            const spotifyZone = document.getElementById("spotify-zone");
-            let spotifyHTML = "";
-            let currentSpotifyId = "none";
-
-            if (data.spotify) {
-                currentSpotifyId = data.spotify.track_id;
-                spotifyHTML = \`
-                    <div class="act-card">
-                        <img src="\${data.spotify.album_art_url}" class="act-img">
-                        <div class="act-text">
-                            <div class="act-main">\${data.spotify.song}</div>
-                            <div class="act-sub">\${data.spotify.artist}</div>
-                            <div class="spotify-timer">
-                                <span id="s-curr">0:00</span>
-                                <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
-                                <span id="s-end">0:00</span>
+            if(game) {
+                if(lastG !== game.name) {
+                    gZone.innerHTML = \`
+                        <div class="card">
+                            <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px"><i class="fa-solid fa-gamepad"></i></div>
+                            <div class="card-info">
+                                <div class="card-title">\${game.name}</div>
+                                <div class="card-sub">\${game.details || 'Oynuyor'}</div>
                             </div>
-                        </div>
-                        <i class="fa-brands fa-spotify" style="color:#1db954; font-size:20px; align-self:flex-start"></i>
-                    </div>\`;
-            }
+                            <i class="fa-brands fa-playstation" style="color:#00439c; font-size:22px;"></i>
+                        </div>\`;
+                    lastG = game.name;
+                }
+            } else { gZone.innerHTML = ""; lastG = ""; }
 
-            if (lastSpotifyId !== currentSpotifyId) {
-                spotifyZone.innerHTML = spotifyHTML;
-                lastSpotifyId = currentSpotifyId;
-            }
-
-            // Canlı Spotify Çubuğu
-            if (data.spotify) {
-                const start = data.spotify.timestamps.start;
-                const total = data.spotify.timestamps.end - start;
-                const elapsed = Math.min(Date.now() - start, total);
-                const prog = (elapsed / total) * 100;
-                
+            // Spotify Kartı
+            const sZone = document.getElementById("spotify-zone");
+            if(data.spotify) {
+                if(lastS !== data.spotify.track_id) {
+                    sZone.innerHTML = \`
+                        <div class="card">
+                            <img src="\${data.spotify.album_art_url}" class="card-img">
+                            <div class="card-info">
+                                <div class="card-title">\${data.spotify.song}</div>
+                                <div class="card-sub">\${data.spotify.artist}</div>
+                                <div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div>
+                            </div>
+                            <i class="fa-brands fa-spotify" style="color:#1db954; font-size:22px;"></i>
+                        </div>\`;
+                    lastS = data.spotify.track_id;
+                }
+                const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
+                const prog = Math.min(((Date.now() - data.spotify.timestamps.start) / total) * 100, 100);
                 const bar = document.getElementById("s-fill");
-                const currTxt = document.getElementById("s-curr");
-                const endTxt = document.getElementById("s-end");
-                
-                if (bar) bar.style.width = prog + "%";
-                if (currTxt) currTxt.innerText = formatHMS(elapsed).replace(/^0:/, '');
-                if (endTxt) endTxt.innerText = formatHMS(total).replace(/^0:/, '');
-            }
+                if(bar) bar.style.width = prog + "%";
+            } else { sZone.innerHTML = ""; lastS = ""; }
         });
     </script>
 </body>
