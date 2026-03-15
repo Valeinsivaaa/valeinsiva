@@ -81,7 +81,7 @@ app.get("/", (req, res) => {
             overflow: hidden; background: rgba(255,255,255,0.03);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        #banner { width: 100%; height: 100%; object-fit: cover; display: none; }
+        #banner { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         .content { padding: 0 25px 30px; position: relative; }
 
@@ -97,7 +97,7 @@ app.get("/", (req, res) => {
         .avatar-decor {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 120%; height: 120%; z-index: 2; pointer-events: none; display: none;
+            width: 120%; height: 120%; z-index: 2; pointer-events: none;
         }
 
         .status-dot {
@@ -119,15 +119,16 @@ app.get("/", (req, res) => {
             padding: 12px; display: flex; align-items: center; gap: 12px;
             text-align: left; border: 1px solid rgba(255,255,255,0.05);
         }
-        .act-img { width: 50px; height: 50px; border-radius: 10px; }
+        .act-img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
         .act-text { flex: 1; overflow: hidden; }
         .act-main { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .act-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
-        /* Spotify Bar & Timer */
+        .time-counter { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; font-variant-numeric: tabular-nums; }
+
         .spotify-timer {
             display: flex; align-items: center; gap: 8px; margin-top: 8px;
-            font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;
+            font-size: 10px; color: rgba(255,255,255,0.4);
         }
         .p-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
         .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 10px #1db954; }
@@ -148,7 +149,7 @@ app.get("/", (req, res) => {
         <div class="content">
             <div class="avatar-area">
                 <img id="avatar" class="avatar" src="">
-                <img id="decor" class="avatar-decor" src="">
+                <img id="decor" class="avatar-decor" src="" style="display:none;">
                 <div id="status" class="status-dot offline"></div>
             </div>
             <h1>Valeinsiva</h1>
@@ -172,37 +173,39 @@ app.get("/", (req, res) => {
         const socket = io();
         let lastActivityKey = "";
 
-        function formatTime(ms) {
+        function formatHMS(ms) {
             const totalSec = Math.floor(ms / 1000);
-            const min = Math.floor(totalSec / 60);
-            const sec = totalSec % 60;
-            return min + ":" + (sec < 10 ? "0" : "") + sec;
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
         }
 
         socket.on("presence", data => {
             const user = data.discord_user;
 
-            // Avatar
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
-            document.getElementById("status").className = "status-dot " + data.discord_status;
-
-            // Banner (Gelişmiş Kontrol)
+            // Banner - Doğrudan Discord CDN Denemesi
             const banner = document.getElementById("banner");
-            const bannerHash = user.banner || data.discord_user.banner;
-            if (bannerHash) {
-                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${bannerHash}.png?size=600\`;
+            if (user.banner) {
+                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.gif?size=1024\`;
+                banner.onerror = () => { banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.png?size=1024\`; };
                 banner.style.display = "block";
-            } else { banner.style.display = "none"; }
+            } else { banner.style.backgroundColor = user.banner_color || "#111"; }
 
-            // Dekor (Gelişmiş Kontrol)
+            // Avatar & Dekor
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
             const decor = document.getElementById("decor");
-            const decorUrl = user.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${user.avatar_decoration_data.asset}.png\` : null;
-            if (decorUrl || user.avatar_decoration) {
-                decor.src = decorUrl || user.avatar_decoration;
+            if (user.avatar_decoration_data) {
+                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${user.avatar_decoration_data.asset}.png\`;
+                decor.style.display = "block";
+            } else if (user.avatar_decoration) {
+                decor.src = user.avatar_decoration;
                 decor.style.display = "block";
             } else { decor.style.display = "none"; }
 
-            // Aktivite Alanı
+            document.getElementById("status").className = "status-dot " + data.discord_status;
+
+            // Aktivite Kontrolü
             const zone = document.getElementById("activity-zone");
             let html = "";
             let currentKey = "none";
@@ -216,9 +219,9 @@ app.get("/", (req, res) => {
                             <div class="act-main">\${data.spotify.song}</div>
                             <div class="act-sub">\${data.spotify.artist}</div>
                             <div class="spotify-timer">
-                                <span id="time-curr">0:00</span>
+                                <span id="s-curr">0:00</span>
                                 <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
-                                <span id="time-end">0:00</span>
+                                <span id="s-end">0:00</span>
                             </div>
                         </div>
                     </div>\`;
@@ -226,14 +229,20 @@ app.get("/", (req, res) => {
                 const game = data.activities.find(a => a.type === 0);
                 if (game) {
                     currentKey = game.name;
-                    let icon = game.name.toLowerCase().includes("playstation") ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad';
+                    const isPS = game.name.toLowerCase().includes("playstation") || (game.assets && game.assets.large_text && game.assets.large_text.toLowerCase().includes("playstation"));
+                    let iconHTML = game.assets && game.assets.large_image ? 
+                        \`<img src="https://cdn.discordapp.com/app-assets/\${game.application_id}/\${game.assets.large_image}.png" class="act-img">\` : 
+                        \`<div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px"><i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}"></i></div>\`;
+                    
                     html = \`
                         <div class="act-box">
-                            <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px"><i class="\${icon}"></i></div>
+                            \${iconHTML}
                             <div class="act-text">
                                 <div class="act-main">\${game.name}</div>
-                                <div class="act-sub">\${game.details || 'Aktif'}</div>
+                                <div class="act-sub">\${game.details || 'Oynuyor'}</div>
+                                <div class="time-counter" id="game-time">00:00:00</div>
                             </div>
+                            \${isPS ? '<i class="fa-brands fa-playstation" style="color:#003087; font-size:18px; align-self:flex-start;"></i>' : ''}
                         </div>\`;
                 }
             }
@@ -243,26 +252,29 @@ app.get("/", (req, res) => {
                 lastActivityKey = currentKey;
             }
 
-            // Spotify Real-time Update
+            // Canlı Sayaçlar
             if (data.spotify) {
                 const start = data.spotify.timestamps.start;
-                const end = data.spotify.timestamps.end;
-                const total = end - start;
-                
-                const updateSpotify = () => {
-                    const now = Date.now();
-                    const elapsed = Math.min(now - start, total);
-                    const prog = (elapsed / total) * 100;
-                    
-                    const bar = document.getElementById("s-fill");
-                    const currTxt = document.getElementById("time-curr");
-                    const endTxt = document.getElementById("time-end");
-                    
-                    if (bar) bar.style.width = prog + "%";
-                    if (currTxt) currTxt.innerText = formatTime(elapsed);
-                    if (endTxt) endTxt.innerText = formatTime(total);
+                const total = data.spotify.timestamps.end - start;
+                const update = () => {
+                    const elapsed = Math.min(Date.now() - start, total);
+                    if(document.getElementById("s-fill")) document.getElementById("s-fill").style.width = (elapsed / total * 100) + "%";
+                    if(document.getElementById("s-curr")) document.getElementById("s-curr").innerText = formatHMS(elapsed).replace(/^0:/, '');
+                    if(document.getElementById("s-end")) document.getElementById("s-end").innerText = formatHMS(total).replace(/^0:/, '');
                 };
-                updateSpotify();
+                update();
+            }
+
+            if (data.activities.length > 0) {
+                const game = data.activities.find(a => a.type === 0);
+                if (game && game.timestamps && game.timestamps.start) {
+                    const updateGame = () => {
+                        const elapsed = Date.now() - game.timestamps.start;
+                        const el = document.getElementById("game-time");
+                        if(el) el.innerText = formatHMS(elapsed) + " süredir oynuyor";
+                    };
+                    updateGame();
+                }
             }
         });
     </script>
