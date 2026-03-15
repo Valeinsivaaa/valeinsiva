@@ -13,7 +13,7 @@ const REPO_NAME = "valeinsiva";
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
 const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1482766630663754016/SPOILER_Baslksz86_20260315183407.png?ex=69b82589&is=69b6d409&hm=e24ab15c66257729a7089f34df0423b6dd7f498db96d6178de5835fc17adb580&";
-const BOT_PANEL_LINK = "https://valeinsiva.com.tr"; 
+const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 // ---------------
 
 let stats = { views: 0, likes: 0 };
