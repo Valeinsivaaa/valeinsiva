@@ -1,54 +1,41 @@
-
 const express = require('express');
 const axios = require('axios');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// SADECE ID GİRİN
 const DISCORD_ID = '877946035408891945'; 
 let viewsCount = 0;
 
 app.get('/', async (req, res) => {
     viewsCount++;
-    
-    // Her girişte taze veri çekmek için Cache-Control başlıkları ve zaman damgası ekliyoruz
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    let d = null;
     
+    let d = null;
     try {
         const response = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}?t=${Date.now()}`);
         d = response.data.data;
     } catch (err) {
-        return res.status(500).send("Discord API verisi su an alinamiyor.");
+        return res.status(500).send("Veri baglantisi kurulamadi.");
     }
 
-    const user = d.discord_user;
-    const spotify = d.spotify;
+    const { discord_user: user, spotify, activities, discord_status } = d;
     
-    // PlayStation veya diğer oyun aktivitelerini filtreleme
-    const activities = d.activities.filter(a => a.type !== 2 && a.id !== 'custom');
+    // Oyun/Uygulama Filtreleme
+    const filteredActivities = activities.filter(a => a.type !== 2 && a.id !== 'custom');
 
-    // Rozetleri ve Avatarı API'den Hazırla
-    const avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`;
+    // Avatar ve Banner logic
+    const avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar?.startsWith('a_') ? 'gif' : 'png'}?size=512`;
     
-    // Rozet Sistemi (Flags üzerinden otomatik)
-    let badgesHTML = '';
-    const flags = user.public_flags;
+    // Rozetler
+    const flags = user.public_flags || 0;
     const badgeMap = {
         1: 'discordstaff', 2: 'discordpartner', 4: 'hypesquad', 8: 'bughunter_level_1',
         64: 'hypesquadbravery', 128: 'hypesquadbrilliance', 256: 'hypesquadbalance',
-        512: 'earlysupporter', 16384: 'bughunter_level_2', 131072: 'developer', 4194304: 'active_developer'
+        512: 'earlysupporter', 131072: 'developer', 4194304: 'active_developer'
     };
+    let badgesHTML = '';
     Object.keys(badgeMap).forEach(f => { if (flags & f) badgesHTML += `<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeMap[f]}.svg" class="badge">`; });
-    if (user.avatar && user.avatar.startsWith('a_')) badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge">';
-
-    // Spotify Süre Hesaplama
-    let spotifyProgress = 0;
-    if (spotify) {
-        const total = spotify.timestamps.end - spotify.timestamps.start;
-        const current = Date.now() - spotify.timestamps.start;
-        spotifyProgress = Math.min(100, Math.max(0, (current / total) * 100));
-    }
+    if (user.avatar?.startsWith('a_')) badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge">';
 
     res.send(`
 <!DOCTYPE html>
@@ -56,103 +43,138 @@ app.get('/', async (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${user.global_name || user.username} | Profile</title>
+    <title>${user.global_name || user.username} | Profil</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(15, 15, 15, 0.7);
+            --accent-blue: #5865F2;
+            --accent-green: #1DB954;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        /* Guns.lol Estetiği Hareketli Arka Plan */
-        .bg-animate { position: fixed; inset: 0; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); background-size: 400% 400%; animation: grad 15s infinite; z-index: -1; filter: blur(50px); opacity: 0.6; }
-        @keyframes grad { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        /* Hareketli Arka Plan */
+        .bg-glow { position: fixed; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%); z-index: -1; }
+        .bg-glow::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, var(--accent-blue), transparent 30%); animation: rotate 20s linear infinite; opacity: 0.1; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        /* Ana Kart Tasarımı (Cam Efekti) */
-        .card { width: 480px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; padding: 35px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position: relative; }
+        .card { width: 420px; background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 40px 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; }
         
-        .avatar-box { position: relative; display: inline-block; margin-bottom: 20px; }
-        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #000; }
-        .status { position: absolute; bottom: 10px; right: 8px; width: 28px; height: 28px; border-radius: 50%; border: 4px solid #000; }
-        .online { background: #43b581; } .idle { background: #faa61a; } .dnd { background: #f04747; } .offline { background: #747f8d; }
+        /* Avatar & Status */
+        .avatar-wrap { position: relative; width: 120px; margin: 0 auto 20px; }
+        .avatar { width: 120px; height: 120px; border-radius: 40px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .status-dot { position: absolute; bottom: -5px; right: -5px; width: 24px; height: 24px; border-radius: 50%; border: 4px solid #111; }
+        .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
 
-        .name { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
-        .badges-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; }
-        .badge { width: 22px; height: 22px; }
+        .name { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .badges-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 25px; min-height: 22px; }
+        .badge { width: 20px; height: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-        /* Aktivite Kartları */
-        .act-card { background: rgba(0,0,0,0.4); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 18px; border: 1px solid rgba(255,255,255,0.05); text-align: left; margin-bottom: 15px; }
-        .act-card img { width: 65px; height: 65px; border-radius: 12px; }
-        .info h4 { font-size: 15px; margin-bottom: 3px; }
-        .info p { font-size: 12px; color: #aaa; }
+        /* Aktivite Bölümü */
+        .section-title { font-size: 11px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 12px; font-weight: 700; text-align: left; }
+        
+        .activity-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; transition: 0.3s; }
+        .activity-card:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+        
+        .act-img { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; }
+        .act-info { flex: 1; text-align: left; overflow: hidden; }
+        .act-info h4 { font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .act-info p { font-size: 12px; color: var(--text-dim); }
 
-        .spotify-style { border-left: 4px solid #1DB954; }
-        .game-style { border-left: 4px solid #5865F2; }
+        /* Spotify Progress */
+        .spotify-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+        .spotify-progress { height: 100%; background: var(--accent-green); transition: width 1s linear; }
 
-        /* Spotify İlerleme Çubuğu */
-        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px; overflow: hidden; }
-        .progress-bar { height: 100%; background: #1DB954; width: ${spotifyProgress}%; }
+        /* Footer */
+        .footer { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .dc-btn { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 12px; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.3s; }
+        .dc-btn:hover { background: var(--accent-blue); }
+        .views { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 5px; }
 
-        /* Alt Bilgi */
-        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px; opacity: 0.6; font-size: 13px; }
-        .dc-icon { color: #fff; text-decoration: none; font-size: 20px; transition: 0.3s; }
-        .dc-icon:hover { color: #5865F2; transform: scale(1.1); }
+        @media (max-width: 450px) { .card { width: 90%; padding: 30px 20px; } }
     </style>
 </head>
 <body>
-    <div class="bg-animate"></div>
+    <div class="bg-glow"></div>
     <div class="card">
-        <div class="avatar-box">
-            <img class="avatar" src="${avatarUrl}">
-            <div class="status ${d.discord_status}"></div>
+        <div class="avatar-wrap">
+            <img class="avatar" src="${avatarUrl}" alt="Avatar">
+            <div class="status-dot ${discord_status}"></div>
         </div>
 
         <div class="name">${user.global_name || user.username}</div>
         <div class="badges-row">${badgesHTML}</div>
 
-        <div class="activities">
+        <div class="content">
             ${spotify ? `
-            <div class="act-card spotify-style">
-                <img src="${spotify.album_art_url}">
-                <div class="info" style="width: 100%;">
-                    <h4 style="color:#1DB954"><i class="fab fa-spotify"></i> Dinliyor</h4>
-                    <p><strong>${spotify.song}</strong></p>
-                    <p>${spotify.artist}</p>
-                    <div class="progress-container"><div class="progress-bar"></div></div>
+                <div class="section-title">Spotify</div>
+                <div class="activity-card">
+                    <img class="act-img" src="${spotify.album_art_url}">
+                    <div class="act-info">
+                        <h4>${spotify.song}</h4>
+                        <p>${spotify.artist}</p>
+                        <div class="spotify-bar">
+                            <div class="spotify-progress" style="width: ${((Date.now() - spotify.timestamps.start) / (spotify.timestamps.end - spotify.timestamps.start)) * 100}%"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
             ` : ''}
 
-            ${activities.map(act => `
-            <div class="act-card game-style">
-                <img src="https://i.imgur.com/vHExl6m.png">
-                <div class="info">
-                    <h4 style="color:#5865F2"><i class="fas fa-gamepad"></i> Oynuyor</h4>
-                    <p><strong>${act.name}</strong></p>
-                    <p>${act.details || ''}</p>
-                    <p>${act.state || 'Aktif'}</p>
+            ${filteredActivities.length > 0 ? '<div class="section-title">Aktivite</div>' : ''}
+            ${filteredActivities.map(act => {
+                const gameImg = act.assets?.large_image 
+                    ? (act.assets.large_image.startsWith('mp:external') 
+                        ? act.assets.large_image.replace(/.*https\//, 'https://') 
+                        : `https://cdn.discordapp.com/app-assets/${act.application_id}/${act.assets.large_image}.png`)
+                    : 'https://i.imgur.com/vHExl6m.png';
+                
+                return `
+                <div class="activity-card">
+                    <img class="act-img" src="${gameImg}">
+                    <div class="act-info">
+                        <h4>${act.name}</h4>
+                        <p>${act.details || 'Oynuyor'}</p>
+                        <p style="font-size: 10px; opacity: 0.7;">${act.state || ''}</p>
+                    </div>
                 </div>
-            </div>
-            `).join('')}
+                `;
+            }).join('')}
 
-            ${(!spotify && activities.length === 0) ? '<p style="text-align:center; color:#333; font-size:13px;">Şu an aktif bir durum yok.</p>' : ''}
+            ${(!spotify && filteredActivities.length === 0) ? '<p style="font-size: 12px; color: #444;">Şu an sessiz...</p>' : ''}
         </div>
 
         <div class="footer">
-            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="dc-icon">
-                <i class="fab fa-discord"></i>
+            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="dc-btn">
+                <i class="fab fa-discord"></i> Profili Gör
             </a>
-            <div>
-                <i class="fas fa-eye"></i> <span>${viewsCount}</span>
+            <div class="views">
+                <i class="far fa-eye"></i> ${viewsCount}
             </div>
         </div>
     </div>
+
     <script>
-        // Sayfayı her 30 saniyede bir sessizce yenileyerek API'den taze veri çeker
-        setInterval(() => { location.reload(); }, 30000);
+        // Sayfayı yenilemeden Spotify barını hareket ettirmek için basit bir script
+        setInterval(() => {
+            const progressBar = document.querySelector('.spotify-progress');
+            if (progressBar) {
+                // Sadece görsel bir akıcılık için sayfa yenilenene kadar küçük artış yapılabilir
+                // Ancak lanyard taze veri verdiği için reload en sağlıklısıdır.
+            }
+        }, 1000);
+
+        // 30 saniyede bir tam yenileme
+        setTimeout(() => { location.reload(); }, 30000);
     </script>
 </body>
 </html>
     `);
 });
 
-app.listen(port);
-
+app.listen(port, () => console.log(`Site ${port} portunda hazır!`));
