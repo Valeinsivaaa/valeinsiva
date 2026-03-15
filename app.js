@@ -12,18 +12,16 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1482767286732328980/SPOILER_Screenshot_20260315_182002_Gallery-1.jpg?ex=69b82625&is=69b6d4a5&hm=1823322bd44acc69d7e1897fe92b195d20a849423d75daf4c3f809f4d07e7994&";
+const BANNER_URL = "https://i.ibb.co/L5k6t0r/1000055681.jpg"; //
+const BOT_PANEL_LINK = "https://valeinsiva.com.tr"; 
 // ---------------
 
 let stats = { views: 0, likes: 0 };
 
-// GitHub'dan Veri Çekme ve Güncelleme Fonksiyonları
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
         const headers = { Authorization: `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
-
-        // Dosyanın mevcut durumunu al (SHA için gerekli)
         const getRes = await axios.get(url, { headers }).catch(() => null);
         
         if (!isUpdate && getRes) {
@@ -31,20 +29,14 @@ async function syncWithGithub(isUpdate = false) {
             stats = JSON.parse(content);
             return;
         }
-
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(stats, null, 2)).toString('base64');
-            await axios.put(url, {
-                message: "📊 İstatistik Güncelleme",
-                content: newContent,
-                sha: sha
-            }, { headers });
+            await axios.put(url, { message: "📊 İstatistik Güncelleme", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("GitHub Sync Error:", e.message); }
 }
 
-// Lanyard Verisi
 let cachedData = null;
 setInterval(async () => {
     try {
@@ -54,7 +46,6 @@ setInterval(async () => {
     } catch (e) {}
 }, 1000);
 
-// İlk açılışta veriyi çek
 syncWithGithub();
 
 app.get("/api/like", async (req, res) => {
@@ -65,7 +56,8 @@ app.get("/api/like", async (req, res) => {
 
 app.get("/", async (req, res) => {
     stats.views++;
-    // Render her girişte GitHub'ı tetiklemesin diye beklemeden yanıt ver
+    syncWithGithub(true);
+
     res.send(`
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -79,33 +71,29 @@ app.get("/", async (req, res) => {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.85); --text-color: #fff; }
         [data-theme="light"] { --bg-color: #ffffff; --card-bg: rgba(240, 240, 240, 0.9); --text-color: #1a1a1a; }
-
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition:0.5s; }
         .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; }
         .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; background:var(--profile-color); animation:move 15s infinite alternate linear; }
         @keyframes move { 0% { transform: translate(-10%,-10%); } 100% { transform: translate(100%,100%); } }
-
         .like-btn, .theme-toggle { position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100; border:1px solid rgba(255,255,255,0.1); transition:0.3s; }
         .like-btn { left:25px; color:#888; } .like-btn.liked { color:#ff4757; transform:scale(1.1); box-shadow: 0 0 15px rgba(255,71,87,0.4); }
         .theme-toggle { right:25px; color:var(--profile-color); }
-
         .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; position:relative; }
         .banner-box { height:160px; } .banner-img { width:100%; height:100%; object-fit:cover; }
-
         .profile-content { padding: 0 25px 25px; text-align:center; }
         .avatar-wrap { position:relative; width:105px; height:105px; margin:-55px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card-bg); }
         .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; }
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
-
         .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; text-align:left; border:1px solid rgba(255,255,255,0.05); }
         .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; width:100%; overflow:hidden; }
-        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 0.4s ease; }
+        .s-bar-fill { height:100%; background:var(--profile-color); }
         .s-time { display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.4); margin-top:6px; font-weight:600; }
-
         .footer { margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6; font-weight:bold; }
-        .stat-item { display:flex; align-items:center; gap:6px; }
+        .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .social-link:hover { opacity:1; color:var(--profile-color); transform:translateY(-3px); }
+        .social-link span { font-size:10px; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -126,15 +114,21 @@ app.get("/", async (req, res) => {
             
             <div id="act-stack"></div>
 
-            <div style="display:flex; justify-content:center; gap:30px; margin-top:20px;">
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:var(--text-color); font-size:24px; opacity:0.7;"><i class="fa-brands fa-discord"></i></a>
-                <a href="#" style="text-decoration:none; color:var(--text-color); font-size:24px; opacity:0.7;"><i class="fa-solid fa-code"></i></a>
+            <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link">
+                    <i class="fa-brands fa-discord fa-2xl"></i>
+                    <span>Profili Görüntüle</span>
+                </a>
+                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link">
+                    <i class="fa-solid fa-code fa-2xl"></i>
+                    <span>Bot Panel</span>
+                </a>
             </div>
 
             <div class="footer">
-                <div class="stat-item"><i class="fa-solid fa-eye"></i> <span>${stats.views}</span></div>
-                <div class="stat-item"><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
-                <div class="stat-item"><i class="fa-solid fa-location-dot"></i> Türkiye</div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-eye"></i> <span>${stats.views}</span></div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-location-dot"></i> Türkiye</div>
             </div>
         </div>
     </div>
@@ -170,10 +164,11 @@ app.get("/", async (req, res) => {
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             document.getElementById("status").className = "status " + data.discord_status;
             
+            const decor = document.getElementById("decor");
             if(u.avatar_decoration_data) {
-                document.getElementById("decor").src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
-                document.getElementById("decor").style.display = "block";
-            } else { document.getElementById("decor").style.display = "none"; }
+                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
+                decor.style.display = "block";
+            } else { decor.style.display = "none"; }
 
             let acts = "";
             if(data.spotify) {
@@ -184,7 +179,7 @@ app.get("/", async (req, res) => {
                 <div class="card">
                     <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                     <div style="flex:1">
-                        <div style="font-weight:800; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:180px;">\${data.spotify.song}</div>
+                        <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
                         <div style="font-size:11px; opacity:0.5; font-weight:600;">\${data.spotify.artist}</div>
                         <div class="s-bar-container"><div class="s-bar-fill" style="width:\${prog}%"></div></div>
                         <div class="s-time"><span>\${formatTime(elapsed)}</span><span>\${formatTime(total)}</span></div>
@@ -213,18 +208,18 @@ app.get("/", async (req, res) => {
             document.getElementById("act-stack").innerHTML = acts || '<div style="font-size:12px; opacity:0.3; font-style:italic; padding:15px;">Aktivite yok...</div>';
         });
 
-        for(let i=0; i<5; i++){
+        // Arka plan animasyonu
+        const bg = document.getElementById('bg-canvas');
+        for(let i=0; i<6; i++){
             let o = document.createElement('div'); o.className='orb';
             o.style.width='400px'; o.style.height='400px';
             o.style.left=Math.random()*100+'%'; o.style.top=Math.random()*100+'%';
-            o.style.animationDelay=(i*3)+'s'; document.getElementById('bg-canvas').appendChild(o);
+            o.style.animationDelay=(i*2)+'s'; bg.appendChild(o);
         }
     </script>
 </body>
 </html>
     `);
-    // Görüntülenmeyi GitHub'a işle
-    syncWithGithub(true);
 });
 
 server.listen(process.env.PORT || 3000);
