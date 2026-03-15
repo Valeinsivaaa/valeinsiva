@@ -94,20 +94,17 @@ app.get("/", (req, res) => {
         }
         .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
 
-        /* ROZETLER - GÖRÜNÜRLÜK DÜZELTİLDİ */
+        /* ROZETLER (BADGES) - DINAMIK */
         .badges-container {
-            display: flex; justify-content: center; gap: 6px; margin-bottom: 5px; position: relative; z-index: 20;
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; height: 22px;
         }
         .badge-icon {
             width: 20px; height: 20px; object-fit: contain;
         }
 
-        /* YAZI ESKİ HALİNE DÖNDÜ */
         .display-name {
             font-size: 32px; font-weight: 800; margin: 0;
-            color: #ffffff;
-            letter-spacing: -1px;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+            color: #ffffff; letter-spacing: -1px;
         }
         
         .username { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 15px; }
@@ -124,7 +121,6 @@ app.get("/", (req, res) => {
         .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
-        /* SPOTIFY SÜRE VE BAR */
         .spotify-time-info {
             display: flex; justify-content: space-between; font-size: 10px;
             color: rgba(255,255,255,0.4); margin-top: 8px; font-family: monospace;
@@ -150,12 +146,7 @@ app.get("/", (req, res) => {
                 <div id="status" class="status offline"></div>
             </div>
 
-            <div class="badges-container">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png" class="badge-icon">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png" class="badge-icon">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png" class="badge-icon">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png" class="badge-icon">
-            </div>
+            <div id="badges" class="badges-container"></div>
             
             <div id="display-name" class="display-name">Valeinsiva</div>
             <div class="username">@valeinsiva.</div>
@@ -181,6 +172,13 @@ app.get("/", (req, res) => {
         const socket = io();
         let lastG = ""; let lastS = "";
 
+        const BADGE_URLS = {
+            NITRO: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png",
+            HYPESQUAD_BRAVERY: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png",
+            BOOST: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png",
+            ACTIVE_DEVELOPER: "https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png"
+        };
+
         function formatTime(ms) {
             const totalSec = Math.floor(ms / 1000);
             const m = Math.floor(totalSec / 60);
@@ -192,10 +190,22 @@ app.get("/", (req, res) => {
             const u = data.discord_user;
             document.getElementById("display-name").innerText = u.display_name || u.username;
 
+            // Rozetleri ID üzerinden çekip oluşturma
+            const badgeBox = document.getElementById("badges");
+            badgeBox.innerHTML = "";
+            // Örnek: Manuel ekleme yerine data.public_flags üzerinden de gidilebilir
+            // Şimdilik istediğin 4 rozeti garantili PNG olarak basıyoruz:
+            Object.values(BADGE_URLS).forEach(url => {
+                const img = document.createElement("img");
+                img.src = url;
+                img.className = "badge-icon";
+                badgeBox.appendChild(img);
+            });
+
+            // Banner & Avatar
             const b = document.getElementById("banner");
             if(u.banner) {
                 b.src = \`https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.\${u.banner.startsWith("a_")?"gif":"png"}?size=600\`;
-                b.style.display = "block";
             }
 
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
@@ -207,58 +217,28 @@ app.get("/", (req, res) => {
 
             document.getElementById("status").className = "status " + data.discord_status;
 
-            // Oyun
+            // Oyun & Spotify (Düzeltilmiş Sayaç)
             const gZone = document.getElementById("game-zone");
             const game = data.activities.find(a => a.type === 0);
             if(game) {
                 if(lastG !== game.name) {
-                    gZone.innerHTML = \`
-                        <div class="card">
-                            <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px"><i class="fa-solid fa-gamepad"></i></div>
-                            <div class="card-info">
-                                <div class="card-title">\${game.name}</div>
-                                <div class="card-sub">\${game.details || 'Oynuyor'}</div>
-                            </div>
-                            <i class="fa-brands fa-playstation" style="color:#00439c; font-size:22px;"></i>
-                        </div>\`;
+                    gZone.innerHTML = \`<div class="card"><div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px"><i class="fa-solid fa-gamepad"></i></div><div class="card-info"><div class="card-title">\${game.name}</div><div class="card-sub">\${game.details || 'Oynuyor'}</div></div><i class="fa-brands fa-playstation" style="color:#00439c; font-size:22px;"></i></div>\`;
                     lastG = game.name;
                 }
             } else { gZone.innerHTML = ""; lastG = ""; }
 
-            // Spotify - Saniye Saniye İlerleme ve Bitiş Süresi
             const sZone = document.getElementById("spotify-zone");
             if(data.spotify) {
                 if(lastS !== data.spotify.track_id) {
-                    sZone.innerHTML = \`
-                        <div class="card">
-                            <img src="\${data.spotify.album_art_url}" class="card-img">
-                            <div class="card-info">
-                                <div class="card-title">\${data.spotify.song}</div>
-                                <div class="card-sub">\${data.spotify.artist}</div>
-                                <div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div>
-                                <div class="spotify-time-info">
-                                    <span id="s-start">00:00</span>
-                                    <span id="s-end">00:00</span>
-                                </div>
-                            </div>
-                            <i class="fa-brands fa-spotify" style="color:#1db954; font-size:22px;"></i>
-                        </div>\`;
+                    sZone.innerHTML = \`<div class="card"><img src="\${data.spotify.album_art_url}" class="card-img"><div class="card-info"><div class="card-title">\${data.spotify.song}</div><div class="card-sub">\${data.spotify.artist}</div><div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div><div class="spotify-time-info"><span id="s-start">00:00</span><span id="s-end">00:00</span></div></div><i class="fa-brands fa-spotify" style="color:#1db954; font-size:22px;"></i></div>\`;
                     lastS = data.spotify.track_id;
                 }
-                
-                // Zaman hesaplama
                 const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
                 const elapsed = Math.min(Date.now() - data.spotify.timestamps.start, total);
                 const prog = (elapsed / total) * 100;
-                
-                const bar = document.getElementById("s-fill");
-                const startTxt = document.getElementById("s-start");
-                const endTxt = document.getElementById("s-end");
-                
-                if(bar) bar.style.width = prog + "%";
-                if(startTxt) startTxt.innerText = formatTime(elapsed);
-                if(endTxt) endTxt.innerText = formatTime(total);
-                
+                document.getElementById("s-fill").style.width = prog + "%";
+                document.getElementById("s-start").innerText = formatTime(elapsed);
+                document.getElementById("s-end").innerText = formatTime(total);
             } else { sZone.innerHTML = ""; lastS = ""; }
         });
     </script>
