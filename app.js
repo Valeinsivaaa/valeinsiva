@@ -73,25 +73,21 @@ app.get("/", (req, res) => {
             backdrop-filter: blur(45px); border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-            position: relative; overflow: visible; /* Decor taşması için visible */
+            position: relative;
         }
 
-        /* Dikdörtgen İnce Banner */
         .banner-container {
-            width: 100%; height: 90px; /* İnce dikdörtgen yapı */
-            border-radius: 30px 30px 0 0; overflow: hidden;
-            background: rgba(255,255,255,0.03);
+            width: 100%; height: 95px; border-radius: 30px 30px 0 0; 
+            overflow: hidden; background: rgba(255,255,255,0.03);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         #banner { width: 100%; height: 100%; object-fit: cover; display: none; }
 
         .content { padding: 0 25px 30px; position: relative; }
 
-        /* Profil Avatar & Decor */
         .avatar-area {
             position: relative; width: 95px; height: 95px;
-            margin: -50px auto 15px; /* Banner altına tam ortalı bindirme */
-            z-index: 10;
+            margin: -50px auto 15px; z-index: 10;
         }
         .avatar {
             width: 100%; height: 100%; border-radius: 50%;
@@ -101,8 +97,7 @@ app.get("/", (req, res) => {
         .avatar-decor {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 120%; height: 120%; /* Dekoru biraz daha büyük tutar */
-            z-index: 2; pointer-events: none; display: none;
+            width: 120%; height: 120%; z-index: 2; pointer-events: none; display: none;
         }
 
         .status-dot {
@@ -129,8 +124,13 @@ app.get("/", (req, res) => {
         .act-main { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .act-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
-        .p-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; }
-        .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 10px #1db954; transition: width 1s linear; }
+        /* Spotify Bar & Timer */
+        .spotify-timer {
+            display: flex; align-items: center; gap: 8px; margin-top: 8px;
+            font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;
+        }
+        .p-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 10px #1db954; }
 
         .socials { display: flex; justify-content: center; gap: 35px; }
         .socials a { color: white; font-size: 26px; opacity: 0.3; transition: 0.3s; }
@@ -172,28 +172,37 @@ app.get("/", (req, res) => {
         const socket = io();
         let lastActivityKey = "";
 
+        function formatTime(ms) {
+            const totalSec = Math.floor(ms / 1000);
+            const min = Math.floor(totalSec / 60);
+            const sec = totalSec % 60;
+            return min + ":" + (sec < 10 ? "0" : "") + sec;
+        }
+
         socket.on("presence", data => {
             const user = data.discord_user;
 
-            // Avatar & Durum
+            // Avatar
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
             document.getElementById("status").className = "status-dot " + data.discord_status;
 
-            // İnce Banner
+            // Banner (Gelişmiş Kontrol)
             const banner = document.getElementById("banner");
-            if (user.banner) {
-                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.png?size=512\`;
+            const bannerHash = user.banner || data.discord_user.banner;
+            if (bannerHash) {
+                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${bannerHash}.png?size=600\`;
                 banner.style.display = "block";
             } else { banner.style.display = "none"; }
 
-            // Dekor
+            // Dekor (Gelişmiş Kontrol)
             const decor = document.getElementById("decor");
-            if (user.avatar_decoration) {
-                decor.src = user.avatar_decoration;
+            const decorUrl = user.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${user.avatar_decoration_data.asset}.png\` : null;
+            if (decorUrl || user.avatar_decoration) {
+                decor.src = decorUrl || user.avatar_decoration;
                 decor.style.display = "block";
             } else { decor.style.display = "none"; }
 
-            // Aktivite Sabitleme
+            // Aktivite Alanı
             const zone = document.getElementById("activity-zone");
             let html = "";
             let currentKey = "none";
@@ -206,9 +215,12 @@ app.get("/", (req, res) => {
                         <div class="act-text">
                             <div class="act-main">\${data.spotify.song}</div>
                             <div class="act-sub">\${data.spotify.artist}</div>
-                            <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
+                            <div class="spotify-timer">
+                                <span id="time-curr">0:00</span>
+                                <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
+                                <span id="time-end">0:00</span>
+                            </div>
                         </div>
-                        <i class="fa-brands fa-spotify" style="color:#1db954; font-size:18px"></i>
                     </div>\`;
             } else if (data.activities.length > 0) {
                 const game = data.activities.find(a => a.type === 0);
@@ -220,7 +232,7 @@ app.get("/", (req, res) => {
                             <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px"><i class="\${icon}"></i></div>
                             <div class="act-text">
                                 <div class="act-main">\${game.name}</div>
-                                <div class="act-sub">\${game.details || 'Şu an aktif'}</div>
+                                <div class="act-sub">\${game.details || 'Aktif'}</div>
                             </div>
                         </div>\`;
                 }
@@ -231,11 +243,26 @@ app.get("/", (req, res) => {
                 lastActivityKey = currentKey;
             }
 
+            // Spotify Real-time Update
             if (data.spotify) {
-                const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
-                const prog = Math.min(((Date.now() - data.spotify.timestamps.start) / total) * 100, 100);
-                const bar = document.getElementById("s-fill");
-                if (bar) bar.style.width = prog + "%";
+                const start = data.spotify.timestamps.start;
+                const end = data.spotify.timestamps.end;
+                const total = end - start;
+                
+                const updateSpotify = () => {
+                    const now = Date.now();
+                    const elapsed = Math.min(now - start, total);
+                    const prog = (elapsed / total) * 100;
+                    
+                    const bar = document.getElementById("s-fill");
+                    const currTxt = document.getElementById("time-curr");
+                    const endTxt = document.getElementById("time-end");
+                    
+                    if (bar) bar.style.width = prog + "%";
+                    if (currTxt) currTxt.innerText = formatTime(elapsed);
+                    if (endTxt) endTxt.innerText = formatTime(total);
+                };
+                updateSpotify();
             }
         });
     </script>
