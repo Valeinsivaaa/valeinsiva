@@ -4,7 +4,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // BURAYI KENDİ DISCORD ID'N İLE DEĞİŞTİR
-const DISCORD_ID = 'SENIN_DISCORD_ID_BURAYA'; 
+const DISCORD_ID = '877946035408891945'; 
 
 app.get('/', async (req, res) => {
     let discordStatus = { status: 'offline', activities: [] };
