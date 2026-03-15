@@ -1,7 +1,7 @@
 {
-  "name": "valeinsiva-advanced-profile",
-  "version": "1.1.0",
-  "description": "Discord Activity & Spotify Dashboard",
+  "name": "valeinsiva-api-profile",
+  "version": "1.2.0",
+  "description": "Discord API Powered Profile",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
