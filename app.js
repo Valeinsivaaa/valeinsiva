@@ -18,13 +18,18 @@ const BOT_PANEL_URL = "https://valeinsiva.com.tr";
 const DB_FILE = "./views.json";
 // ---------------
 
-let views = 0;
-if (fs.existsSync(DB_FILE)) {
-    try { views = JSON.parse(fs.readFileSync(DB_FILE)).views || 0; } catch(e) { views = 0; }
+// Veritabanı Kontrolü
+function getStats() {
+    if (!fs.existsSync(DB_FILE)) {
+        fs.writeFileSync(DB_FILE, JSON.stringify({ views: 0, likes: 0 }));
+        return { views: 0, likes: 0 };
+    }
+    try {
+        return JSON.parse(fs.readFileSync(DB_FILE));
+    } catch (e) { return { views: 0, likes: 0 }; }
 }
 
 let cachedData = null;
-
 async function updateCache() {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
@@ -36,14 +41,19 @@ async function updateCache() {
 }
 setInterval(updateCache, 2000);
 
-io.on("connection", (socket) => { if (cachedData) socket.emit("presence", cachedData); });
+// Kalp Atma İsteği
+app.get("/api/like", (req, res) => {
+    let stats = getStats();
+    stats.likes = (stats.likes || 0) + 1;
+    fs.writeFileSync(DB_FILE, JSON.stringify(stats));
+    res.json({ success: true, likes: stats.likes });
+});
 
 app.get("/", (req, res) => {
-    if (!req.cookies.viewed) {
-        views++;
-        fs.writeFileSync(DB_FILE, JSON.stringify({ views }));
-        res.cookie("viewed", "yes", { maxAge: 31536000000 });
-    }
+    // Sayfa her yüklendiğinde görüntülenmeyi arttır
+    let stats = getStats();
+    stats.views++;
+    fs.writeFileSync(DB_FILE, JSON.stringify(stats));
 
     res.send(`
 <!DOCTYPE html>
@@ -60,14 +70,14 @@ app.get("/", (req, res) => {
         :root { 
             --profile-color: #7289da;
             --bg-color: #050505;
-            --card-bg: rgba(15, 15, 15, 0.7);
+            --card-bg: rgba(15, 15, 15, 0.75);
             --text-color: #ffffff;
             --sub-text: rgba(255, 255, 255, 0.4);
         }
 
         [data-theme="light"] {
-            --bg-color: #f0f2f5;
-            --card-bg: rgba(255, 255, 255, 0.8);
+            --bg-color: #ffffff;
+            --card-bg: rgba(240, 240, 240, 0.8);
             --text-color: #1a1a1a;
             --sub-text: rgba(0, 0, 0, 0.5);
         }
@@ -78,102 +88,98 @@ app.get("/", (req, res) => {
             background: var(--bg-color); color: var(--text-color);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden;
-            transition: background 0.5s ease;
-        }
-
-        /* CANLI MESH GRADIENT ARKA PLAN */
-        .bg-wrap {
-            position: fixed; inset: 0; z-index: -1;
-            background: var(--bg-color);
-            overflow: hidden;
-        }
-        .mesh {
-            position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(at 0% 0%, var(--profile-color) 0, transparent 50%),
-                        radial-gradient(at 100% 100%, var(--profile-color) 0, transparent 50%);
-            opacity: 0.15; filter: blur(100px);
-            animation: meshMove 10s infinite alternate;
-        }
-        @keyframes meshMove {
-            from { transform: scale(1) rotate(0deg); }
-            to { transform: scale(1.2) rotate(5deg); }
-        }
-
-        /* GECE/GÜNDÜZ MODU BUTONU */
-        .theme-toggle {
-            position: absolute; top: 30px; right: 30px;
-            width: 50px; height: 50px;
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 100;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .theme-toggle i { font-size: 20px; transition: 0.3s; color: var(--profile-color); }
-        .theme-toggle:active { transform: scale(0.9) rotate(360deg); }
-
-        .main-card {
-            width: 380px; 
-            background: var(--card-bg);
-            backdrop-filter: blur(25px); border-radius: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 40px -10px var(--profile-color);
-            position: relative; overflow: hidden;
             transition: all 0.5s ease;
         }
 
-        .banner-box { width: 100%; height: 160px; overflow: hidden; position: relative; }
-        .banner-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); transition: 0.5s; }
+        .bg-wrap { position: fixed; inset: 0; z-index: -1; background: var(--bg-color); overflow: hidden; }
+        .orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(100px); opacity: 0.3;
+            background: var(--profile-color);
+            animation: moveOrb 15s infinite alternate ease-in-out;
+        }
+        @keyframes moveOrb {
+            0% { transform: translate(-20%, -20%) scale(1); }
+            100% { transform: translate(120%, 120%) scale(1.6); }
+        }
+
+        /* SOL ÜST KALP BUTONU */
+        .like-btn {
+            position: fixed; top: 25px; left: 25px;
+            width: 55px; height: 55px;
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 1000;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .like-btn i { font-size: 22px; color: #888; transition: 0.3s; }
+        .like-btn.liked i { color: #ff4757; animation: heartPop 0.4s ease; }
+        @keyframes heartPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+        .like-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 71, 87, 0.3); }
+
+        /* SAĞ ÜST TEMA TOGGLE */
+        .theme-toggle {
+            position: fixed; top: 25px; right: 25px;
+            width: 55px; height: 55px;
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 1000; transition: 0.6s;
+        }
+
+        .main-card {
+            width: 380px; background: var(--card-bg);
+            backdrop-filter: blur(30px); border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px -10px var(--profile-color);
+            position: relative; overflow: hidden;
+        }
+
+        .banner-box { width: 100%; height: 165px; overflow: hidden; }
+        .banner-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); }
 
         .profile-content { padding: 0 25px 25px; text-align: center; }
 
         .avatar-wrap {
-            position: relative; width: 100px; height: 100px;
-            margin: -55px auto 15px; z-index: 10;
+            position: relative; width: 110px; height: 110px;
+            margin: -65px auto 15px; z-index: 10;
         }
-        .avatar { 
-            width: 100%; height: 100%; border-radius: 50%; 
-            border: 5px solid var(--card-bg); object-fit: cover; 
-            transition: border-color 0.5s;
-        }
-        .decor-img { position: absolute; inset: -15%; width: 130%; height: 130%; z-index: 11; pointer-events: none; }
+        .avatar { width: 100%; height: 100%; border-radius: 50%; border: 6px solid var(--card-bg); transition: 0.3s; }
+        .decor-img { position: absolute; inset: -16%; width: 132%; height: 132%; z-index: 11; }
 
         .status {
-            position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px;
+            position: absolute; bottom: 8px; right: 8px; width: 18px; height: 18px;
             border-radius: 50%; border: 4px solid var(--card-bg); z-index: 12;
         }
         .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
 
-        .display-name { font-size: 24px; font-weight: 800; margin: 0; color: var(--text-color); }
-        .username { font-size: 13px; color: var(--sub-text); margin-bottom: 20px; }
+        .display-name { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+        .username { font-size: 14px; color: var(--sub-text); margin-bottom: 20px; }
 
-        .act-stack { min-height: 80px; display: flex; flex-direction: column; gap: 10px; }
         .card {
-            background: rgba(120, 120, 120, 0.08); border-radius: 18px;
-            padding: 12px; display: flex; align-items: center; gap: 12px;
+            background: rgba(120, 120, 120, 0.1); border-radius: 20px;
+            padding: 15px; display: flex; align-items: center; gap: 15px;
             border: 1px solid rgba(255,255,255,0.05); text-align: left;
-            transition: transform 0.3s;
+            margin-bottom: 10px; transition: 0.3s;
         }
-        .card:hover { transform: scale(1.02); }
-        .no-activity { font-size: 13px; color: var(--sub-text); font-style: italic; }
+        .card:hover { background: rgba(120, 120, 120, 0.15); }
+        .s-bar-container { height: 5px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+        .s-bar-fill { height: 100%; background: var(--profile-color); border-radius: 10px; }
 
-        .s-bar-container { height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden;}
-        .s-bar-fill { height: 100%; background: var(--profile-color); border-radius: 10px; transition: width 1s linear; }
-        .s-time { display: flex; justify-content: space-between; font-size: 9px; color: var(--sub-text); margin-top: 4px; }
+        .socials { display: flex; justify-content: center; gap: 45px; margin-top: 25px; }
+        .social-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: var(--text-color); transition: 0.3s; }
+        .social-item:hover { color: var(--profile-color); transform: translateY(-5px); }
 
-        .socials { display: flex; justify-content: center; gap: 40px; margin-top: 25px; }
-        .social-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: var(--text-color); opacity: 0.6; transition: 0.3s; }
-        .social-item:hover { opacity: 1; transform: translateY(-5px); color: var(--profile-color); text-shadow: 0 0 10px var(--profile-color); }
-        .social-item span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .footer { margin-top: 20px; font-size: 11px; color: var(--sub-text); display: flex; justify-content: center; gap: 15px; }
+        .footer { margin-top: 25px; font-size: 11px; color: var(--sub-text); display: flex; justify-content: center; gap: 15px; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
-    <div class="bg-wrap">
-        <div class="mesh"></div>
+    <div class="bg-wrap" id="bg-canvas"></div>
+
+    <div class="like-btn" id="like-btn" title="Kalp At">
+        <i class="fa-solid fa-heart"></i>
     </div>
 
     <div class="theme-toggle" id="theme-btn" title="Temayı Değiştir">
@@ -181,65 +187,78 @@ app.get("/", (req, res) => {
     </div>
 
     <div class="main-card">
-        <div class="banner-box">
-            <img src="${BANNER_URL}" class="banner-img">
-        </div>
+        <div class="banner-box"><img src="${BANNER_URL}" class="banner-img"></div>
         <div class="profile-content">
             <div class="avatar-wrap">
-                <img id="avatar" class="avatar" src="">
+                <img id="avatar" class="avatar">
                 <img id="decor" class="decor-img" style="display:none;">
                 <div id="status" class="status offline"></div>
             </div>
             <div id="display-name" class="display-name">Valeinsiva</div>
             <div class="username">@valeinsiva.</div>
             
-            <div class="act-stack" id="act-stack">
-                <div class="no-activity">Durum yükleniyor...</div>
+            <div id="act-stack" style="min-height: 80px;">
+                <div style="font-size: 13px; color: var(--sub-text); font-style: italic;">Yükleniyor...</div>
             </div>
 
             <div class="socials">
-                <a href="${BOT_PANEL_URL}" target="_blank" class="social-item">
-                    <i class="fa-solid fa-layer-group fa-xl"></i><span>Bot Panel</span>
-                </a>
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-item">
-                    <i class="fa-brands fa-discord fa-xl"></i><span>Profil</span>
-                </a>
+                <a href="${BOT_PANEL_URL}" target="_blank" class="social-item"><i class="fa-solid fa-layer-group fa-xl"></i><span>Bot Panel</span></a>
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-item"><i class="fa-brands fa-discord fa-xl"></i><span>Profil</span></a>
             </div>
 
             <div class="footer">
-                <span><i class="fa-solid fa-eye"></i> ${views} Görüntülenme</span>
-                <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
+                <div class="stat-item"><i class="fa-solid fa-eye"></i> <span>${stats.views}</span></div>
+                <div class="stat-item"><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
+                <div class="stat-item"><i class="fa-solid fa-location-dot"></i> Türkiye</div>
             </div>
         </div>
     </div>
 
     <script>
         const socket = io();
-        const stack = document.getElementById("act-stack");
         const themeBtn = document.getElementById("theme-btn");
+        const likeBtn = document.getElementById("like-btn");
         const html = document.documentElement;
 
-        // TEMA DEĞİŞTİRME MANTIĞI
-        themeBtn.addEventListener("click", () => {
+        // Kalp Atma Fonksiyonu
+        likeBtn.onclick = () => {
+            if(likeBtn.classList.contains('liked')) return;
+            fetch('/api/like').then(r => r.json()).then(data => {
+                if(data.success) {
+                    document.getElementById('like-count').innerText = data.likes;
+                    likeBtn.classList.add('liked');
+                }
+            });
+        };
+
+        // Tema Değiştirme
+        themeBtn.onclick = () => {
             const isDark = html.getAttribute("data-theme") === "dark";
             html.setAttribute("data-theme", isDark ? "light" : "dark");
-            themeBtn.querySelector("i").className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
             themeBtn.style.transform = "rotate(360deg)";
+            themeBtn.querySelector("i").className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
             setTimeout(() => themeBtn.style.transform = "rotate(0deg)", 600);
-        });
+        };
 
-        function formatTime(ms) {
-            const m = Math.floor(ms / 60000);
-            const s = Math.floor((ms % 60000) / 1000);
-            return \`\${m}:\${s < 10 ? '0' : ''}\${s}\`;
+        // Arka plan animasyon topları
+        const bg = document.getElementById('bg-canvas');
+        for(let i=0; i<5; i++) {
+            let orb = document.createElement('div');
+            orb.className = 'orb';
+            orb.style.width = (400 + Math.random() * 200) + 'px';
+            orb.style.height = orb.style.width;
+            orb.style.left = Math.random() * 80 + '%';
+            orb.style.top = Math.random() * 80 + '%';
+            orb.style.animationDelay = (i * 2) + 's';
+            bg.appendChild(orb);
         }
 
         socket.on("presence", data => {
             const u = data.discord_user;
             const themeColor = u.accent_color ? '#' + u.accent_color.toString(16).padStart(6, '0') : '#7289da';
             document.documentElement.style.setProperty('--profile-color', themeColor);
-
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            document.getElementById("status").className = "status " + data.discord_status;
             
             const decor = document.getElementById("decor");
             if(u.avatar_decoration_data) {
@@ -247,43 +266,16 @@ app.get("/", (req, res) => {
                 decor.style.display = "block";
             } else { decor.style.display = "none"; }
 
-            document.getElementById("status").className = "status " + data.discord_status;
-
-            let activityHtml = "";
-            let hasActivity = false;
-
+            let acts = "";
             if(data.spotify) {
-                hasActivity = true;
                 const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
                 const elapsed = Math.min(Date.now() - data.spotify.timestamps.start, total);
-                const progress = (elapsed / total) * 100;
-                activityHtml += \`
-                <div class="card">
-                    <img src="\${data.spotify.album_art_url}" style="width:50px; border-radius:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
-                    <div style="flex:1">
-                        <div style="font-weight:700; font-size:13px;">\${data.spotify.song}</div>
-                        <div style="font-size:11px; color:var(--sub-text)">\${data.spotify.artist}</div>
-                        <div class="s-bar-container"><div class="s-bar-fill" style="width:\${progress}%"></div></div>
-                        <div class="s-time"><span>\${formatTime(elapsed)}</span><span>\${formatTime(total)}</span></div>
-                    </div>
-                    <i class="fa-brands fa-spotify" style="color:#1db954; font-size:18px"></i>
-                </div>\`;
+                acts += \`<div class="card"><img src="\${data.spotify.album_art_url}" style="width:50px; border-radius:10px;"><div style="flex:1"><div style="font-weight:700; font-size:13px;">\${data.spotify.song}</div><div style="font-size:11px; color:var(--sub-text)">\${data.spotify.artist}</div><div class="s-bar-container"><div class="s-bar-fill" style="width:\${(elapsed/total)*100}%"></div></div></div><i class="fa-brands fa-spotify" style="color:#1db954; font-size:18px"></i></div>\`;
             }
-
             const game = data.activities.find(a => a.type === 0);
-            if(game) {
-                hasActivity = true;
-                activityHtml += \`
-                <div class="card">
-                    <div style="width:45px; height:45px; background:var(--profile-color); opacity:0.8; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div>
-                    <div style="flex:1">
-                        <div style="font-weight:700; font-size:13px;">\${game.name}</div>
-                        <div style="font-size:11px; color:var(--sub-text)">\${game.details || 'Oynuyor'}</div>
-                    </div>
-                </div>\`;
-            }
-
-            stack.innerHTML = hasActivity ? activityHtml : '<div class="no-activity">Şu an bir aktivite yok...</div>';
+            if(game) acts += \`<div class="card"><div style="width:45px; height:45px; background:var(--profile-color); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div><div style="flex:1"><div style="font-weight:700; font-size:13px;">\${game.name}</div><div style="font-size:11px; color:var(--sub-text)">\${game.details || 'Oynuyor'}</div></div></div>\`;
+            
+            document.getElementById("act-stack").innerHTML = acts || '<div style="font-size: 13px; color: var(--sub-text); font-style: italic;">Şu an bir aktivite yok...</div>';
         });
     </script>
 </body>
@@ -291,4 +283,4 @@ app.get("/", (req, res) => {
     `);
 });
 
-server.listen(3000, () => console.log("Valeinsiva Profile is Live on Port 3000"));
+server.listen(3000, () => console.log("Site 3000 portunda aktif!"));
