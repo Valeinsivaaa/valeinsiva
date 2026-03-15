@@ -1,125 +1,50 @@
-const express = require("express")
-const axios = require("axios")
-const cookieParser = require("cookie-parser")
+const express=require("express")
+const axios=require("axios")
+const http=require("http")
+const {Server}=require("socket.io")
+const cookieParser=require("cookie-parser")
 
-const app = express()
+const app=express()
+const server=http.createServer(app)
+const io=new Server(server)
+
 app.use(cookieParser())
 
-const PORT = 3000
-const DISCORD_ID = "877946035408891945"
+const DISCORD_ID="877946035408891945"
+let views=0
 
-let views = 0
+async function getDiscord(){
 
-app.get("/", async (req,res)=>{
+const r=await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`)
 
-if(!req.cookies.viewed){
-views++
-res.cookie("viewed","yes",{maxAge:31536000000})
+return r.data.data
+
 }
 
-let d
+io.on("connection",async socket=>{
+
+setInterval(async()=>{
 
 try{
 
-const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`)
-d = r.data.data
+const data=await getDiscord()
 
-}catch{
+socket.emit("presence",data)
 
-return res.send("Discord API error")
+}catch{}
 
-}
-
-const user = d.discord_user
-const spotify = d.spotify
-
-const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`
-
-let activities = d.activities.filter(a=>a.type!==2 && a.id!=="custom")
-
-let spotifyHTML = ""
-
-if(spotify){
-
-spotifyHTML = `
-
-<div class="activity spotify">
-
-<img src="${spotify.album_art_url}" class="cover">
-
-<div class="act-info">
-
-<div class="title">
-<i class="fab fa-spotify"></i> Spotify
-</div>
-
-<div class="song">${spotify.song}</div>
-<div class="artist">${spotify.artist}</div>
-
-<div class="wave">
-<div></div><div></div><div></div><div></div><div></div>
-</div>
-
-<div class="progress">
-<div id="bar"></div>
-</div>
-
-</div>
-
-</div>
-
-`
-
-}
-
-let gamesHTML=""
-
-activities.forEach(act=>{
-
-let img="https://cdn.discordapp.com/embed/avatars/0.png"
-
-if(act.assets && act.assets.large_image){
-
-img=`https://cdn.discordapp.com/app-assets/${act.application_id}/${act.assets.large_image}.png`
-
-}
-
-let time=""
-
-if(act.timestamps && act.timestamps.start){
-
-let diff = Date.now()-act.timestamps.start
-let min = Math.floor(diff/60000)
-let h = Math.floor(min/60)
-
-time = h>0 ? `${h}s ${min%60}dk oynuyor` : `${min}dk oynuyor`
-
-}
-
-gamesHTML += `
-
-<div class="activity game">
-
-<img src="${img}" class="cover">
-
-<div class="act-info">
-
-<div class="title">
-<i class="fa-brands fa-playstation"></i> Oynuyor
-</div>
-
-<div class="song">${act.name}</div>
-<div class="artist">${act.details || ""}</div>
-
-<div class="time">${time}</div>
-
-</div>
-
-</div>
-
-`
+},5000)
 
 })
+
+app.get("/",(req,res)=>{
+
+if(!req.cookies.viewed){
+
+views++
+res.cookie("viewed","yes",{maxAge:31536000000})
+
+}
 
 res.send(`
 
@@ -130,7 +55,10 @@ res.send(`
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width">
+
+<script src="/socket.io/socket.io.js"></script>
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -138,47 +66,80 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <style>
 
 body{
+
 margin:0;
+font-family:Inter;
 background:#0b0b12;
 color:white;
-font-family:Inter;
+
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+overflow:hidden
+
 }
 
 .bg{
+
 position:fixed;
 inset:0;
-background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
-background-size:400% 400%;
-animation:bg 15s infinite;
-filter:blur(60px);
-opacity:.6
+
+background:linear-gradient(270deg,#0f0c29,#302b63,#24243e);
+
+background-size:600% 600%;
+
+animation:bgMove 20s infinite
+
 }
 
-@keyframes bg{
+@keyframes bgMove{
+
 0%{background-position:0% 50%}
 50%{background-position:100% 50%}
 100%{background-position:0% 50%}
+
+}
+
+.particles div{
+
+position:absolute;
+
+width:4px;
+height:4px;
+
+background:white;
+
+opacity:.3;
+
+border-radius:50%;
+
+animation:float 10s infinite
+
+}
+
+@keyframes float{
+
+0%{transform:translateY(0)}
+100%{transform:translateY(-800px)}
+
 }
 
 .card{
 
-width:450px;
+width:460px;
 
 background:rgba(255,255,255,.04);
 
-border:1px solid rgba(255,255,255,.1);
+backdrop-filter:blur(30px);
 
 border-radius:25px;
 
-backdrop-filter:blur(30px);
+border:1px solid rgba(255,255,255,.1);
 
 padding:30px;
 
-box-shadow:0 40px 100px rgba(0,0,0,.7)
+box-shadow:0 40px 120px rgba(0,0,0,.7)
 
 }
 
@@ -195,15 +156,48 @@ margin:auto
 
 }
 
+.status{
+
+position:absolute;
+
+width:22px;
+height:22px;
+
+border-radius:50%;
+
+border:4px solid #111
+
+}
+
+.online{background:#43b581}
+.idle{background:#faa61a}
+.dnd{background:#f04747}
+.offline{background:#747f8d}
+
 .name{
 
 text-align:center;
 
 font-size:28px;
 
-margin-top:10px;
+font-weight:800;
 
-font-weight:800
+margin-top:10px
+
+}
+
+.badges{
+
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:10px
+
+}
+
+.badges img{
+
+width:20px
 
 }
 
@@ -225,7 +219,7 @@ display:flex;
 
 gap:12px;
 
-background:rgba(0,0,0,.4);
+background:rgba(0,0,0,.5);
 
 padding:12px;
 
@@ -242,31 +236,39 @@ border-radius:10px
 
 }
 
-.title{
-font-size:12px;
-opacity:.7
-}
+.song{font-weight:700}
 
-.song{
-font-weight:700
-}
-
-.artist{
-font-size:13px;
-opacity:.7
-}
+.artist{opacity:.7;font-size:13px}
 
 .progress{
+
 height:4px;
+
 background:rgba(255,255,255,.1);
+
 margin-top:6px;
+
 border-radius:2px
+
 }
 
-#bar{
+.bar{
+
 height:100%;
+
 background:#1db954;
+
 width:0%
+
+}
+
+.timeRow{
+
+display:flex;
+justify-content:space-between;
+font-size:11px;
+opacity:.7
+
 }
 
 .wave{
@@ -281,7 +283,9 @@ margin-top:6px
 
 width:3px;
 height:10px;
+
 background:#1db954;
+
 animation:wave 1s infinite
 
 }
@@ -289,7 +293,6 @@ animation:wave 1s infinite
 .wave div:nth-child(2){animation-delay:.2s}
 .wave div:nth-child(3){animation-delay:.3s}
 .wave div:nth-child(4){animation-delay:.4s}
-.wave div:nth-child(5){animation-delay:.5s}
 
 @keyframes wave{
 
@@ -319,25 +322,31 @@ opacity:.6
 
 <div class="bg"></div>
 
+<div class="particles">
+<div style="left:10%"></div>
+<div style="left:30%"></div>
+<div style="left:60%"></div>
+<div style="left:80%"></div>
+</div>
+
 <div class="card">
 
-<img class="avatar" src="${avatar}">
+<img id="avatar" class="avatar">
 
-<div class="name">${user.global_name || user.username}</div>
+<div id="name" class="name"></div>
 
-<div class="activities">
+<div class="badges">
 
-${spotifyHTML}
-
-${gamesHTML}
+<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg">
+<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbalance.svg">
 
 </div>
+
+<div id="activities" class="activities"></div>
 
 <div class="footer">
 
 <div>👀 ${views}</div>
-
-<a href="https://discord.com/users/${DISCORD_ID}" target="_blank">Discord</a>
 
 </div>
 
@@ -345,27 +354,107 @@ ${gamesHTML}
 
 <script>
 
-let start=${spotify?spotify.timestamps.start:0}
-let end=${spotify?spotify.timestamps.end:0}
+const socket=io()
 
-function update(){
+function format(ms){
 
-if(!start)return
+let s=Math.floor(ms/1000)
 
-let now=Date.now()
+let m=Math.floor(s/60)
 
-let percent=((now-start)/(end-start))*100
+s=s%60
 
-if(percent<0)percent=0
-if(percent>100)percent=100
-
-let bar=document.getElementById("bar")
-
-if(bar)bar.style.width=percent+"%"
+return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")
 
 }
 
-setInterval(update,1000)
+socket.on("presence",data=>{
+
+const user=data.discord_user
+
+document.getElementById("avatar").src=
+"https://cdn.discordapp.com/avatars/"+user.id+"/"+user.avatar+".png"
+
+document.getElementById("name").innerText=
+user.global_name || user.username
+
+const activities=document.getElementById("activities")
+
+activities.innerHTML=""
+
+if(data.spotify){
+
+const s=data.spotify
+
+let html=\`
+
+<div class="activity">
+
+<img src="\${s.album_art_url}" class="cover">
+
+<div style="width:100%">
+
+<div class="song">\${s.song}</div>
+
+<div class="artist">\${s.artist}</div>
+
+<div class="wave"><div></div><div></div><div></div><div></div></div>
+
+<div class="timeRow">
+
+<div>\${format(Date.now()-s.timestamps.start)}</div>
+
+<div>\${format(s.timestamps.end-s.timestamps.start)}</div>
+
+</div>
+
+<div class="progress">
+
+<div class="bar" id="spotifyBar"></div>
+
+</div>
+
+</div>
+
+</div>
+
+\`
+
+activities.innerHTML+=html
+
+}
+
+data.activities.forEach(a=>{
+
+if(a.type!==0)return
+
+let icon="🎮"
+
+if(a.name.toLowerCase().includes("steam")) icon='<i class="fa-brands fa-steam"></i>'
+if(a.name.toLowerCase().includes("xbox")) icon='<i class="fa-brands fa-xbox"></i>'
+if(a.name.toLowerCase().includes("playstation")) icon='<i class="fa-brands fa-playstation"></i>'
+
+activities.innerHTML+=\`
+
+<div class="activity">
+
+<div class="cover">\${icon}</div>
+
+<div>
+
+<div class="song">\${a.name}</div>
+
+<div class="artist">\${a.details||""}</div>
+
+</div>
+
+</div>
+
+\`
+
+})
+
+})
 
 </script>
 
@@ -377,4 +466,4 @@ setInterval(update,1000)
 
 })
 
-app.listen(PORT)
+server.listen(3000)
