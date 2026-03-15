@@ -1,305 +1,318 @@
-const express = require("express")
-const axios = require("axios")
-const cookieParser = require("cookie-parser")
+const express = require("express");
+const axios = require("axios");
+const http = require("http");
+const { Server } = require("socket.io");
+const cookieParser = require("cookie-parser");
 
-const app = express()
-app.use(cookieParser())
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-const PORT = 3000
-const DISCORD_ID = "877946035408891945"
+app.use(cookieParser());
 
-let views = 0
+const DISCORD_ID = "877946035408891945";
+let views = 0;
+let cachedData = null;
 
-app.get("/", async (req,res)=>{
-
-if(!req.cookies.viewed){
-views++
-res.cookie("viewed","1",{maxAge:31536000000})
+// API Cache Sistemi (Rate limit yememek için)
+async function updateCache() {
+    try {
+        const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
+        cachedData = r.data.data;
+        io.emit("presence", cachedData);
+    } catch (e) { console.error("Lanyard Error"); }
 }
+setInterval(updateCache, 5000);
 
-let data
+io.on("connection", (socket) => { if (cachedData) socket.emit("presence", cachedData); });
 
-try{
-const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`)
-data = r.data.data
-}catch{
-return res.send("Discord API error")
-}
+app.get("/", (req, res) => {
+    if (!req.cookies.viewed) {
+        views++;
+        res.cookie("viewed", "yes", { maxAge: 31536000000 });
+    }
 
-const user = data.discord_user
-const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`
-const spotify = data.spotify
-const activities = data.activities
-
-res.send(`
-
+    res.send(`
 <!DOCTYPE html>
-
-<html>
-
+<html lang="tr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #08080c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        /* Arka Plan Efekti */
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+        }
 
-<style>
+        /* Ana Kart */
+        .main-card {
+            width: 650px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
 
-body{
-margin:0;
-font-family:Inter;
-background:#0e0e15;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh
-}
+        /* Üst Kısım: Avatar ve İsim */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-.bg{
-position:fixed;
-inset:0;
-background:linear-gradient(120deg,#0f0c29,#302b63,#24243e);
-background-size:300% 300%;
-animation:bg 20s infinite;
-opacity:.7
-}
+        .avatar-container { position: relative; }
 
-@keyframes bg{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
 
-.card{
-width:420px;
-background:rgba(255,255,255,.05);
-border-radius:20px;
-padding:25px;
-backdrop-filter:blur(10px);
-box-shadow:0 30px 80px rgba(0,0,0,.6)
-}
+        .user-info .name {
+            font-size: 32px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.avatar{
-width:110px;
-height:110px;
-border-radius:50%;
-display:block;
-margin:auto
-}
+        .badges { display: flex; gap: 8px; }
+        .badges img { width: 22px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
 
-.status{
-width:18px;
-height:18px;
-border-radius:50%;
-position:absolute;
-border:3px solid #0e0e15
-}
+        .discord-link {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 400;
+        }
 
-.online{background:#43b581}
-.idle{background:#faa61a}
-.dnd{background:#f04747}
-.offline{background:#747f8d}
+        /* Orta Bölüm: Durum Kartları */
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
 
-.name{
-text-align:center;
-font-size:26px;
-font-weight:700;
-margin-top:10px
-}
+        .status-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-.badges{
-display:flex;
-justify-content:center;
-gap:6px;
-margin-top:10px
-}
+        .status-icon { font-size: 24px; color: #5865f2; }
 
-.badges img{
-width:20px
-}
+        /* Sosyal Medya İkonları */
+        .socials {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-.activity{
-display:flex;
-gap:12px;
-background:rgba(0,0,0,.4);
-padding:10px;
-border-radius:12px;
-margin-top:12px
-}
+        .socials i {
+            font-size: 24px;
+            color: white;
+            opacity: 0.8;
+            transition: 0.3s;
+            cursor: pointer;
+            filter: drop-shadow(0 0 8px transparent);
+        }
 
-.cover{
-width:56px;
-height:56px;
-border-radius:10px
-}
+        .socials i:hover {
+            opacity: 1;
+            transform: translateY(-3px);
+            filter: drop-shadow(0 0 12px white);
+        }
 
-.song{font-weight:700}
-.artist{font-size:13px;opacity:.7}
+        /* Footer Bilgileri */
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
 
-.progress{
-height:4px;
-background:#222;
-margin-top:6px;
-border-radius:2px
-}
+        /* Spotify Alt Bar */
+        .spotify-bar {
+            width: 650px;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: none; /* Başlangıçta gizli */
+        }
 
-.bar{
-height:100%;
-background:#1db954;
-width:0%
-}
+        .spotify-img { width: 50px; height: 50px; border-radius: 10px; }
 
-.timeRow{
-display:flex;
-justify-content:space-between;
-font-size:11px;
-opacity:.7
-}
+        .spotify-info { flex: 1; }
+        .spotify-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .spotify-artist { font-size: 12px; color: rgba(255,255,255,0.6); }
 
-.wave{
-display:flex;
-gap:3px;
-margin-top:5px
-}
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
 
-.wave div{
-width:3px;
-height:10px;
-background:#1db954;
-animation:wave 1s infinite
-}
+        .progress-fill {
+            height: 100%;
+            background: white;
+            width: 0%;
+            transition: width 1s linear;
+        }
 
-.wave div:nth-child(2){animation-delay:.2s}
-.wave div:nth-child(3){animation-delay:.3s}
-.wave div:nth-child(4){animation-delay:.4s}
+        .spotify-controls { display: flex; gap: 15px; color: rgba(255,255,255,0.6); }
 
-@keyframes wave{
-0%{height:6px}
-50%{height:14px}
-100%{height:6px}
-}
-
-.footer{
-margin-top:15px;
-display:flex;
-justify-content:space-between;
-opacity:.6
-}
-
-</style>
-
+    </style>
 </head>
-
 <body>
 
-<div class="bg"></div>
+    <div class="bg-glow"></div>
 
-<div class="card">
+    <div class="main-card">
+        <div class="header">
+            <div class="avatar-container">
+                <img id="avatar" class="avatar" src="">
+            </div>
+            <div class="user-info">
+                <div class="name">
+                    <span id="display-name">Loading</span>
+                    <div class="badges">
+                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg">
+                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbalance.svg">
+                    </div>
+                </div>
+                <div class="discord-link">discord.gg/guns</div>
+            </div>
+        </div>
 
-<img class="avatar" src="${avatar}">
+        <div class="status-grid">
+            <div class="status-box">
+                <i class="fa-brands fa-discord status-icon"></i>
+                <div>
+                    <div id="username" style="font-weight:600">User#0000</div>
+                    <div style="font-size:12px; opacity:0.5" id="status-text">connecting...</div>
+                </div>
+            </div>
+            <div class="status-box">
+                <i class="fa-solid fa-link status-icon" style="color:#fff"></i>
+                <div>
+                    <div style="font-weight:600">guns.lol</div>
+                    <div style="font-size:12px; opacity:0.5">official member</div>
+                </div>
+            </div>
+        </div>
 
-<div class="name">${user.global_name || user.username}</div>
+        <div class="socials">
+            <i class="fa-brands fa-discord"></i>
+            <i class="fa-brands fa-github"></i>
+            <i class="fa-solid fa-envelope"></i>
+            <i class="fa-brands fa-telegram"></i>
+            <i class="fa-solid fa-globe"></i>
+        </div>
 
-<div class="badges">
+        <div class="meta-info">
+            <span><i class="fa-solid fa-eye"></i> ${views.toLocaleString()}</span>
+            <span><i class="fa-solid fa-location-dot"></i> guns.lol HQ</span>
+        </div>
+    </div>
 
-<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg">
-<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost.svg">
-<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/quest_completed.svg">
+    <div id="spotify-card" class="spotify-bar">
+        <img id="spotify-album" class="spotify-img" src="">
+        <div class="spotify-info">
+            <div id="spotify-song" class="spotify-title">Song Name</div>
+            <div id="spotify-art" class="spotify-artist">Artist</div>
+            <div class="progress-container">
+                <div id="spotify-progress" class="progress-fill"></div>
+            </div>
+        </div>
+        <div class="spotify-controls">
+            <i class="fa-solid fa-backward-step"></i>
+            <i class="fa-solid fa-pause"></i>
+            <i class="fa-solid fa-forward-step"></i>
+        </div>
+    </div>
 
-</div>
+    <script>
+        const socket = io();
+        
+        socket.on("presence", data => {
+            const user = data.discord_user;
+            
+            // Üst Kısım
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
+            document.getElementById("display-name").innerText = user.global_name || user.username;
+            document.getElementById("username").innerText = user.username;
+            document.getElementById("status-text").innerText = data.discord_status.toUpperCase();
 
-${spotify?`
-
-<div class="activity">
-
-<img class="cover" src="${spotify.album_art_url}">
-
-<div style="width:100%">
-
-<div class="song">
-<i class="fab fa-spotify"></i>
-${spotify.song}
-</div>
-
-<div class="artist">${spotify.artist}</div>
-
-<div class="wave">
-<div></div><div></div><div></div><div></div>
-</div>
-
-<div class="timeRow">
-<div id="start">00:00</div>
-<div id="end">00:00</div>
-</div>
-
-<div class="progress">
-<div id="bar" class="bar"></div>
-</div>
-
-</div>
-
-</div>
-
-`:""}
-
-<div id="game"></div>
-
-<div class="footer">
-
-<div>👀 ${views}</div>
-
-</div>
-
-</div>
-
-<script>
-
-const spotifyStart=${spotify?spotify.timestamps.start:0}
-const spotifyEnd=${spotify?spotify.timestamps.end:0}
-
-function format(ms){
-
-let s=Math.floor(ms/1000)
-
-let m=Math.floor(s/60)
-s=s%60
-
-return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")
-
-}
-
-function updateSpotify(){
-
-if(!spotifyStart)return
-
-let now=Date.now()
-
-let progress=(now-spotifyStart)/(spotifyEnd-spotifyStart)
-
-if(progress<0)progress=0
-if(progress>1)progress=1
-
-document.getElementById("bar").style.width=(progress*100)+"%"
-
-document.getElementById("start").innerText=format(now-spotifyStart)
-
-document.getElementById("end").innerText=format(spotifyEnd-spotifyStart)
-
-}
-
-setInterval(updateSpotify,1000)
-
-</script>
-
+            // Spotify
+            const spotifyCard = document.getElementById("spotify-card");
+            if (data.spotify) {
+                spotifyCard.style.display = "flex";
+                document.getElementById("spotify-album").src = data.spotify.album_art_url;
+                document.getElementById("spotify-song").innerText = data.spotify.song;
+                document.getElementById("spotify-art").innerText = data.spotify.artist;
+                
+                // Progress Hesaplama
+                const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
+                const current = Date.now() - data.spotify.timestamps.start;
+                const prg = Math.min((current / total) * 100, 100);
+                document.getElementById("spotify-progress").style.width = prg + "%";
+            } else {
+                spotifyCard.style.display = "none";
+            }
+        });
+    </script>
 </body>
-
 </html>
+    `);
+});
 
-`)
-
-})
-
-app.listen(PORT)
+server.listen(3000, () => {
+    console.log("Guns.lol temalı sunucu 3000 portunda hazır!");
+});
