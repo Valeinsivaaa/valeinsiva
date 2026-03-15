@@ -1,214 +1,152 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// SADECE ID GİRİN
 const DISCORD_ID = '877946035408891945'; 
+let viewsCount = 0;
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+    viewsCount++;
+    
+    // Her girişte taze veri çekmek için Cache-Control başlıkları ve zaman damgası ekliyoruz
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    let d = null;
+    
+    try {
+        const response = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}?t=${Date.now()}`);
+        d = response.data.data;
+    } catch (err) {
+        return res.status(500).send("Discord API verisi su an alinamiyor.");
+    }
+
+    const user = d.discord_user;
+    const spotify = d.spotify;
+    
+    // PlayStation veya diğer oyun aktivitelerini filtreleme
+    const activities = d.activities.filter(a => a.type !== 2 && a.id !== 'custom');
+
+    // Rozetleri ve Avatarı API'den Hazırla
+    const avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`;
+    
+    // Rozet Sistemi (Flags üzerinden otomatik)
+    let badgesHTML = '';
+    const flags = user.public_flags;
+    const badgeMap = {
+        1: 'discordstaff', 2: 'discordpartner', 4: 'hypesquad', 8: 'bughunter_level_1',
+        64: 'hypesquadbravery', 128: 'hypesquadbrilliance', 256: 'hypesquadbalance',
+        512: 'earlysupporter', 16384: 'bughunter_level_2', 131072: 'developer', 4194304: 'active_developer'
+    };
+    Object.keys(badgeMap).forEach(f => { if (flags & f) badgesHTML += `<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeMap[f]}.svg" class="badge">`; });
+    if (user.avatar && user.avatar.startsWith('a_')) badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge">';
+
+    // Spotify Süre Hesaplama
+    let spotifyProgress = 0;
+    if (spotify) {
+        const total = spotify.timestamps.end - spotify.timestamps.start;
+        const current = Date.now() - spotify.timestamps.start;
+        spotifyProgress = Math.min(100, Math.max(0, (current / total) * 100));
+    }
+
     res.send(`
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Profile | v3</title>
+    <title>${user.global_name || user.username} | Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #0a0a0c;
-            --card-bg: #121214;
-            --accent-blue: #5865F2;
-            --spotify: #1DB954;
-            --border: rgba(255, 255, 255, 0.05);
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; display: flex; justify-content: center; align-items: center; }
-
-        /* Arka Plan Hareketli Işıklar */
-        .bg-gradient {
-            position: fixed; width: 100%; height: 100%; top: 0; left: 0;
-            background: radial-gradient(circle at 10% 20%, rgba(88, 101, 242, 0.05) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(29, 185, 84, 0.05) 0%, transparent 40%);
-            z-index: -1;
-        }
-
-        .card {
-            width: 440px; background: var(--card-bg); border-radius: 24px;
-            border: 1px solid var(--border); padding: 32px;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.6); position: relative;
-            overflow: hidden;
-        }
-
-        /* Üst Header */
-        .header { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 28px; }
-        .avatar-area { position: relative; }
-        .avatar { width: 90px; height: 90px; border-radius: 22px; object-fit: cover; border: 2px solid var(--border); }
-        .status-badge { 
-            position: absolute; bottom: -6px; right: -6px; width: 22px; height: 22px; 
-            border-radius: 50%; border: 4px solid var(--card-bg);
-        }
-
-        .user-meta h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+        body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        /* Rozetler */
-        .badges-row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .badge { width: 22px; height: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* Guns.lol Estetiği Hareketli Arka Plan */
+        .bg-animate { position: fixed; inset: 0; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); background-size: 400% 400%; animation: grad 15s infinite; z-index: -1; filter: blur(50px); opacity: 0.6; }
+        @keyframes grad { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-        /* Widgetlar */
-        .widget-label { font-size: 11px; font-weight: 800; color: #444; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .widget-label span { height: 1px; flex: 1; background: var(--border); }
-
-        .widget-content { 
-            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-            border-radius: 16px; padding: 16px; margin-bottom: 16px;
-            display: none; transition: 0.3s;
-        }
-        .widget-content.active { display: block; animation: fadeIn 0.5s ease; }
-
-        /* Spotify Özel */
-        .spotify-info { display: flex; gap: 14px; align-items: center; }
-        .album-cover { width: 54px; height: 54px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .track-name { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 2px; }
-        .artist-name { font-size: 12px; color: #888; }
+        /* Ana Kart Tasarımı (Cam Efekti) */
+        .card { width: 480px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; padding: 35px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position: relative; }
         
-        .progress-container { margin-top: 14px; }
-        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; }
-        .bar-fill { height: 100%; background: var(--spotify); border-radius: 2px; width: 0%; }
-        .time-labels { display: flex; justify-content: space-between; font-size: 10px; color: #555; margin-top: 6px; font-weight: 600; }
+        .avatar-box { position: relative; display: inline-block; margin-bottom: 20px; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #000; }
+        .status { position: absolute; bottom: 10px; right: 8px; width: 28px; height: 28px; border-radius: 50%; border: 4px solid #000; }
+        .online { background: #43b581; } .idle { background: #faa61a; } .dnd { background: #f04747; } .offline { background: #747f8d; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .name { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+        .badges-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; }
+        .badge { width: 22px; height: 22px; }
+
+        /* Aktivite Kartları */
+        .act-card { background: rgba(0,0,0,0.4); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 18px; border: 1px solid rgba(255,255,255,0.05); text-align: left; margin-bottom: 15px; }
+        .act-card img { width: 65px; height: 65px; border-radius: 12px; }
+        .info h4 { font-size: 15px; margin-bottom: 3px; }
+        .info p { font-size: 12px; color: #aaa; }
+
+        .spotify-style { border-left: 4px solid #1DB954; }
+        .game-style { border-left: 4px solid #5865F2; }
+
+        /* Spotify İlerleme Çubuğu */
+        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #1DB954; width: ${spotifyProgress}%; }
+
+        /* Alt Bilgi */
+        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px; opacity: 0.6; font-size: 13px; }
+        .dc-icon { color: #fff; text-decoration: none; font-size: 20px; transition: 0.3s; }
+        .dc-icon:hover { color: #5865F2; transform: scale(1.1); }
     </style>
 </head>
 <body>
-    <div class="bg-gradient"></div>
+    <div class="bg-animate"></div>
     <div class="card">
-        <div class="header">
-            <div class="avatar-area">
-                <img id="avatar" class="avatar" src="">
-                <div id="status" class="status-badge"></div>
-            </div>
-            <div class="user-meta">
-                <h1 id="username">...</h1>
-                <div id="badges" class="badges-row"></div>
-            </div>
+        <div class="avatar-box">
+            <img class="avatar" src="${avatarUrl}">
+            <div class="status ${d.discord_status}"></div>
         </div>
 
-        <div id="spotify-widget" class="widget-content">
-            <div class="widget-label">Dinliyor <span></span></div>
-            <div class="spotify-info">
-                <img id="sp-art" class="album-cover" src="">
-                <div style="overflow: hidden;">
-                    <div id="sp-name" class="track-name"></div>
-                    <div id="sp-artist" class="artist-name"></div>
+        <div class="name">${user.global_name || user.username}</div>
+        <div class="badges-row">${badgesHTML}</div>
+
+        <div class="activities">
+            ${spotify ? `
+            <div class="act-card spotify-style">
+                <img src="${spotify.album_art_url}">
+                <div class="info" style="width: 100%;">
+                    <h4 style="color:#1DB954"><i class="fab fa-spotify"></i> Dinliyor</h4>
+                    <p><strong>${spotify.song}</strong></p>
+                    <p>${spotify.artist}</p>
+                    <div class="progress-container"><div class="progress-bar"></div></div>
                 </div>
             </div>
-            <div class="progress-container">
-                <div class="bar-bg"><div id="sp-bar" class="bar-fill"></div></div>
-                <div class="time-labels"><span id="sp-start">0:00</span><span id="sp-end">0:00</span></div>
+            ` : ''}
+
+            ${activities.map(act => `
+            <div class="act-card game-style">
+                <img src="https://i.imgur.com/vHExl6m.png">
+                <div class="info">
+                    <h4 style="color:#5865F2"><i class="fas fa-gamepad"></i> Oynuyor</h4>
+                    <p><strong>${act.name}</strong></p>
+                    <p>${act.details || ''}</p>
+                    <p>${act.state || 'Aktif'}</p>
+                </div>
             </div>
+            `).join('')}
+
+            ${(!spotify && activities.length === 0) ? '<p style="text-align:center; color:#333; font-size:13px;">Şu an aktif bir durum yok.</p>' : ''}
         </div>
 
-        <div id="game-widget" class="widget-content">
-            <div class="widget-label">Oynuyor <span></span></div>
-            <div id="game-info" class="spotify-info">
-                </div>
+        <div class="footer">
+            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="dc-icon">
+                <i class="fab fa-discord"></i>
+            </a>
+            <div>
+                <i class="fas fa-eye"></i> <span>${viewsCount}</span>
+            </div>
         </div>
     </div>
-
     <script>
-        const userId = "${DISCORD_ID}";
-        
-        // Rozetleri her zaman doğru göstermek için gelişmiş liste
-        const badgeIcons = {
-            'STAFF': 'discordstaff', 'PARTNER': 'discordpartner',
-            'HYPESQUAD': 'hypesquad', 'BUG_HUNTER_LEVEL_1': 'bughunter_level_1',
-            'HYPESQUAD_ONLINE_HOUSE_1': 'hypesquadbravery', 'HYPESQUAD_ONLINE_HOUSE_2': 'hypesquadbrilliance',
-            'HYPESQUAD_ONLINE_HOUSE_3': 'hypesquadbalance', 'PREMIUM_EARLY_SUPPORTER': 'earlysupporter',
-            'VERIFIED_DEVELOPER': 'developer', 'ACTIVE_DEVELOPER': 'active_developer'
-        };
-
-        const socket = new WebSocket('wss://api.lanyard.rest/socket');
-        socket.onmessage = (msg) => {
-            const data = JSON.parse(msg.data);
-            if (data.op === 1) {
-                socket.send(JSON.stringify({ op: 2, d: { subscribe_to_id: userId } }));
-                setInterval(() => socket.send(JSON.stringify({ op: 3 })), data.d.heartbeat_interval);
-            }
-            if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') update(data.d);
-        };
-
-        function format(ms) {
-            const m = Math.floor(ms / 60000);
-            const s = Math.floor((ms % 60000) / 1000);
-            return \`\${m}:\${s < 10 ? '0' : ''}\${s}\`;
-        }
-
-        function update(d) {
-            const user = d.discord_user;
-            document.getElementById('avatar').src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
-            document.getElementById('username').innerText = user.global_name || user.username;
-            
-            // Durum Renkleri
-            const statusMap = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
-            document.getElementById('status').style.background = statusMap[d.discord_status];
-
-            // Rozet İşleme
-            let bHtml = '';
-            // Nitro tespiti (Animasyonsuz profil olsa bile banner varsa nitro ihtimali yüksektir)
-            if (user.avatar_decoration_data || user.banner) {
-                 bHtml += \`<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge">\`;
-            }
-            
-            if (user.public_flags_array) {
-                user.public_flags_array.forEach(flag => {
-                    if (badgeIcons[flag]) {
-                        bHtml += \`<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/\${badgeIcons[flag]}.svg" class="badge">\`;
-                    }
-                });
-            }
-            document.getElementById('badges').innerHTML = bHtml;
-
-            // Spotify
-            const spWidget = document.getElementById('spotify-widget');
-            if (d.listening_to_spotify) {
-                spWidget.classList.add('active');
-                document.getElementById('sp-art').src = d.spotify.album_art_url;
-                document.getElementById('sp-name').innerText = d.spotify.song;
-                document.getElementById('sp-artist').innerText = d.spotify.artist;
-                
-                const total = d.spotify.timestamps.end - d.spotify.timestamps.start;
-                const now = Date.now() - d.spotify.timestamps.start;
-                document.getElementById('sp-bar').style.width = Math.min(100, (now/total)*100) + '%';
-                document.getElementById('sp-start').innerText = format(now);
-                document.getElementById('sp-end').innerText = format(total);
-            } else {
-                spWidget.classList.remove('active');
-            }
-
-            // Oyunlar (PS5 vb.)
-            const gameWidget = document.getElementById('game-widget');
-            const game = d.activities.find(a => a.type === 0);
-            if (game) {
-                gameWidget.classList.add('active');
-                let img = 'https://i.imgur.com/vHExl6m.png';
-                if (game.assets?.large_image) {
-                    img = game.assets.large_image.startsWith('mp:') ? 
-                        game.assets.large_image.replace('mp:', 'https://media.discordapp.net/') : 
-                        \`https://cdn.discordapp.com/app-assets/\${game.application_id}/\${game.assets.large_image}.png\`;
-                }
-                document.getElementById('game-info').innerHTML = \`
-                    <img src="\${img}" class="album-cover">
-                    <div>
-                        <div class="track-name">\${game.name}</div>
-                        <div class="artist-name">\${game.details || 'Oynuyor'}</div>
-                        <div class="artist-name" style="color:var(--accent-blue); font-weight:bold; margin-top:4px;">\${game.state || ''}</div>
-                    </div>
-                \`;
-            } else {
-                gameWidget.classList.remove('active');
-            }
-        }
+        // Sayfayı her 30 saniyede bir sessizce yenileyerek API'den taze veri çeker
+        setInterval(() => { location.reload(); }, 30000);
     </script>
 </body>
 </html>
