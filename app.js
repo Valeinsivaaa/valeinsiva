@@ -15,6 +15,7 @@ const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
 const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1482766630663754016/SPOILER_Baslksz86_20260315183407.png?ex=69b82589&is=69b6d409&hm=e24ab15c66257729a7089f34df0423b6dd7f498db96d6178de5835fc17adb580&";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
+const INSTAGRAM_LINK = "https://www.instagram.com/KULLANICI_ADIN"; // Buraya kendi linkini koy
 // ---------------
 
 let stats = { views: 0, likes: 0 };
@@ -130,12 +131,14 @@ app.get("/", async (req, res) => {
             
             <div id="act-stack"></div>
 
-            <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link"><i class="fa-brands fa-discord fa-2xl"></i><br><span>Profilim</span></a>
-                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span>Bot Panelim</span></a>
+            <div style="display:flex; justify-content:center; gap:35px; margin-top:20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link"><i class="fa-brands fa-discord fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:600;">Discord</span></a>
+                <a href="${INSTAGRAM_LINK}" target="_blank" class="social-link"><i class="fa-brands fa-instagram fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:600;">Instagram</span></a>
+                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:600;">Bot Panel</span></a>
             </div>
+            <div style="font-size: 9px; opacity: 0.3; margin-top: 10px; letter-spacing: 1px; text-transform: uppercase;">Sosyal Medya</div>
 
-            <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6;">
+            <div style="margin-top:25px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.5;">
                 <div><i class="fa-solid fa-eye"></i> <span id="view-count">${stats.views}</span></div>
                 <div><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
                 <div><i class="fa-solid fa-location-dot"></i> Türkiye</div>
@@ -165,11 +168,8 @@ app.get("/", async (req, res) => {
             return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
         }
 
-        // AKICI SÜRE GÜNCELLEME (DEKORDAN BAĞIMSIZ)
         setInterval(() => {
             if (!currentPresence) return;
-            
-            // Spotify Süresi
             if (currentPresence.spotify) {
                 const total = currentPresence.spotify.timestamps.end - currentPresence.spotify.timestamps.start;
                 const elapsed = Date.now() - currentPresence.spotify.timestamps.start;
@@ -179,8 +179,6 @@ app.get("/", async (req, res) => {
                 if (bar) bar.style.width = prog + "%";
                 if (timeStr) timeStr.innerText = formatTime(elapsed) + " / " + formatTime(total);
             }
-
-            // Oyun Süresi
             const game = currentPresence.activities.find(a => a.type === 0);
             const gameTime = document.getElementById('game-duration');
             if (game && game.timestamps && gameTime) {
@@ -191,34 +189,27 @@ app.get("/", async (req, res) => {
         socket.on("presence", data => {
             const u = data.discord_user;
             
-            // 1. DEKOR VE STATÜ GÜNCELLEME (YALNIZCA DEĞİŞİRSE)
+            // Dekor ve Avatar Güncelleme (Sabit Akış)
             const decorEl = document.getElementById("decor");
             const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
-            
             if (newDecorUrl) {
-                if (decorEl.src !== newDecorUrl) {
-                    decorEl.src = newDecorUrl;
-                    decorEl.style.display = "block";
-                }
-            } else {
-                decorEl.style.display = "none";
-            }
+                if (decorEl.src !== newDecorUrl) { decorEl.src = newDecorUrl; decorEl.style.display = "block"; }
+            } else { decorEl.style.display = "none"; }
 
             const avatarImg = document.getElementById("avatar");
             const newAvatar = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
-            
             document.getElementById("status").className = "status " + data.discord_status;
 
-            // 2. AKTİVİTE KARTI GÜNCELLEME (SADECE ŞARKI VEYA OYUN DEĞİŞİRSE)
-            const oldActivityKey = JSON.stringify(currentPresence?.spotify?.song_id || '') + JSON.stringify(currentPresence?.activities?.find(a=>a.type===0)?.name || '');
-            const newActivityKey = JSON.stringify(data?.spotify?.song_id || '') + JSON.stringify(data?.activities?.find(a=>a.type===0)?.name || '');
+            // Aktivite Değişim Kontrolü
+            const oldKey = JSON.stringify(currentPresence?.spotify?.song_id || '') + JSON.stringify(currentPresence?.activities?.find(a=>a.type===0)?.name || '');
+            const newKey = JSON.stringify(data?.spotify?.song_id || '') + JSON.stringify(data?.activities?.find(a=>a.type===0)?.name || '');
 
-            if (oldActivityKey !== newActivityKey) {
+            if (oldKey !== newKey) {
                 let actsHTML = "";
                 if(data.spotify) {
                     actsHTML += \`
-                    <div class="card" id="spotify-card">
+                    <div class="card">
                         <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
@@ -232,17 +223,18 @@ app.get("/", async (req, res) => {
                 const game = data.activities.find(a => a.type === 0);
                 if(game) {
                     actsHTML += \`
-                    <div class="card" id="game-card">
+                    <div class="card">
                         <div style="width:55px; height:55px; background:var(--profile-color); border-radius:12px; display:flex; align-items:center; justify-content:center; opacity:0.8;">
                             <i class="fa-solid fa-gamepad" style="font-size:28px; color:white;"></i>
                         </div>
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px;">\${game.name}</div>
-                            <div id="game-duration" style="font-size:11px; opacity:0.6; font-weight:600;"></div>
+                            <div id="game-duration" style="font-size:10px; margin-top:5px; opacity:0.6; font-weight:bold;"></div>
                         </div>
                     </div>\`;
                 }
-                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:12px; opacity:0.3; padding:15px;">Şu an sessizim...</div>';
+                // Minimalist Boş Durum Yazısı
+                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:11px; opacity:0.25; padding:10px; letter-spacing:1.5px; text-transform:uppercase;">Şu an sessiz modda...</div>';
             }
             currentPresence = data;
         });
