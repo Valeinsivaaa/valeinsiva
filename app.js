@@ -15,7 +15,7 @@ const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
 const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1482766630663754016/SPOILER_Baslksz86_20260315183407.png?ex=69b82589&is=69b6d409&hm=e24ab15c66257729a7089f34df0423b6dd7f498db96d6178de5835fc17adb580&";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
-const INSTAGRAM_LINK = "https://www.instagram.com/KULLANICI_ADIN"; // Buraya kendi linkini koy
+const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 // ---------------
 
 let stats = { views: 0, likes: 0 };
@@ -74,43 +74,40 @@ app.get("/", async (req, res) => {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.85); --text-color: #fff; --btn-inactive: #888; }
-        [data-theme="light"] { --bg-color: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9); --text-color: #1a1a1a; --btn-inactive: #555; }
+        :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.9); --text-color: #fff; --btn-inactive: #888; }
+        [data-theme="light"] { --bg-color: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.95); --text-color: #1a1a1a; --btn-inactive: #555; }
         
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition: background 0.8s ease; }
-        .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; }
-        .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; background:var(--profile-color); animation:move 15s infinite alternate linear; }
-        @keyframes move { 0% { transform: translate(-10%,-10%); } 100% { transform: translate(100%,100%); } }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition: background 0.4s ease; }
+        .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events: none; }
         
-        .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; position:relative; z-index:10; }
+        /* Performans İçin Optimize Edilmiş Orblar */
+        .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.2; background:var(--profile-color); will-change: transform; animation:move 20s infinite alternate ease-in-out; }
+        @keyframes move { 0% { transform: translate3d(-5%, -5%, 0); } 100% { transform: translate3d(50%, 50%, 0); } }
+        
+        .main-card { width:380px; background:var(--card-bg); border-radius:40px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 20px 40px rgba(0,0,0,0.4); overflow:hidden; position:relative; z-index:10; }
         .avatar-wrap { position:relative; width:105px; height:105px; margin:-55px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card-bg); }
         .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; pointer-events:none; }
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
         
-        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; }
+        .card { background:rgba(120,120,120,0.08); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; }
         .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
-        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 0.5s ease-out; }
+        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 0.6s ease; }
         
-        .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; text-align:center; font-size:10px; }
-        .social-link:hover { opacity:1; transform:translateY(-3px); color:var(--profile-color); }
+        .social-link { text-decoration:none; color:var(--text-color); opacity:0.6; transition:0.2s; text-align:center; font-size:10px; }
+        .social-link:hover { opacity:1; transform:translateY(-2px); color:var(--profile-color); }
 
         .like-btn, .theme-toggle { 
             position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; 
             display:flex; align-items:center; justify-content:center; cursor:pointer; 
-            border:1px solid rgba(255,255,255,0.1); color: var(--btn-inactive);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+            border:1px solid rgba(255,255,255,0.1); color: var(--btn-inactive); z-index: 100;
         }
         .like-btn { left:25px; } .theme-toggle { right:25px; }
-        .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); }
+        .like-btn.liked { color:#ff4757 !important; }
 
-        .theme-toggle.rotating i { animation: rotateAndScale 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes rotateAndScale {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(0.5) rotate(180deg); opacity: 0.5; }
-            100% { transform: scale(1) rotate(360deg); opacity: 1; }
-        }
+        .theme-toggle.rotating i { animation: rotateIcon 0.5s ease-in-out; }
+        @keyframes rotateIcon { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -189,7 +186,7 @@ app.get("/", async (req, res) => {
         socket.on("presence", data => {
             const u = data.discord_user;
             
-            // Dekor ve Avatar Güncelleme (Sabit Akış)
+            // Dekor ve Avatar
             const decorEl = document.getElementById("decor");
             const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
             if (newDecorUrl) {
@@ -233,8 +230,8 @@ app.get("/", async (req, res) => {
                         </div>
                     </div>\`;
                 }
-                // Minimalist Boş Durum Yazısı
-                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:11px; opacity:0.25; padding:10px; letter-spacing:1.5px; text-transform:uppercase;">Şu an sessiz modda...</div>';
+                // Düzeltilmiş Sessiz Mod Yazısı
+                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:11px; opacity:0.3; padding:15px; letter-spacing:1px; text-transform:uppercase; font-weight:600;">Şu an sessiz modda...</div>';
             }
             currentPresence = data;
         });
@@ -262,16 +259,17 @@ app.get("/", async (req, res) => {
                     icon.className = "fa-solid fa-moon";
                     icon.style.color = "";
                 }
-            }, 300);
-            setTimeout(() => this.classList.remove('rotating'), 600);
+            }, 250);
+            setTimeout(() => this.classList.remove('rotating'), 500);
         };
 
+        // Performans İçin Orb Oluşturucu
         const bg = document.getElementById('bg-canvas');
-        for(let i=0; i<5; i++){
+        for(let i=0; i<3; i++){ // Sayı 5'ten 3'e indirildi (Performans)
             let o = document.createElement('div'); o.className='orb';
-            o.style.width='400px'; o.style.height='400px';
-            o.style.left=Math.random()*100+'%'; o.style.top=Math.random()*100+'%';
-            o.style.animationDelay=(i*3)+'s'; bg.appendChild(o);
+            o.style.width='300px'; o.style.height='300px';
+            o.style.left=Math.random()*80+'%'; o.style.top=Math.random()*80+'%';
+            o.style.animationDelay=(i*4)+'s'; bg.appendChild(o);
         }
     </script>
 </body>
