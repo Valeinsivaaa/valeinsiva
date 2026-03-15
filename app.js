@@ -19,6 +19,7 @@ const BOT_PANEL_LINK = "https://valeinsiva.com.tr";
 let stats = { views: 0, likes: 0 };
 let cachedData = null;
 
+// GitHub Senkronizasyonu
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
@@ -42,7 +43,7 @@ setInterval(async () => {
         cachedData = r.data.data;
         io.emit("presence", cachedData);
     } catch (e) {}
-}, 2000); // Lanyard verisini 2 saniyede bir çekmek yeterli (takılmayı önler)
+}, 2000);
 
 syncWithGithub();
 
@@ -120,7 +121,7 @@ app.get("/", async (req, res) => {
 
     <script>
         const socket = io();
-        let lastPresence = null;
+        let currentPresence = null;
 
         function formatTime(ms) {
             const s = Math.floor(ms / 1000);
@@ -130,23 +131,25 @@ app.get("/", async (req, res) => {
             return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
         }
 
-        // --- BAĞIMSIZ ZAMANLAYICI (Saniyede bir sadece rakamları günceller) ---
+        // --- SADECE SÜRELERİ GÜNCELLEYEN DÖNGÜ (Dekoru Ellemeyen Kısım) ---
         setInterval(() => {
-            if (!lastPresence) return;
+            if (!currentPresence) return;
             
-            // Spotify Süresi Güncelle
-            if (lastPresence.spotify) {
-                const total = lastPresence.spotify.timestamps.end - lastPresence.spotify.timestamps.start;
-                const elapsed = Date.now() - lastPresence.spotify.timestamps.start;
+            // Spotify Süresi
+            if (currentPresence.spotify) {
+                const total = currentPresence.spotify.timestamps.end - currentPresence.spotify.timestamps.start;
+                const elapsed = Date.now() - currentPresence.spotify.timestamps.start;
                 const prog = Math.min((elapsed / total) * 100, 100);
+                
                 const bar = document.getElementById('spotify-bar');
                 const timeStr = document.getElementById('spotify-time');
+                
                 if (bar) bar.style.width = prog + "%";
                 if (timeStr) timeStr.innerText = formatTime(elapsed) + " / " + formatTime(total);
             }
 
-            // Oyun Süresi Güncelle
-            const game = lastPresence.activities.find(a => a.type === 0);
+            // Oyun Süresi
+            const game = currentPresence.activities.find(a => a.type === 0);
             const gameTime = document.getElementById('game-duration');
             if (game && game.timestamps && gameTime) {
                 gameTime.innerText = formatTime(Date.now() - game.timestamps.start) + " süredir";
@@ -154,47 +157,56 @@ app.get("/", async (req, res) => {
         }, 1000);
 
         socket.on("presence", data => {
-            // Sadece veri değiştiğinde dekoru ve ana yapıyı güncelle (Takılmayı önleyen ana mantık)
             const u = data.discord_user;
             
-            // Dekor ve Avatarı sadece URL değişirse güncelle
+            // 1. DEKOR GÜNCELLEME (Sadece resim değişirse müdahale eder)
             const decorEl = document.getElementById("decor");
-            const newDecor = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
+            const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
             
-            if (newDecor && decorEl.src !== newDecor) {
-                decorEl.src = newDecor;
-                decorEl.style.display = "block";
-            } else if (!newDecor) {
+            if (newDecorUrl) {
+                if (decorEl.src !== newDecorUrl) {
+                    decorEl.src = newDecorUrl;
+                    decorEl.style.display = "block";
+                }
+            } else {
                 decorEl.style.display = "none";
+                decorEl.src = "";
             }
 
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            // 2. AVATAR VE STATÜ (Sadece değişirse)
+            const avatarImg = document.getElementById("avatar");
+            const newAvatar = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
             document.getElementById("status").className = "status " + data.discord_status;
 
-            // Aktivite Listesini Sadece Aktivite Değişirse Yenile
-            if (JSON.stringify(data.activities) !== JSON.stringify(lastPresence?.activities) || 
-                JSON.stringify(data.spotify) !== JSON.stringify(lastPresence?.spotify)) {
+            // 3. KARTLARI OLUŞTURMA (Sadece aktiviteler değişirse DOM'u günceller)
+            const activitiesChanged = JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
+                                     JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify);
+
+            if (activitiesChanged) {
+                let actsHTML = "";
                 
-                let acts = "";
+                // Spotify Kartı
                 if(data.spotify) {
-                    acts += \`
-                    <div class="card">
+                    actsHTML += \`
+                    <div class="card" id="spotify-card">
                         <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
                             <div style="font-size:11px; opacity:0.5;">\${data.spotify.artist}</div>
                             <div class="s-bar-container"><div id="spotify-bar" class="s-bar-fill"></div></div>
-                            <div id="spotify-time" class="s-time" style="font-size:10px; margin-top:5px; opacity:0.4;"></div>
+                            <div id="spotify-time" style="font-size:10px; margin-top:5px; opacity:0.4; font-weight:600;"></div>
                         </div>
                         <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px;"></i>
                     </div>\`;
                 }
 
+                // Oyun Kartı
                 const game = data.activities.find(a => a.type === 0);
                 if(game) {
                     const isPS = game.application_id === "710548135111163904" || (game.assets?.large_text?.includes("PlayStation"));
-                    acts += \`
-                    <div class="card">
+                    actsHTML += \`
+                    <div class="card" id="game-card">
                         <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;">
                             <i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i>
                         </div>
@@ -205,12 +217,14 @@ app.get("/", async (req, res) => {
                         </div>
                     </div>\`;
                 }
-                document.getElementById("act-stack").innerHTML = acts || '<div style="font-size:12px; opacity:0.3; padding:15px;">Aktivite yok...</div>';
+
+                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:12px; opacity:0.3; padding:15px;">Aktivite yok...</div>';
             }
-            lastPresence = data;
+
+            currentPresence = data;
         });
 
-        // Beğeni Butonu
+        // Diğer Buton Fonksiyonları
         document.getElementById("like-btn").onclick = function() {
             if(this.classList.contains('liked')) return;
             fetch('/api/like').then(r => r.json()).then(data => {
@@ -218,6 +232,21 @@ app.get("/", async (req, res) => {
                 this.classList.add('liked');
             });
         };
+        
+        document.getElementById("theme-btn").onclick = function() {
+            const isDark = html.getAttribute("data-theme") === "dark";
+            html.setAttribute("data-theme", isDark ? "light" : "dark");
+            this.querySelector("i").className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+        };
+
+        // Arka Plan
+        const bg = document.getElementById('bg-canvas');
+        for(let i=0; i<5; i++){
+            let o = document.createElement('div'); o.className='orb';
+            o.style.width='400px'; o.style.height='400px';
+            o.style.left=Math.random()*100+'%'; o.style.top=Math.random()*100+'%';
+            o.style.animationDelay=(i*3)+'s'; bg.appendChild(o);
+        }
     </script>
 </body>
 </html>
