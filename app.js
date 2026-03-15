@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 // --- AYARLAR ---
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://i.ibb.co/L5k6t0r/1000055681.jpg"; // Kendi banner linkini buraya koy
+const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1482767286732328980/SPOILER_Screenshot_20260315_182002_Gallery-1.jpg?ex=69b82625&is=69b6d4a5&hm=1823322bd44acc69d7e1897fe92b195d20a849423d75daf4c3f809f4d07e7994&"; // Kendi banner linkini buraya koy
 const BOT_PANEL_URL = "https://valeinsiva.com.tr"; // Bot panelinin linkini buraya koy
 const DB_FILE = "./views.json";
 // ---------------
