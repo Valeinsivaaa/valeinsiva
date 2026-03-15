@@ -1,261 +1,184 @@
-const express = require("express");
-const axios = require("axios");
-const fs = require("fs");
-const cookieParser = require("cookie-parser");
+const express = require("express")
+const axios = require("axios")
+const cookieParser = require("cookie-parser")
 
-const app = express();
-const port = process.env.PORT || 3000;
+const app = express()
+app.use(cookieParser())
 
-app.use(cookieParser());
+const PORT = 3000
+const DISCORD_ID = "877946035408891945"
 
-const DISCORD_ID = "877946035408891945";
-
-let views = 0;
-
-try {
-views = JSON.parse(fs.readFileSync("views.json")).views;
-} catch {
-views = 0;
-}
-
-function saveViews(){
-fs.writeFileSync("views.json",JSON.stringify({views}));
-}
+let views = 0
 
 app.get("/", async (req,res)=>{
 
 if(!req.cookies.viewed){
-views++;
-saveViews();
-res.cookie("viewed","yes",{maxAge:31536000000});
+views++
+res.cookie("viewed","yes",{maxAge:31536000000})
 }
 
-let d;
+let d
 
 try{
 
-const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}?t=${Date.now()}`);
-
-d = r.data.data;
+const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`)
+d = r.data.data
 
 }catch{
 
-return res.send("Discord API Error");
+return res.send("Discord API error")
 
 }
 
-const user = d.discord_user;
-const spotify = d.spotify;
+const user = d.discord_user
+const spotify = d.spotify
 
-const activities = d.activities.filter(a=>a.type!==2 && a.id!=="custom");
+const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`
 
-const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512`;
+let activities = d.activities.filter(a=>a.type!==2 && a.id!=="custom")
 
-const banner = user.banner
-? `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png?size=1024`
-: null;
-
-const avatarDecoration = user.avatar_decoration_data
-? `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png`
-: null;
-
-let badges="";
-
-const flags = user.public_flags;
-
-const badgeMap={
-1:"discordstaff",
-2:"discordpartner",
-4:"hypesquad",
-8:"bughunter_level_1",
-64:"hypesquadbravery",
-128:"hypesquadbrilliance",
-256:"hypesquadbalance",
-512:"earlysupporter",
-16384:"bughunter_level_2",
-131072:"developer",
-4194304:"active_developer"
-};
-
-Object.keys(badgeMap).forEach(f=>{
-if(flags & f){
-badges+=`<img class="badge" src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeMap[f]}.svg">`;
-}
-});
-
-let spotifyHTML="";
+let spotifyHTML = ""
 
 if(spotify){
 
-spotifyHTML=`
+spotifyHTML = `
 
-<div class="card-act spotify">
+<div class="activity spotify">
 
-<img src="${spotify.album_art_url}">
+<img src="${spotify.album_art_url}" class="cover">
 
-<div style="width:100%">
+<div class="act-info">
 
-<h4>🎧 Spotify</h4>
+<div class="title">
+<i class="fab fa-spotify"></i> Spotify
+</div>
 
-<p><b>${spotify.song}</b></p>
+<div class="song">${spotify.song}</div>
+<div class="artist">${spotify.artist}</div>
 
-<p>${spotify.artist}</p>
+<div class="wave">
+<div></div><div></div><div></div><div></div><div></div>
+</div>
 
 <div class="progress">
-
-<div id="spotifyBar" class="bar"></div>
-
+<div id="bar"></div>
 </div>
 
 </div>
 
 </div>
 
-`;
+`
 
 }
 
-let activitiesHTML="";
+let gamesHTML=""
 
 activities.forEach(act=>{
 
-let img="https://cdn.discordapp.com/embed/avatars/0.png";
+let img="https://cdn.discordapp.com/embed/avatars/0.png"
 
 if(act.assets && act.assets.large_image){
 
-img=`https://cdn.discordapp.com/app-assets/${act.application_id}/${act.assets.large_image}.png`;
+img=`https://cdn.discordapp.com/app-assets/${act.application_id}/${act.assets.large_image}.png`
 
 }
 
-let time="";
+let time=""
 
 if(act.timestamps && act.timestamps.start){
 
-const diff=Date.now()-act.timestamps.start;
+let diff = Date.now()-act.timestamps.start
+let min = Math.floor(diff/60000)
+let h = Math.floor(min/60)
 
-const min=Math.floor(diff/60000);
-const h=Math.floor(min/60);
-
-time=h>0?`${h}s ${min%60}dk oynuyor`:`${min}dk oynuyor`;
+time = h>0 ? `${h}s ${min%60}dk oynuyor` : `${min}dk oynuyor`
 
 }
 
-activitiesHTML+=`
+gamesHTML += `
 
-<div class="card-act game">
+<div class="activity game">
 
-<img src="${img}">
+<img src="${img}" class="cover">
 
-<div>
+<div class="act-info">
 
-<h4>🎮 ${act.name}</h4>
+<div class="title">
+<i class="fa-brands fa-playstation"></i> Oynuyor
+</div>
 
-<p>${act.details||""}</p>
+<div class="song">${act.name}</div>
+<div class="artist">${act.details || ""}</div>
 
-<p>${act.state||""}</p>
-
-<p class="time">${time}</p>
+<div class="time">${time}</div>
 
 </div>
 
 </div>
 
-`;
+`
 
-});
+})
 
 res.send(`
 
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width">
 
-<title>${user.username}</title>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Inter
-}
-
 body{
-
-background:black;
+margin:0;
+background:#0b0b12;
 color:white;
+font-family:Inter;
 display:flex;
 justify-content:center;
 align-items:center;
-min-height:100vh;
-
+height:100vh;
 }
 
 .bg{
-
 position:fixed;
 inset:0;
-
 background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
-
 background-size:400% 400%;
-
-animation:grad 15s infinite;
-
-filter:blur(80px);
-
-opacity:.7;
-
+animation:bg 15s infinite;
+filter:blur(60px);
+opacity:.6
 }
 
-@keyframes grad{
-
+@keyframes bg{
 0%{background-position:0% 50%}
 50%{background-position:100% 50%}
 100%{background-position:0% 50%}
-
 }
 
 .card{
 
-width:480px;
+width:450px;
 
-background:rgba(255,255,255,.03);
+background:rgba(255,255,255,.04);
 
-backdrop-filter:blur(30px);
+border:1px solid rgba(255,255,255,.1);
 
 border-radius:25px;
 
+backdrop-filter:blur(30px);
+
 padding:30px;
 
-border:1px solid rgba(255,255,255,.08);
-
-box-shadow:0 40px 100px rgba(0,0,0,.8);
-
-}
-
-.banner{
-
-height:120px;
-
-background-size:cover;
-
-border-radius:15px;
-
-margin-bottom:20px;
-
-}
-
-.avatar-box{
-
-position:relative;
-
-text-align:center;
+box-shadow:0 40px 100px rgba(0,0,0,.7)
 
 }
 
@@ -266,64 +189,21 @@ height:120px;
 
 border-radius:50%;
 
-border:4px solid black;
+display:block;
+
+margin:auto
 
 }
-
-.dec{
-
-position:absolute;
-top:0;
-left:50%;
-transform:translateX(-50%);
-width:120px;
-
-}
-
-.status{
-
-position:absolute;
-bottom:8px;
-right:calc(50% - 70px);
-
-width:26px;
-height:26px;
-
-border-radius:50%;
-
-border:4px solid black;
-
-}
-
-.online{background:#43b581;box-shadow:0 0 10px #43b581}
-.idle{background:#faa61a}
-.dnd{background:#f04747}
-.offline{background:#747f8d}
 
 .name{
 
 text-align:center;
 
-font-size:30px;
-
-font-weight:800;
+font-size:28px;
 
 margin-top:10px;
 
-}
-
-.badges{
-
-display:flex;
-justify-content:center;
-gap:6px;
-margin-top:10px;
-
-}
-
-.badge{
-
-width:20px;
+font-weight:800
 
 }
 
@@ -332,77 +212,102 @@ width:20px;
 margin-top:20px;
 
 display:flex;
+
 flex-direction:column;
-gap:10px;
+
+gap:12px
 
 }
 
-.card-act{
+.activity{
 
 display:flex;
+
 gap:12px;
 
 background:rgba(0,0,0,.4);
 
 padding:12px;
 
-border-radius:15px;
+border-radius:14px
 
 }
 
-.card-act img{
+.cover{
 
 width:60px;
 height:60px;
 
-border-radius:10px;
+border-radius:10px
 
 }
 
-.spotify{
-
-border-left:4px solid #1DB954;
-
+.title{
+font-size:12px;
+opacity:.7
 }
 
-.game{
+.song{
+font-weight:700
+}
 
-border-left:4px solid #5865F2;
-
+.artist{
+font-size:13px;
+opacity:.7
 }
 
 .progress{
-
 height:4px;
 background:rgba(255,255,255,.1);
-
-border-radius:2px;
-
 margin-top:6px;
+border-radius:2px
+}
 
-overflow:hidden;
+#bar{
+height:100%;
+background:#1db954;
+width:0%
+}
+
+.wave{
+
+display:flex;
+gap:3px;
+margin-top:6px
 
 }
 
-.bar{
+.wave div{
 
-height:100%;
-background:#1DB954;
+width:3px;
+height:10px;
+background:#1db954;
+animation:wave 1s infinite
 
-width:0%;
+}
+
+.wave div:nth-child(2){animation-delay:.2s}
+.wave div:nth-child(3){animation-delay:.3s}
+.wave div:nth-child(4){animation-delay:.4s}
+.wave div:nth-child(5){animation-delay:.5s}
+
+@keyframes wave{
+
+0%{height:6px}
+50%{height:14px}
+100%{height:6px}
 
 }
 
 .footer{
 
-margin-top:20px;
+margin-top:15px;
 
 display:flex;
+
 justify-content:space-between;
 
-opacity:.6;
-
-font-size:13px;
+opacity:.6
 
 }
 
@@ -416,27 +321,15 @@ font-size:13px;
 
 <div class="card">
 
-${banner?`<div class="banner" style="background-image:url(${banner})"></div>`:""}
-
-<div class="avatar-box">
-
 <img class="avatar" src="${avatar}">
 
-${avatarDecoration?`<img class="dec" src="${avatarDecoration}">`:""}
-
-<div class="status ${d.discord_status}"></div>
-
-</div>
-
-<div class="name">${user.global_name||user.username}</div>
-
-<div class="badges">${badges}</div>
+<div class="name">${user.global_name || user.username}</div>
 
 <div class="activities">
 
 ${spotifyHTML}
 
-${activitiesHTML}
+${gamesHTML}
 
 </div>
 
@@ -455,7 +348,7 @@ ${activitiesHTML}
 let start=${spotify?spotify.timestamps.start:0}
 let end=${spotify?spotify.timestamps.end:0}
 
-function updateSpotify(){
+function update(){
 
 if(!start)return
 
@@ -466,15 +359,13 @@ let percent=((now-start)/(end-start))*100
 if(percent<0)percent=0
 if(percent>100)percent=100
 
-let bar=document.getElementById("spotifyBar")
+let bar=document.getElementById("bar")
 
 if(bar)bar.style.width=percent+"%"
 
 }
 
-setInterval(updateSpotify,1000)
-
-setInterval(()=>location.reload(),15000)
+setInterval(update,1000)
 
 </script>
 
@@ -482,12 +373,8 @@ setInterval(()=>location.reload(),15000)
 
 </html>
 
-`);
+`)
 
-});
+})
 
-app.listen(port,()=>{
-
-console.log("Server started");
-
-});
+app.listen(PORT)
