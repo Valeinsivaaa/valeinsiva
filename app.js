@@ -20,7 +20,6 @@ const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com";
 let stats = { views: 0, likes: 0 };
 let cachedData = null;
 
-// Tarayıcıların otomatik favicon isteği atıp sayacı artırmasını engeller
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 async function syncWithGithub(isUpdate = false) {
@@ -50,7 +49,6 @@ setInterval(async () => {
 
 syncWithGithub();
 
-// API Rotaları
 app.get("/api/like", async (req, res) => {
     stats.likes++;
     res.json({ success: true, likes: stats.likes });
@@ -90,9 +88,9 @@ app.get("/", async (req, res) => {
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
         
-        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; transition: 0.3s; }
+        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; }
         .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
-        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 1s linear; }
+        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 0.5s ease-out; }
         
         .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; text-align:center; font-size:10px; }
         .social-link:hover { opacity:1; transform:translateY(-3px); color:var(--profile-color); }
@@ -104,7 +102,6 @@ app.get("/", async (req, res) => {
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
         }
         .like-btn { left:25px; } .theme-toggle { right:25px; }
-        .like-btn:hover, .theme-toggle:hover { transform: scale(1.1); }
         .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); }
 
         .theme-toggle.rotating i { animation: rotateAndScale 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -124,7 +121,7 @@ app.get("/", async (req, res) => {
         <div style="height:160px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
         <div class="profile-content" style="padding:0 25px 25px; text-align:center;">
             <div class="avatar-wrap">
-                <img id="avatar" class="avatar">
+                <img id="avatar" class="avatar" src="">
                 <img id="decor" class="decor-img" style="display:none;">
                 <div id="status" class="status"></div>
             </div>
@@ -150,7 +147,6 @@ app.get("/", async (req, res) => {
         const socket = io();
         let currentPresence = null;
 
-        // Görüntülenme Sayacı (Sadece gerçek girişlerde)
         window.addEventListener('load', () => {
             if (!sessionStorage.getItem('viewed')) {
                 fetch('/api/view').then(r => r.json()).then(data => {
@@ -161,6 +157,7 @@ app.get("/", async (req, res) => {
         });
 
         function formatTime(ms) {
+            if (ms < 0) ms = 0;
             const s = Math.floor(ms / 1000);
             const h = Math.floor(s / 3600);
             const m = Math.floor((s % 3600) / 60);
@@ -168,8 +165,11 @@ app.get("/", async (req, res) => {
             return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
         }
 
+        // AKICI SÜRE GÜNCELLEME (DEKORDAN BAĞIMSIZ)
         setInterval(() => {
             if (!currentPresence) return;
+            
+            // Spotify Süresi
             if (currentPresence.spotify) {
                 const total = currentPresence.spotify.timestamps.end - currentPresence.spotify.timestamps.start;
                 const elapsed = Date.now() - currentPresence.spotify.timestamps.start;
@@ -179,22 +179,46 @@ app.get("/", async (req, res) => {
                 if (bar) bar.style.width = prog + "%";
                 if (timeStr) timeStr.innerText = formatTime(elapsed) + " / " + formatTime(total);
             }
+
+            // Oyun Süresi
+            const game = currentPresence.activities.find(a => a.type === 0);
+            const gameTime = document.getElementById('game-duration');
+            if (game && game.timestamps && gameTime) {
+                gameTime.innerText = formatTime(Date.now() - game.timestamps.start) + " süredir";
+            }
         }, 1000);
 
         socket.on("presence", data => {
             const u = data.discord_user;
+            
+            // 1. DEKOR VE STATÜ GÜNCELLEME (YALNIZCA DEĞİŞİRSE)
             const decorEl = document.getElementById("decor");
             const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
-            if (newDecorUrl) { decorEl.src = newDecorUrl; decorEl.style.display = "block"; } else { decorEl.style.display = "none"; }
+            
+            if (newDecorUrl) {
+                if (decorEl.src !== newDecorUrl) {
+                    decorEl.src = newDecorUrl;
+                    decorEl.style.display = "block";
+                }
+            } else {
+                decorEl.style.display = "none";
+            }
 
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            const avatarImg = document.getElementById("avatar");
+            const newAvatar = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
+            
             document.getElementById("status").className = "status " + data.discord_status;
 
-            if (JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify)) {
+            // 2. AKTİVİTE KARTI GÜNCELLEME (SADECE ŞARKI VEYA OYUN DEĞİŞİRSE)
+            const oldActivityKey = JSON.stringify(currentPresence?.spotify?.song_id || '') + JSON.stringify(currentPresence?.activities?.find(a=>a.type===0)?.name || '');
+            const newActivityKey = JSON.stringify(data?.spotify?.song_id || '') + JSON.stringify(data?.activities?.find(a=>a.type===0)?.name || '');
+
+            if (oldActivityKey !== newActivityKey) {
                 let actsHTML = "";
                 if(data.spotify) {
                     actsHTML += \`
-                    <div class="card">
+                    <div class="card" id="spotify-card">
                         <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
@@ -208,13 +232,13 @@ app.get("/", async (req, res) => {
                 const game = data.activities.find(a => a.type === 0);
                 if(game) {
                     actsHTML += \`
-                    <div class="card">
+                    <div class="card" id="game-card">
                         <div style="width:55px; height:55px; background:var(--profile-color); border-radius:12px; display:flex; align-items:center; justify-content:center; opacity:0.8;">
                             <i class="fa-solid fa-gamepad" style="font-size:28px; color:white;"></i>
                         </div>
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px;">\${game.name}</div>
-                            <div style="font-size:11px; opacity:0.5;">\${game.details || 'Oynuyor'}</div>
+                            <div id="game-duration" style="font-size:11px; opacity:0.6; font-weight:600;"></div>
                         </div>
                     </div>\`;
                 }
