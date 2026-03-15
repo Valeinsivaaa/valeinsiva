@@ -1,18 +1,16 @@
 {
-  "name": "valeinsiva-profile",
-  "version": "1.0.0",
-  "description": "Discord Activity Profile Site",
+  "name": "valeinsiva-advanced-profile",
+  "version": "1.1.0",
+  "description": "Discord Activity & Spotify Dashboard",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
-"dependencies": {
+  "dependencies": {
     "express": "^4.18.2",
-    "axios": "^1.6.0",
-    "mongodb-memory-server": "^8.15.0"
-}
+    "axios": "^1.6.0"
+  },
   "engines": {
     "node": ">=14.0.0"
   }
 }
-
