@@ -10,11 +10,10 @@ const io = new Server(server);
 
 app.use(cookieParser());
 
-const DISCORD_ID = "877946035408891945"; // Kendi ID'n ile değiştir
+const DISCORD_ID = "877946035408891945";
 let views = 0;
 let cachedData = null;
 
-// Lanyard API üzerinden Discord verilerini çekme
 async function updateCache() {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
@@ -32,15 +31,6 @@ app.get("/", async (req, res) => {
         res.cookie("viewed", "yes", { maxAge: 31536000000 });
     }
 
-    // Kullanıcı konumunu IP üzerinden çekme
-    let userLocation = "Dünya";
-    try {
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        // Lokal testlerde (127.0.0.1) konum çalışmaz, sunucuda çalışır.
-        const loc = await axios.get(`http://ip-api.com/json/${ip}?fields=city,country`);
-        if(loc.data.status === 'success') userLocation = `${loc.data.city}, ${loc.data.country}`;
-    } catch { userLocation = "Bilinmiyor"; }
-
     res.send(`
 <!DOCTYPE html>
 <html lang="tr">
@@ -56,39 +46,33 @@ app.get("/", async (req, res) => {
         body {
             margin: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #050505; /* Simsiyah modern arka plan */
+            background: #050505;
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Ana Kart Tasarımı */
         .main-card {
-            width: 380px;
+            width: 400px;
             background: rgba(255, 255, 255, 0.01);
             backdrop-filter: blur(30px);
             border-radius: 40px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 45px 30px;
+            padding: 40px 25px;
             text-align: center;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
         }
 
-        .header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+        .header { margin-bottom: 20px; }
 
         .avatar-box {
             position: relative;
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 15px;
         }
 
         .avatar {
@@ -99,75 +83,89 @@ app.get("/", async (req, res) => {
             border: 2px solid rgba(255,255,255,0.08);
         }
 
-        /* Aktiflik Durum Işığı (Neon) */
         .status-dot {
             position: absolute;
-            bottom: 6px;
-            right: 6px;
-            width: 20px;
-            height: 20px;
+            bottom: 8px;
+            right: 8px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             border: 4px solid #050505;
-            transition: all 0.5s ease;
         }
 
         .online { background: #23a55a; box-shadow: 0 0 15px #23a55a; }
         .idle { background: #f0b232; box-shadow: 0 0 15px #f0b232; }
         .dnd { background: #f23f43; box-shadow: 0 0 15px #f23f43; }
-        .offline { background: #80848e; box-shadow: none; }
+        .offline { background: #80848e; }
 
-        .name-section h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin: 0;
-            letter-spacing: -1px;
-            background: linear-gradient(to bottom, #fff, #888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        h1 { font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+        .nickname { font-size: 14px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+        /* Aktivite Alanı (Spotify / Oyun) */
+        #activities {
+            margin: 25px 0;
+            min-height: 0;
         }
 
-        .nickname {
-            font-size: 14px;
-            color: rgba(255,255,255,0.3);
-            margin-top: 4px;
-            font-weight: 400;
+        .activity-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeIn 0.5s ease;
         }
 
-        /* Sadece Discord ve Web Butonları */
+        .activity-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .activity-info { flex: 1; overflow: hidden; }
+        .activity-name { font-weight: 700; font-size: 14px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .activity-details { font-size: 12px; color: rgba(255,255,255,0.5); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+        }
+        .progress-fill { height: 100%; background: #1db954; width: 0%; border-radius: 2px; }
+
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin: 40px 0;
+            gap: 30px;
+            margin-top: 10px;
         }
 
         .social-links a {
             color: white;
-            font-size: 30px;
-            text-decoration: none;
-            opacity: 0.5;
-            transition: all 0.3s ease;
+            font-size: 28px;
+            opacity: 0.4;
+            transition: 0.3s;
         }
 
-        .social-links a:hover {
-            opacity: 1;
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));
-        }
+        .social-links a:hover { opacity: 1; transform: translateY(-3px); }
 
-        /* Alt Bilgi Alanı */
         .footer-meta {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.03);
             display: flex;
             justify-content: center;
             gap: 20px;
             font-size: 12px;
-            color: rgba(255,255,255,0.25);
-            border-top: 1px solid rgba(255,255,255,0.03);
-            padding-top: 25px;
+            color: rgba(255,255,255,0.2);
         }
 
-        .footer-meta i { margin-right: 6px; }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -175,28 +173,23 @@ app.get("/", async (req, res) => {
     <div class="main-card">
         <div class="header">
             <div class="avatar-box">
-                <img id="avatar" class="avatar" src="https://via.placeholder.com/100">
+                <img id="avatar" class="avatar" src="">
                 <div id="status" class="status-dot offline"></div>
             </div>
-            <div class="name-section">
-                <h1>Valeinsiva</h1>
-                <div class="nickname">@valeinsiva.</div>
-            </div>
+            <h1>Valeinsiva</h1>
+            <div class="nickname">@valeinsiva.</div>
         </div>
 
+        <div id="activities"></div>
+
         <div class="social-links">
-            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank">
-                <i class="fa-brands fa-discord"></i>
-            </a>
-            
-            <a href="https://GİTMESİNİ_İSTEDİĞİN_LİNK.com" target="_blank">
-                <i class="fa-solid fa-globe"></i>
-            </a>
+            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
+            <a href="https://GİTMESİNİ_İSTEDİĞİN_LİNK.com" target="_blank"><i class="fa-solid fa-globe"></i></a>
         </div>
 
         <div class="footer-meta">
             <span><i class="fa-solid fa-eye"></i> ${views}</span>
-            <span><i class="fa-solid fa-location-dot"></i> ${userLocation}</span>
+            <span><i class="fa-solid fa-location-dot"></i> Dünya</span>
         </div>
     </div>
 
@@ -205,14 +198,50 @@ app.get("/", async (req, res) => {
         
         socket.on("presence", data => {
             const user = data.discord_user;
-            // Profil resmini güncelle
-            if(user.avatar) {
-                document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
+            document.getElementById("status").className = "status-dot " + data.discord_status;
+
+            const activityContainer = document.getElementById("activities");
+            activityContainer.innerHTML = "";
+
+            // ÖNCELİK 1: Spotify
+            if (data.spotify) {
+                const s = data.spotify;
+                const total = s.timestamps.end - s.timestamps.start;
+                const current = Date.now() - s.timestamps.start;
+                const prg = Math.min((current / total) * 100, 100);
+
+                activityContainer.innerHTML = \`
+                    <div class="activity-card">
+                        <img src="\${s.album_art_url}" class="activity-img">
+                        <div class="activity-info">
+                            <div class="activity-name">\${s.song}</div>
+                            <div class="activity-details">\${s.artist}</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: \${prg}%"></div></div>
+                        </div>
+                        <i class="fa-brands fa-spotify" style="color: #1db954; font-size: 20px;"></i>
+                    </div>\`;
+            } 
+            // ÖNCELİK 2: Oyunlar (Steam, PlayStation vs.)
+            else if (data.activities && data.activities.length > 0) {
+                const act = data.activities.find(a => a.type === 0); // Playing tipi
+                if (act) {
+                    let icon = '<i class="fa-solid fa-gamepad"></i>';
+                    if (act.name.toLowerCase().includes("playstation")) icon = '<i class="fa-brands fa-playstation"></i>';
+                    if (act.name.toLowerCase().includes("steam")) icon = '<i class="fa-brands fa-steam"></i>';
+
+                    activityContainer.innerHTML = \`
+                        <div class="activity-card">
+                            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                                \${icon}
+                            </div>
+                            <div class="activity-info">
+                                <div class="activity-name">\${act.name}</div>
+                                <div class="activity-details">\${act.details || 'Oynuyor'}</div>
+                            </div>
+                        </div>\`;
+                }
             }
-            
-            // Durum ışığını güncelle
-            const statusDot = document.getElementById("status");
-            statusDot.className = "status-dot " + data.discord_status;
         });
     </script>
 </body>
@@ -220,4 +249,4 @@ app.get("/", async (req, res) => {
     `);
 });
 
-server.listen(3000, () => console.log("Valeinsiva Portfolyo 3000 portunda yayında!"));
+server.listen(3000, () => console.log("Profil aktif!"));
