@@ -58,7 +58,7 @@ app.get("/", (req, res) => {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #050505; color: white;
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; overflow: hidden;
+            min-height: 100vh; overflow-y: auto; padding: 40px 0;
         }
 
         .bg-animate {
@@ -68,22 +68,23 @@ app.get("/", (req, res) => {
         }
         @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 
+        .container { width: 380px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+
         .main-card {
-            width: 360px; background: rgba(255, 255, 255, 0.015);
+            background: rgba(255, 255, 255, 0.015);
             backdrop-filter: blur(45px); border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-            position: relative;
+            position: relative; overflow: hidden;
         }
 
         .banner-container {
-            width: 100%; height: 95px; border-radius: 30px 30px 0 0; 
-            overflow: hidden; background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            width: 100%; height: 100px; position: relative;
+            background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        #banner { width: 100%; height: 100%; object-fit: cover; display: block; }
+        #banner { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        .content { padding: 0 25px 30px; position: relative; }
+        .content { padding: 0 25px 25px; position: relative; text-align: center; }
 
         .avatar-area {
             position: relative; width: 95px; height: 95px;
@@ -95,187 +96,188 @@ app.get("/", (req, res) => {
             position: relative; z-index: 1;
         }
         .avatar-decor {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 120%; height: 120%; z-index: 2; pointer-events: none;
         }
 
         .status-dot {
-            position: absolute; bottom: 5px; right: 5px;
-            width: 18px; height: 18px; border-radius: 50%;
-            border: 3px solid #080808; z-index: 3;
+            position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px;
+            border-radius: 50%; border: 3px solid #080808; z-index: 3;
         }
         .online { background: #23a55a; box-shadow: 0 0 15px #23a55a; }
         .idle { background: #f0b232; box-shadow: 0 0 15px #f0b232; }
         .dnd { background: #f23f43; box-shadow: 0 0 15px #f23f43; }
         .offline { background: #80848e; }
 
-        h1 { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -1px; }
-        .sub-nick { font-size: 13px; color: rgba(255,255,255,0.3); margin: 5px 0 20px; }
+        h1 { font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: #fff; }
+        .sub-nick { font-size: 13px; color: rgba(255,255,255,0.3); margin: 5px 0 15px; }
 
-        #activity-zone { min-height: 80px; margin-bottom: 20px; }
-        .act-box {
-            background: rgba(255, 255, 255, 0.03); border-radius: 18px;
-            padding: 12px; display: flex; align-items: center; gap: 12px;
-            text-align: left; border: 1px solid rgba(255,255,255,0.05);
+        /* Oyun Kartı */
+        .game-card {
+            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
+            padding: 15px; display: flex; align-items: center; gap: 15px;
+            border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px;
+            text-align: left; position: relative;
         }
-        .act-img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        .act-img { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .act-text { flex: 1; overflow: hidden; }
-        .act-main { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .act-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+        .act-main { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #eee; }
+        .act-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+        .time-counter { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 5px; font-weight: 600; }
 
-        .time-counter { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; font-variant-numeric: tabular-nums; }
-
-        .spotify-timer {
-            display: flex; align-items: center; gap: 8px; margin-top: 8px;
-            font-size: 10px; color: rgba(255,255,255,0.4);
+        /* Spotify Kartı (Guns.lol Stil) */
+        .spotify-card {
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px);
+            border-radius: 25px; padding: 15px 20px; border: 1px solid rgba(29, 185, 84, 0.2);
+            display: flex; align-items: center; gap: 18px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
-        .p-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-        .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 10px #1db954; }
+        .spot-img { width: 60px; height: 60px; border-radius: 12px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .spot-info { flex: 1; overflow: hidden; }
+        .spot-title { font-weight: 800; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spot-artist { font-size: 12px; color: rgba(255,255,255,0.5); margin: 2px 0 8px; }
+        
+        .spot-progress-container { display: flex; align-items: center; gap: 10px; font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 700; }
+        .p-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .p-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 12px rgba(29, 185, 84, 0.6); }
 
-        .socials { display: flex; justify-content: center; gap: 35px; }
-        .socials a { color: white; font-size: 26px; opacity: 0.3; transition: 0.3s; }
-        .socials a:hover { opacity: 1; transform: translateY(-3px); }
+        .socials { display: flex; justify-content: center; gap: 25px; margin-top: 5px; }
+        .socials a { color: white; font-size: 22px; opacity: 0.3; transition: 0.3s; }
+        .socials a:hover { opacity: 1; transform: scale(1.2); }
 
-        .footer { margin-top: 30px; display: flex; justify-content: center; gap: 20px; font-size: 11px; color: rgba(255,255,255,0.15); }
+        .footer { margin-top: 20px; display: flex; justify-content: center; gap: 15px; font-size: 11px; color: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
     <div class="bg-animate"></div>
-    <div class="main-card">
-        <div class="banner-container">
-            <img id="banner" src="" alt="">
-        </div>
-        <div class="content">
-            <div class="avatar-area">
-                <img id="avatar" class="avatar" src="">
-                <img id="decor" class="avatar-decor" src="" style="display:none;">
-                <div id="status" class="status-dot offline"></div>
+    <div class="container">
+        <div class="main-card">
+            <div class="banner-container">
+                <img id="banner" src="" alt="">
             </div>
-            <h1>Valeinsiva</h1>
-            <div class="sub-nick">@valeinsiva.</div>
-            
-            <div id="activity-zone"></div>
+            <div class="content">
+                <div class="avatar-area">
+                    <img id="avatar" class="avatar" src="">
+                    <img id="decor" class="avatar-decor" src="" style="display:none;">
+                    <div id="status" class="status-dot offline"></div>
+                </div>
+                <h1>Valeinsiva</h1>
+                <div class="sub-nick">@valeinsiva.</div>
+                
+                <div id="game-zone"></div>
 
-            <div class="socials">
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
-                <a href="https://valeinsiva.com.tr" target="_blank"><i class="fa-solid fa-globe"></i></a>
-            </div>
-            
-            <div class="footer">
-                <span><i class="fa-solid fa-eye"></i> ${views.toLocaleString()}</span>
-                <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
+                <div class="socials">
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank"><i class="fa-brands fa-discord"></i></a>
+                    <a href="https://valeinsiva.com.tr" target="_blank"><i class="fa-solid fa-globe"></i></a>
+                </div>
+                
+                <div class="footer">
+                    <span><i class="fa-solid fa-eye"></i> ${views.toLocaleString()}</span>
+                    <span><i class="fa-solid fa-location-dot"></i> Türkiye</span>
+                </div>
             </div>
         </div>
+
+        <div id="spotify-zone"></div>
     </div>
 
     <script>
         const socket = io();
-        let lastActivityKey = "";
+        let currentActivityKey = "";
+        let currentSpotifyKey = "";
 
-        function formatHMS(ms) {
-            const totalSec = Math.floor(ms / 1000);
-            const h = Math.floor(totalSec / 3600);
-            const m = Math.floor((totalSec % 3600) / 60);
-            const s = totalSec % 60;
-            return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        function formatTime(ms) {
+            const s = Math.floor(ms / 1000);
+            return Math.floor(s / 60) + ":" + (s % 60).toString().padStart(2, '0');
         }
 
         socket.on("presence", data => {
             const user = data.discord_user;
 
-            // Banner - Doğrudan Discord CDN Denemesi
+            // Banner Çekici
             const banner = document.getElementById("banner");
             if (user.banner) {
-                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.gif?size=1024\`;
-                banner.onerror = () => { banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.png?size=1024\`; };
+                const ext = user.banner.startsWith("a_") ? "gif" : "png";
+                banner.src = \`https://cdn.discordapp.com/banners/\${user.id}/\${user.banner}.\${ext}?size=1024\`;
                 banner.style.display = "block";
-            } else { banner.style.backgroundColor = user.banner_color || "#111"; }
+            }
 
             // Avatar & Dekor
             document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${user.id}/\${user.avatar}.png?size=256\`;
             const decor = document.getElementById("decor");
-            if (user.avatar_decoration_data) {
-                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${user.avatar_decoration_data.asset}.png\`;
+            const d = user.avatar_decoration_data || user.avatar_decoration;
+            if (d) {
+                decor.src = d.asset ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${d.asset}.png\` : d;
                 decor.style.display = "block";
-            } else if (user.avatar_decoration) {
-                decor.src = user.avatar_decoration;
-                decor.style.display = "block";
-            } else { decor.style.display = "none"; }
+            }
 
             document.getElementById("status").className = "status-dot " + data.discord_status;
 
-            // Aktivite Kontrolü
-            const zone = document.getElementById("activity-zone");
-            let html = "";
-            let currentKey = "none";
-
-            if (data.spotify) {
-                currentKey = data.spotify.track_id;
-                html = \`
-                    <div class="act-box">
-                        <img src="\${data.spotify.album_art_url}" class="act-img">
-                        <div class="act-text">
-                            <div class="act-main">\${data.spotify.song}</div>
-                            <div class="act-sub">\${data.spotify.artist}</div>
-                            <div class="spotify-timer">
-                                <span id="s-curr">0:00</span>
-                                <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
-                                <span id="s-end">0:00</span>
-                            </div>
-                        </div>
-                    </div>\`;
-            } else if (data.activities.length > 0) {
-                const game = data.activities.find(a => a.type === 0);
-                if (game) {
-                    currentKey = game.name;
-                    const isPS = game.name.toLowerCase().includes("playstation") || (game.assets && game.assets.large_text && game.assets.large_text.toLowerCase().includes("playstation"));
-                    let iconHTML = game.assets && game.assets.large_image ? 
-                        \`<img src="https://cdn.discordapp.com/app-assets/\${game.application_id}/\${game.assets.large_image}.png" class="act-img">\` : 
-                        \`<div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px"><i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}"></i></div>\`;
+            // --- OYUN KONTROLÜ ---
+            const gameZone = document.getElementById("game-zone");
+            const game = data.activities.find(a => a.type === 0);
+            if (game) {
+                if (currentActivityKey !== game.name) {
+                    let icon = "";
+                    if (game.assets && game.assets.large_image) {
+                        icon = game.assets.large_image.startsWith("mp:") ? 
+                            "https://images-ext-1.discordapp.net/external/" + game.assets.large_image.split("https/")[1] :
+                            \`https://cdn.discordapp.com/app-assets/\${game.application_id}/\${game.assets.large_image}.png\`;
+                    }
+                    const psIcon = game.name.toLowerCase().includes("playstation") ? '<i class="fa-brands fa-playstation" style="color:#00439c; margin-left:auto"></i>' : '';
                     
-                    html = \`
-                        <div class="act-box">
-                            \${iconHTML}
+                    gameZone.innerHTML = \`
+                        <div class="game-card">
+                            <img src="\${icon || 'https://i.imgur.com/8Q9M99S.png'}" class="act-img">
                             <div class="act-text">
                                 <div class="act-main">\${game.name}</div>
                                 <div class="act-sub">\${game.details || 'Oynuyor'}</div>
-                                <div class="time-counter" id="game-time">00:00:00</div>
+                                <div class="time-counter" id="game-timer">00:00:00</div>
                             </div>
-                            \${isPS ? '<i class="fa-brands fa-playstation" style="color:#003087; font-size:18px; align-self:flex-start;"></i>' : ''}
+                            \${psIcon}
                         </div>\`;
+                    currentActivityKey = game.name;
                 }
-            }
+                if (game.timestamps && game.timestamps.start) {
+                    const elapsed = Date.now() - game.timestamps.start;
+                    const h = Math.floor(elapsed / 3600000);
+                    const m = Math.floor((elapsed % 3600000) / 60000);
+                    const s = Math.floor((elapsed % 60000) / 1000);
+                    const timerEl = document.getElementById("game-timer");
+                    if (timerEl) timerEl.innerText = \`\${h > 0 ? h + ':' : ''}\${m.toString().padStart(2,'0')}:\${s.toString().padStart(2,'0')} süredir oynuyor\`;
+                }
+            } else { gameZone.innerHTML = ""; currentActivityKey = ""; }
 
-            if (lastActivityKey !== currentKey) {
-                zone.innerHTML = html;
-                lastActivityKey = currentKey;
-            }
-
-            // Canlı Sayaçlar
+            // --- SPOTIFY KONTROLÜ ---
+            const spotZone = document.getElementById("spotify-zone");
             if (data.spotify) {
-                const start = data.spotify.timestamps.start;
-                const total = data.spotify.timestamps.end - start;
-                const update = () => {
-                    const elapsed = Math.min(Date.now() - start, total);
-                    if(document.getElementById("s-fill")) document.getElementById("s-fill").style.width = (elapsed / total * 100) + "%";
-                    if(document.getElementById("s-curr")) document.getElementById("s-curr").innerText = formatHMS(elapsed).replace(/^0:/, '');
-                    if(document.getElementById("s-end")) document.getElementById("s-end").innerText = formatHMS(total).replace(/^0:/, '');
-                };
-                update();
-            }
-
-            if (data.activities.length > 0) {
-                const game = data.activities.find(a => a.type === 0);
-                if (game && game.timestamps && game.timestamps.start) {
-                    const updateGame = () => {
-                        const elapsed = Date.now() - game.timestamps.start;
-                        const el = document.getElementById("game-time");
-                        if(el) el.innerText = formatHMS(elapsed) + " süredir oynuyor";
-                    };
-                    updateGame();
+                if (currentSpotifyKey !== data.spotify.track_id) {
+                    spotZone.innerHTML = \`
+                        <div class="spotify-card">
+                            <img src="\${data.spotify.album_art_url}" class="spot-img">
+                            <div class="spot-info">
+                                <div class="spot-title">\${data.spotify.song}</div>
+                                <div class="spot-artist">\${data.spotify.artist}</div>
+                                <div class="spot-progress-container">
+                                    <span id="s-curr">0:00</span>
+                                    <div class="p-bar"><div id="s-fill" class="p-fill"></div></div>
+                                    <span id="s-end">0:00</span>
+                                </div>
+                            </div>
+                            <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px; align-self:flex-start"></i>
+                        </div>\`;
+                    currentSpotifyKey = data.spotify.track_id;
                 }
-            }
+                const start = data.spotify.timestamps.start;
+                const end = data.spotify.timestamps.end;
+                const total = end - start;
+                const progress = Math.min(((Date.now() - start) / total) * 100, 100);
+                
+                if (document.getElementById("s-fill")) document.getElementById("s-fill").style.width = progress + "%";
+                if (document.getElementById("s-curr")) document.getElementById("s-curr").innerText = formatTime(Date.now() - start);
+                if (document.getElementById("s-end")) document.getElementById("s-end").innerText = formatTime(total);
+            } else { spotZone.innerHTML = ""; currentSpotifyKey = ""; }
         });
     </script>
 </body>
@@ -284,3 +286,4 @@ app.get("/", (req, res) => {
 });
 
 server.listen(3000);
+
