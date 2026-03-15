@@ -69,15 +69,15 @@ app.get("/", (req, res) => {
         @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 
         .main-card {
-            width: 380px; background: rgba(255, 255, 255, 0.01);
-            backdrop-filter: blur(55px); border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 380px; background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(60px); border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 40px 100px rgba(0,0,0,0.9);
             position: relative; overflow: hidden;
         }
 
         .banner-box { width: 100%; height: 110px; background: rgba(255,255,255,0.02); overflow: hidden; }
-        #banner { width: 100%; height: 100%; object-fit: cover; display: none; }
+        #banner { width: 100%; height: 100%; object-fit: cover; }
 
         .profile-content { padding: 0 25px 25px; text-align: center; }
 
@@ -94,49 +94,49 @@ app.get("/", (req, res) => {
         }
         .online { background: #23a55a; } .idle { background: #f0b232; } .dnd { background: #f23f43; } .offline { background: #80848e; }
 
-        /* ROZETLER (BADGES) */
+        /* ROZETLER - GÖRÜNÜRLÜK DÜZELTİLDİ */
         .badges-container {
-            display: flex; justify-content: center; gap: 8px; margin-bottom: 10px;
+            display: flex; justify-content: center; gap: 6px; margin-bottom: 5px; position: relative; z-index: 20;
         }
         .badge-icon {
-            width: 22px; height: 22px; object-fit: contain;
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
+            width: 20px; height: 20px; object-fit: contain;
         }
 
-        /* VAMPİR / ÇİZGİ FİLM YAZI STİLİ */
+        /* YAZI ESKİ HALİNE DÖNDÜ */
         .display-name {
-            font-size: 28px; font-weight: 800; margin: 0;
+            font-size: 32px; font-weight: 800; margin: 0;
+            color: #ffffff;
             letter-spacing: -1px;
-            background: linear-gradient(180deg, #fff 30%, #a2a2a2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 12px rgba(255,255,255,0.4));
-            font-style: italic;
-            text-transform: capitalize;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
         }
         
-        .username { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+        .username { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 15px; }
 
-        .act-stack { margin: 18px 0; display: flex; flex-direction: column; gap: 10px; }
+        .act-stack { margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
 
         .card {
-            background: rgba(255, 255, 255, 0.035); border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04); border-radius: 20px;
             padding: 14px; display: flex; align-items: center; gap: 15px;
-            border: 1px solid rgba(255,255,255,0.06); text-align: left;
+            border: 1px solid rgba(255,255,255,0.08); text-align: left;
         }
         .card-img { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; }
         .card-info { flex: 1; overflow: hidden; }
         .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+        .card-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
-        .s-bar-container { height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 10px; overflow: hidden; }
-        .s-bar-fill { height: 100%; background: #1db954; width: 0%; transition: width 1s linear; }
+        /* SPOTIFY SÜRE VE BAR */
+        .spotify-time-info {
+            display: flex; justify-content: space-between; font-size: 10px;
+            color: rgba(255,255,255,0.4); margin-top: 8px; font-family: monospace;
+        }
+        .s-bar-container { height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 4px; overflow: hidden; }
+        .s-bar-fill { height: 100%; background: #1db954; width: 0%; box-shadow: 0 0 8px rgba(29, 185, 84, 0.5); }
 
-        .socials { display: flex; justify-content: center; gap: 30px; margin-top: 5px; }
-        .socials i { font-size: 24px; color: white; opacity: 0.3; transition: 0.3s; }
+        .socials { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
+        .socials i { font-size: 24px; color: white; opacity: 0.4; transition: 0.3s; }
         .socials i:hover { opacity: 1; transform: scale(1.1); }
 
-        .footer { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.15); display: flex; justify-content: center; gap: 20px; }
+        .footer { margin-top: 25px; font-size: 11px; color: rgba(255,255,255,0.2); display: flex; justify-content: center; gap: 20px; }
     </style>
 </head>
 <body>
@@ -151,10 +151,10 @@ app.get("/", (req, res) => {
             </div>
 
             <div class="badges-container">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png" class="badge-icon" title="Nitro">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png" class="badge-icon" title="HypeSquad">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png" class="badge-icon" title="Server Booster">
-                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png" class="badge-icon" title="Quest Completed">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/nitro.png" class="badge-icon">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.png" class="badge-icon">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost1month.png" class="badge-icon">
+                <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.png" class="badge-icon">
             </div>
             
             <div id="display-name" class="display-name">Valeinsiva</div>
@@ -181,6 +181,13 @@ app.get("/", (req, res) => {
         const socket = io();
         let lastG = ""; let lastS = "";
 
+        function formatTime(ms) {
+            const totalSec = Math.floor(ms / 1000);
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
+
         socket.on("presence", data => {
             const u = data.discord_user;
             document.getElementById("display-name").innerText = u.display_name || u.username;
@@ -200,7 +207,7 @@ app.get("/", (req, res) => {
 
             document.getElementById("status").className = "status " + data.discord_status;
 
-            // Oyun Kartı (SABİT PLAYSTATION LOGOSU)
+            // Oyun
             const gZone = document.getElementById("game-zone");
             const game = data.activities.find(a => a.type === 0);
             if(game) {
@@ -218,7 +225,7 @@ app.get("/", (req, res) => {
                 }
             } else { gZone.innerHTML = ""; lastG = ""; }
 
-            // Spotify Kartı
+            // Spotify - Saniye Saniye İlerleme ve Bitiş Süresi
             const sZone = document.getElementById("spotify-zone");
             if(data.spotify) {
                 if(lastS !== data.spotify.track_id) {
@@ -229,15 +236,29 @@ app.get("/", (req, res) => {
                                 <div class="card-title">\${data.spotify.song}</div>
                                 <div class="card-sub">\${data.spotify.artist}</div>
                                 <div class="s-bar-container"><div id="s-fill" class="s-bar-fill"></div></div>
+                                <div class="spotify-time-info">
+                                    <span id="s-start">00:00</span>
+                                    <span id="s-end">00:00</span>
+                                </div>
                             </div>
                             <i class="fa-brands fa-spotify" style="color:#1db954; font-size:22px;"></i>
                         </div>\`;
                     lastS = data.spotify.track_id;
                 }
+                
+                // Zaman hesaplama
                 const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
-                const prog = Math.min(((Date.now() - data.spotify.timestamps.start) / total) * 100, 100);
+                const elapsed = Math.min(Date.now() - data.spotify.timestamps.start, total);
+                const prog = (elapsed / total) * 100;
+                
                 const bar = document.getElementById("s-fill");
+                const startTxt = document.getElementById("s-start");
+                const endTxt = document.getElementById("s-end");
+                
                 if(bar) bar.style.width = prog + "%";
+                if(startTxt) startTxt.innerText = formatTime(elapsed);
+                if(endTxt) endTxt.innerText = formatTime(total);
+                
             } else { sZone.innerHTML = ""; lastS = ""; }
         });
     </script>
