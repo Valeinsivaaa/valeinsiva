@@ -22,17 +22,14 @@ app.get('/', async (req, res) => {
     const spotify = d.spotify;
     const activities = d.activities.filter(a => a.type !== 2 && a.id !== 'custom');
 
-    // İstediğin Özel Rozetler (Statik + API Çekimi)
-    let badgesHTML = '';
-    // API'den gelen rozetler
-    const flags = user.public_flags;
-    const badgeMap = { 4: 'hypesquad', 64: 'hypesquadbravery', 128: 'hypesquadbrilliance', 256: 'hypesquadbalance', 131072: 'developer', 4194304: 'active_developer' };
-    Object.keys(badgeMap).forEach(f => { if (flags & f) badgesHTML += `<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeMap[f]}.svg" class="badge">`; });
-    
-    // İstediğin Özel Rozetler
-    badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge">'; // Nitro
-    badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost9month.svg" class="badge">'; // Boost
-    badgesHTML += '<img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/completed_quest.svg" class="badge">'; // Görev Tamamlandı
+    // Manuel ve API Rozetleri
+    let badgesHTML = `
+        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.svg" class="badge" title="HypeSquad Bravery">
+        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="badge" title="Discord Nitro">
+        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/boost9month.svg" class="badge" title="Server Booster">
+        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/completed_quest.svg" class="badge" title="Quest Completed">
+        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/active_developer.svg" class="badge" title="Active Developer">
+    `;
 
     res.send(`
 <!DOCTYPE html>
@@ -42,82 +39,121 @@ app.get('/', async (req, res) => {
     <title>${user.global_name || user.username}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --spotify: #1db954; --ps: #003791; --card-bg: rgba(15, 15, 15, 0.7); }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
-        body { background:#030303; color:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; overflow:hidden; }
+        :root { --spotify: #1db954; --ps: #003791; --discord: #5865f2; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'gg sans', 'Inter', sans-serif; }
         
-        .card { width:480px; background:var(--card-bg); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.1); border-radius:30px; padding:35px; box-shadow:0 30px 60px rgba(0,0,0,0.8); position:relative; }
+        body { 
+            background: #000;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://cdn.discordapp.com/banners/${user.id}/${user.banner}.gif?size=1024');
+            background-size: cover;
+            background-position: center;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
         
-        .header { display:flex; flex-direction:column; align-items:center; gap:15px; margin-bottom:30px; }
-        .avatar { width:115px; height:115px; border-radius:50%; border:4px solid #000; }
-        .status { position:absolute; bottom:12px; right:12px; width:24px; height:24px; border-radius:50%; border:4px solid #000; }
+        /* Discord Profil Kartı Estetiği */
+        .card { 
+            width:450px; background: #111214; border-radius:16px; overflow:hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .banner { height: 120px; background: #2b2d31; position: relative; }
+        .banner img { width: 100%; height: 100%; object-fit: cover; }
+
+        .profile-info { padding: 16px; position: relative; margin-top: 45px; }
+        
+        .avatar-container { 
+            position: absolute; top: -60px; left: 16px; 
+            background: #111214; padding: 6px; border-radius: 50%;
+        }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; }
+        .status { 
+            position: absolute; bottom: 8px; right: 8px; 
+            width: 20px; height: 20px; border-radius: 50%; border: 4px solid #111214; 
+        }
         .online { background:#43b581; } .idle { background:#faa61a; } .dnd { background:#f04747; } .offline { background:#747f8d; }
 
-        .name { font-size:32px; font-weight:900; }
-        .badges { display:flex; gap:6px; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:15px; }
-        .badge { width:22px; height:22px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        .badge-container { 
+            background: #232428; border-radius: 8px; padding: 4px 8px; 
+            display: flex; gap: 4px; position: absolute; top: 16px; right: 16px;
+        }
+        .badge { width: 18px; height: 18px; }
 
-        .act-card { background:rgba(255,255,255,0.03); border-radius:20px; padding:18px; margin-top:15px; display:flex; align-items:center; gap:15px; border:1px solid rgba(255,255,255,0.05); }
-        .act-img { width:65px; height:65px; border-radius:12px; box-shadow:0 10px 20px rgba(0,0,0,0.3); }
-        .act-info h4 { font-size:14px; display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+        .user-details { margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        .display-name { font-size: 20px; font-weight: 700; color: #fff; }
+        .username { font-size: 14px; color: #b5bac1; }
+
+        /* Aktivite Bölümleri */
+        .section-title { font-size: 12px; font-weight: 700; color: #b5bac1; text-transform: uppercase; margin: 15px 0 10px 0; }
         
-        /* Bar ve Süreler */
-        .progress-wrap { width:100%; margin-top:10px; }
-        .bar-bg { width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; }
-        .bar-fill { height:100%; width:0%; transition:width 1s linear; }
-        .time-labels { display:flex; justify-content:space-between; font-size:11px; color:#777; margin-top:6px; font-variant-numeric: tabular-nums; }
+        .activity-box { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; }
+        .activity-img { width: 60px; height: 60px; border-radius: 8px; }
+        .activity-text { flex: 1; overflow: hidden; }
+        .activity-text h4 { font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .activity-text p { font-size: 13px; color: #b5bac1; }
 
-        .dc-link { color:#fff; font-size:24px; opacity:0.4; transition:0.3s; position:absolute; bottom:30px; left:35px; }
-        .dc-link:hover { opacity:1; color:#5865f2; }
-        .views { position:absolute; bottom:30px; right:35px; font-size:12px; opacity:0.4; display:flex; align-items:center; gap:5px; }
+        /* Spotify Bar */
+        .bar-container { width: 100%; height: 4px; background: #4e5058; border-radius: 2px; margin-top: 8px; }
+        .bar-fill { height: 100%; background: #fff; width: 0%; border-radius: 2px; }
+        .time-labels { display: flex; justify-content: space-between; font-size: 11px; color: #b5bac1; margin-top: 4px; }
+
+        .footer { padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .dc-btn { color: #b5bac1; font-size: 20px; transition: 0.2s; }
+        .dc-btn:hover { color: #fff; }
+        .view-count { font-size: 12px; color: #b5bac1; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="header">
-            <div style="position:relative">
+        <div class="banner">
+            <img src="https://cdn.discordapp.com/banners/${user.id}/${user.banner}.gif?size=1024" onerror="this.src='https://i.imgur.com/vHExl6m.png'">
+        </div>
+        
+        <div class="profile-info">
+            <div class="avatar-container">
                 <img class="avatar" src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512">
                 <div class="status ${d.discord_status}"></div>
             </div>
-            <h1 class="name">${user.global_name || user.username}</h1>
-            <div class="badges">${badgesHTML}</div>
-        </div>
+            
+            <div class="badge-container">${badgesHTML}</div>
+            
+            <div class="user-details">
+                <div class="display-name">${user.global_name || user.username}</div>
+                <div class="username">${user.username}</div>
+            </div>
 
-        ${spotify ? `
-        <div class="act-card" style="border-left: 4px solid var(--spotify)">
-            <img src="${spotify.album_art_url}" class="act-img">
-            <div class="act-info" style="flex:1">
-                <h4 style="color:var(--spotify)"><i class="fab fa-spotify"></i> Spotify</h4>
-                <p style="font-size:14px; font-weight:bold">${spotify.song}</p>
-                <p style="font-size:12px; color:#aaa">${spotify.artist}</p>
-                <div class="progress-wrap">
-                    <div class="bar-bg"><div id="s-bar" class="bar-fill" style="background:var(--spotify)"></div></div>
+            ${spotify ? `
+            <div class="section-title">Listening to Spotify</div>
+            <div class="activity-box">
+                <img src="${spotify.album_art_url}" class="activity-img">
+                <div class="activity-text">
+                    <h4>${spotify.song}</h4>
+                    <p>by ${spotify.artist}</p>
+                    <div class="bar-container"><div id="s-bar" class="bar-fill"></div></div>
                     <div class="time-labels"><span id="s-start">0:00</span><span id="s-end">0:00</span></div>
                 </div>
             </div>
-        </div>
-        ` : ''}
+            ` : ''}
 
-        ${activities.map(act => `
-        <div class="act-card" style="border-left: 4px solid var(--ps)">
-            <img src="https://i.imgur.com/vHExl6m.png" class="act-img">
-            <div class="act-info" style="flex:1">
-                <h4 style="color:#5865f2"><i class="fas fa-gamepad"></i> PlayStation</h4>
-                <p style="font-size:14px; font-weight:bold">${act.name}</p>
-                <p style="font-size:12px; color:#aaa">${act.details || 'Oynuyor'}</p>
-                <div class="progress-wrap">
-                    <div class="time-labels"><span>Geçen Süre:</span><span id="ps-time">00:00:00</span></div>
+            ${activities.map(act => `
+            <div class="section-title">Playing ${act.name}</div>
+            <div class="activity-box">
+                <img src="https://i.imgur.com/vHExl6m.png" class="activity-img">
+                <div class="activity-text">
+                    <h4>${act.details || act.name}</h4>
+                    <p>${act.state || ''}</p>
+                    <p id="ps-time" style="font-size:12px; margin-top:4px;">00:00:00 elapsed</p>
                 </div>
             </div>
+            `).join('')}
         </div>
-        `).join('')}
 
-        <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="dc-link"><i class="fab fa-discord"></i></a>
-        <div class="views"><i class="fas fa-eye"></i> ${viewsCount}</div>
+        <div class="footer">
+            <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="dc-btn"><i class="fab fa-discord"></i></a>
+            <div class="view-count"><i class="fas fa-eye"></i> ${viewsCount}</div>
+        </div>
     </div>
 
     <script>
-        // Spotify Zaman Hesaplayıcı
         ${spotify ? `
         const sStart = ${spotify.timestamps.start};
         const sEnd = ${spotify.timestamps.end};
@@ -125,8 +161,7 @@ app.get('/', async (req, res) => {
             const now = Date.now();
             const total = sEnd - sStart;
             const current = Math.max(0, now - sStart);
-            const progress = Math.min(100, (current / total) * 100);
-            document.getElementById('s-bar').style.width = progress + "%";
+            document.getElementById('s-bar').style.width = Math.min(100, (current/total)*100) + "%";
             const fmt = (ms) => {
                 const s = Math.floor((ms/1000)%60);
                 return Math.floor(ms/60000) + ":" + (s<10?"0"+s:s);
@@ -137,7 +172,6 @@ app.get('/', async (req, res) => {
         setInterval(updateSpotify, 1000); updateSpotify();
         ` : ''}
 
-        // PlayStation Süre Hesaplayıcı
         ${activities.length > 0 && activities[0].timestamps ? `
         const psStart = ${activities[0].timestamps.start};
         function updatePS() {
@@ -145,12 +179,12 @@ app.get('/', async (req, res) => {
             const h = Math.floor(diff/3600000);
             const m = Math.floor((diff%3600000)/60000);
             const s = Math.floor((diff%60000)/1000);
-            document.getElementById('ps-time').innerText = (h>0?h+":":"") + (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
+            document.getElementById('ps-time').innerText = (h>0?h+":":"") + (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s) + " elapsed";
         }
         setInterval(updatePS, 1000); updatePS();
         ` : ''}
 
-        setTimeout(() => location.reload(), 20000); // 20 saniyede bir taze veri
+        setTimeout(() => location.reload(), 30000);
     </script>
 </body>
 </html>
