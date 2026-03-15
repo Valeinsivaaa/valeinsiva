@@ -19,7 +19,6 @@ const BOT_PANEL_LINK = "https://valeinsiva.com.tr";
 let stats = { views: 0, likes: 0 };
 let cachedData = null;
 
-// GitHub Senkronizasyonu
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
@@ -67,68 +66,58 @@ app.get("/", async (req, res) => {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.85); --text-color: #fff; --btn-inactive: #888; }
+        [data-theme="light"] { --bg-color: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9); --text-color: #1a1a1a; --btn-inactive: #555; }
         
-        :root { 
-            --profile-color: #7289da; 
-            --bg-color: #050505; 
-            --card-bg: rgba(15, 15, 15, 0.85); 
-            --text-color: #fff; 
-        }
-        [data-theme="light"] { 
-            --bg-color: #f0f2f5; 
-            --card-bg: rgba(255, 255, 255, 0.9); 
-            --text-color: #1a1a1a; 
-        }
-
-        /* AKICI GEÇİŞLER */
-        * { transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease; }
-
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; }
-        
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition: background 0.5s ease; }
         .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; }
         .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; background:var(--profile-color); animation:move 15s infinite alternate linear; }
         @keyframes move { 0% { transform: translate(-10%,-10%); } 100% { transform: translate(100%,100%); } }
-
-        .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; }
         
+        .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; position:relative; z-index:10; }
         .avatar-wrap { position:relative; width:105px; height:105px; margin:-55px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card-bg); }
         .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; pointer-events:none; }
-        
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
         
-        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; }
+        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; transition: transform 0.2s; }
         .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
         .s-bar-fill { height:100%; background:var(--profile-color); transition: width 1s linear; }
-
-        /* BUTON ANİMASYONLARI */
-        .like-btn, .theme-toggle { 
-            position:fixed; top:25px; width:54px; height:54px; background:var(--card-bg); 
-            border-radius:50%; display:flex; align-items:center; justify-content:center; 
-            cursor:pointer; border:1px solid rgba(255,255,255,0.1); z-index:100;
-        }
-
-        .like-btn { left:25px; color:#888; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease; }
-        .like-btn.liked { 
-            color:#ff4757; transform:scale(1.2); 
-            box-shadow: 0 0 20px rgba(255,71,87,0.4); 
-            border-color: rgba(255,71,87,0.3);
-        }
-
-        .theme-toggle { 
-            right:25px; 
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .theme-toggle i { font-size: 22px; color:var(--profile-color); }
-
+        
         .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; text-align:center; font-size:10px; }
         .social-link:hover { opacity:1; transform:translateY(-3px); color:var(--profile-color); }
+
+        /* Buton Stilleri */
+        .like-btn, .theme-toggle { 
+            position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; 
+            display:flex; align-items:center; justify-content:center; cursor:pointer; 
+            border:1px solid rgba(255,255,255,0.1); color: var(--btn-inactive);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+        }
+        .like-btn { left:25px; }
+        .theme-toggle { right:25px; }
+        .like-btn:hover, .theme-toggle:hover { transform: scale(1.1); }
+
+        /* Like Animasyonu */
+        .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); box-shadow: 0 0 15px rgba(255, 71, 87, 0.2); }
+        .like-btn.liked i { animation: heartBeat 0.6s linear; }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.4); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Tema Animasyonu */
+        .theme-toggle i { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .theme-toggle.rotating i { transform: rotate(360deg); }
     </style>
 </head>
 <body>
     <div class="bg-wrap" id="bg-canvas"></div>
-    <div class="like-btn" id="like-btn"><i class="fa-solid fa-heart fa-lg"></i></div>
+    <div class="like-btn" id="like-btn"><i class="fa-solid fa-heart"></i></div>
     <div class="theme-toggle" id="theme-btn"><i class="fa-solid fa-moon"></i></div>
 
     <div class="main-card">
@@ -149,7 +138,7 @@ app.get("/", async (req, res) => {
                 <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span>Bot Panel</span></a>
             </div>
 
-            <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6; font-weight:bold;">
+            <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6;">
                 <div><i class="fa-solid fa-eye"></i> ${stats.views}</div>
                 <div><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
                 <div><i class="fa-solid fa-location-dot"></i> Türkiye</div>
@@ -160,8 +149,6 @@ app.get("/", async (req, res) => {
     <script>
         const socket = io();
         let currentPresence = null;
-        const themeBtn = document.getElementById("theme-btn");
-        const html = document.documentElement;
 
         function formatTime(ms) {
             const s = Math.floor(ms / 1000);
@@ -171,7 +158,6 @@ app.get("/", async (req, res) => {
             return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
         }
 
-        // Sayaçlar (Dekoru bozmadan sadece metin günceller)
         setInterval(() => {
             if (!currentPresence) return;
             if (currentPresence.spotify) {
@@ -185,7 +171,7 @@ app.get("/", async (req, res) => {
             }
             const game = currentPresence.activities.find(a => a.type === 0);
             const gameTime = document.getElementById('game-duration');
-            if (game?.timestamps && gameTime) {
+            if (game && game.timestamps && gameTime) {
                 gameTime.innerText = formatTime(Date.now() - game.timestamps.start) + " süredir";
             }
         }, 1000);
@@ -194,24 +180,23 @@ app.get("/", async (req, res) => {
             const u = data.discord_user;
             const decorEl = document.getElementById("decor");
             const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
-            
-            if (newDecorUrl && decorEl.src !== newDecorUrl) {
-                decorEl.src = newDecorUrl;
-                decorEl.style.display = "block";
-            } else if (!newDecorUrl) {
-                decorEl.style.display = "none";
-            }
+            if (newDecorUrl) {
+                if (decorEl.src !== newDecorUrl) { decorEl.src = newDecorUrl; decorEl.style.display = "block"; }
+            } else { decorEl.style.display = "none"; decorEl.src = ""; }
 
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            const avatarImg = document.getElementById("avatar");
+            const newAvatar = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
             document.getElementById("status").className = "status " + data.discord_status;
 
-            if (JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
-                JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify)) {
-                
+            const activitiesChanged = JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
+                                     JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify);
+
+            if (activitiesChanged) {
                 let actsHTML = "";
                 if(data.spotify) {
                     actsHTML += \`
-                    <div class="card">
+                    <div class="card" id="spotify-card">
                         <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
@@ -226,8 +211,10 @@ app.get("/", async (req, res) => {
                 if(game) {
                     const isPS = game.application_id === "710548135111163904" || (game.assets?.large_text?.includes("PlayStation"));
                     actsHTML += \`
-                    <div class="card">
-                        <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;"><i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i></div>
+                    <div class="card" id="game-card">
+                        <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                            <i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i>
+                        </div>
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px;">\${game.name}</div>
                             <div style="font-size:11px; opacity:0.5;">\${game.details || 'Oynuyor'}</div>
@@ -240,7 +227,9 @@ app.get("/", async (req, res) => {
             currentPresence = data;
         });
 
-        // BEĞENİ BUTONU ANİMASYONU
+        // --- ANIMASYONLU BUTON FONKSIYONLARI ---
+
+        // Like Butonu
         document.getElementById("like-btn").onclick = function() {
             if(this.classList.contains('liked')) return;
             fetch('/api/like').then(r => r.json()).then(data => {
@@ -248,23 +237,32 @@ app.get("/", async (req, res) => {
                 this.classList.add('liked');
             });
         };
-
-        // TEMA DEĞİŞTİRME (360 DERECE DÖNÜŞLÜ)
-        themeBtn.addEventListener("click", () => {
+        
+        // Tema Butonu (Aydan Güneşe Geçiş)
+        document.getElementById("theme-btn").onclick = function() {
+            const html = document.documentElement;
             const isDark = html.getAttribute("data-theme") === "dark";
-            themeBtn.style.transform = "rotate(360deg)";
+            const icon = this.querySelector("i");
             
+            // Animasyon Sınıfını Ekle
+            this.classList.add('rotating');
+            
+            // Dönüşün ortasında ikonu değiştir
             setTimeout(() => {
-                html.setAttribute("data-theme", isDark ? "light" : "dark");
-                themeBtn.querySelector("i").className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-            }, 300);
+                if (isDark) {
+                    html.setAttribute("data-theme", "light");
+                    icon.className = "fa-solid fa-sun";
+                } else {
+                    html.setAttribute("data-theme", "dark");
+                    icon.className = "fa-solid fa-moon";
+                }
+            }, 250);
 
+            // Animasyon bitince sınıfı temizle
             setTimeout(() => {
-                themeBtn.style.transition = "none";
-                themeBtn.style.transform = "rotate(0deg)";
-                setTimeout(() => themeBtn.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)", 50);
-            }, 600);
-        });
+                this.classList.remove('rotating');
+            }, 500);
+        };
 
         // Arka Plan Orbları
         const bg = document.getElementById('bg-canvas');
