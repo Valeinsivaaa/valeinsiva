@@ -12,21 +12,20 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://i.ibb.co/L5k6t0r/1000055681.jpg"; //
+const BANNER_URL = "https://i.ibb.co/L5k6t0r/1000055681.jpg";
 const BOT_PANEL_LINK = "https://valeinsiva.com.tr"; 
 // ---------------
 
 let stats = { views: 0, likes: 0 };
+let cachedData = null;
 
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
         const headers = { Authorization: `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
         const getRes = await axios.get(url, { headers }).catch(() => null);
-        
         if (!isUpdate && getRes) {
-            const content = Buffer.from(getRes.data.content, 'base64').toString();
-            stats = JSON.parse(content);
+            stats = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
             return;
         }
         if (isUpdate) {
@@ -34,17 +33,16 @@ async function syncWithGithub(isUpdate = false) {
             const newContent = Buffer.from(JSON.stringify(stats, null, 2)).toString('base64');
             await axios.put(url, { message: "📊 İstatistik Güncelleme", content: newContent, sha: sha }, { headers });
         }
-    } catch (e) { console.error("GitHub Sync Error:", e.message); }
+    } catch (e) { console.error("GitHub Sync Error"); }
 }
 
-let cachedData = null;
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         cachedData = r.data.data;
         io.emit("presence", cachedData);
     } catch (e) {}
-}, 1000);
+}, 2000); // Lanyard verisini 2 saniyede bir çekmek yeterli (takılmayı önler)
 
 syncWithGithub();
 
@@ -57,7 +55,6 @@ app.get("/api/like", async (req, res) => {
 app.get("/", async (req, res) => {
     stats.views++;
     syncWithGithub(true);
-
     res.send(`
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -71,29 +68,23 @@ app.get("/", async (req, res) => {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.85); --text-color: #fff; }
         [data-theme="light"] { --bg-color: #ffffff; --card-bg: rgba(240, 240, 240, 0.9); --text-color: #1a1a1a; }
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition:0.5s; }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; }
         .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; }
         .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; background:var(--profile-color); animation:move 15s infinite alternate linear; }
         @keyframes move { 0% { transform: translate(-10%,-10%); } 100% { transform: translate(100%,100%); } }
-        .like-btn, .theme-toggle { position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100; border:1px solid rgba(255,255,255,0.1); transition:0.3s; }
-        .like-btn { left:25px; color:#888; } .like-btn.liked { color:#ff4757; transform:scale(1.1); box-shadow: 0 0 15px rgba(255,71,87,0.4); }
-        .theme-toggle { right:25px; color:var(--profile-color); }
-        .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; position:relative; }
-        .banner-box { height:160px; } .banner-img { width:100%; height:100%; object-fit:cover; }
-        .profile-content { padding: 0 25px 25px; text-align:center; }
+        .main-card { width:380px; background:var(--card-bg); backdrop-filter:blur(30px); border-radius:40px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 30px 60px rgba(0,0,0,0.5); overflow:hidden; }
         .avatar-wrap { position:relative; width:105px; height:105px; margin:-55px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card-bg); }
-        .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; }
+        .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; pointer-events:none; }
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
-        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; text-align:left; border:1px solid rgba(255,255,255,0.05); }
-        .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; width:100%; overflow:hidden; }
-        .s-bar-fill { height:100%; background:var(--profile-color); }
-        .s-time { display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.4); margin-top:6px; font-weight:600; }
-        .footer { margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6; font-weight:bold; }
-        .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; display:flex; flex-direction:column; align-items:center; gap:5px; }
-        .social-link:hover { opacity:1; color:var(--profile-color); transform:translateY(-3px); }
-        .social-link span { font-size:10px; font-weight:bold; }
+        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; }
+        .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
+        .s-bar-fill { height:100%; background:var(--profile-color); transition: width 1s linear; }
+        .social-link { text-decoration:none; color:var(--text-color); opacity:0.7; transition:0.3s; text-align:center; font-size:10px; }
+        .social-link:hover { opacity:1; transform:translateY(-3px); color:var(--profile-color); }
+        .like-btn, .theme-toggle { position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid rgba(255,255,255,0.1); }
+        .like-btn { left:25px; } .like-btn.liked { color:#ff4757; } .theme-toggle { right:25px; }
     </style>
 </head>
 <body>
@@ -102,40 +93,34 @@ app.get("/", async (req, res) => {
     <div class="theme-toggle" id="theme-btn"><i class="fa-solid fa-moon"></i></div>
 
     <div class="main-card">
-        <div class="banner-box"><img src="${BANNER_URL}" class="banner-img"></div>
-        <div class="profile-content">
+        <div style="height:160px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
+        <div class="profile-content" style="padding:0 25px 25px; text-align:center;">
             <div class="avatar-wrap">
                 <img id="avatar" class="avatar">
                 <img id="decor" class="decor-img" style="display:none;">
                 <div id="status" class="status"></div>
             </div>
-            <h2 style="margin:0; letter-spacing:-1px; font-weight:800;">Valeinsiva</h2>
+            <h2 style="margin:0; font-weight:800;">Valeinsiva</h2>
             <div style="font-size:13px; opacity:0.5; margin-bottom:18px;">@valeinsiva.</div>
             
             <div id="act-stack"></div>
 
             <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link">
-                    <i class="fa-brands fa-discord fa-2xl"></i>
-                    <span>Profili Görüntüle</span>
-                </a>
-                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link">
-                    <i class="fa-solid fa-code fa-2xl"></i>
-                    <span>Bot Panel</span>
-                </a>
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link"><i class="fa-brands fa-discord fa-2xl"></i><br><span>Profili Görüntüle</span></a>
+                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span>Bot Panel</span></a>
             </div>
 
-            <div class="footer">
-                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-eye"></i> <span>${stats.views}</span></div>
-                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
-                <div style="display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-location-dot"></i> Türkiye</div>
+            <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6;">
+                <div><i class="fa-solid fa-eye"></i> ${stats.views}</div>
+                <div><i class="fa-solid fa-heart"></i> <span id="like-count">${stats.likes}</span></div>
+                <div><i class="fa-solid fa-location-dot"></i> Türkiye</div>
             </div>
         </div>
     </div>
 
     <script>
         const socket = io();
-        const html = document.documentElement;
+        let lastPresence = null;
 
         function formatTime(ms) {
             const s = Math.floor(ms / 1000);
@@ -145,6 +130,87 @@ app.get("/", async (req, res) => {
             return (h > 0 ? h + ":" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
         }
 
+        // --- BAĞIMSIZ ZAMANLAYICI (Saniyede bir sadece rakamları günceller) ---
+        setInterval(() => {
+            if (!lastPresence) return;
+            
+            // Spotify Süresi Güncelle
+            if (lastPresence.spotify) {
+                const total = lastPresence.spotify.timestamps.end - lastPresence.spotify.timestamps.start;
+                const elapsed = Date.now() - lastPresence.spotify.timestamps.start;
+                const prog = Math.min((elapsed / total) * 100, 100);
+                const bar = document.getElementById('spotify-bar');
+                const timeStr = document.getElementById('spotify-time');
+                if (bar) bar.style.width = prog + "%";
+                if (timeStr) timeStr.innerText = formatTime(elapsed) + " / " + formatTime(total);
+            }
+
+            // Oyun Süresi Güncelle
+            const game = lastPresence.activities.find(a => a.type === 0);
+            const gameTime = document.getElementById('game-duration');
+            if (game && game.timestamps && gameTime) {
+                gameTime.innerText = formatTime(Date.now() - game.timestamps.start) + " süredir";
+            }
+        }, 1000);
+
+        socket.on("presence", data => {
+            // Sadece veri değiştiğinde dekoru ve ana yapıyı güncelle (Takılmayı önleyen ana mantık)
+            const u = data.discord_user;
+            
+            // Dekor ve Avatarı sadece URL değişirse güncelle
+            const decorEl = document.getElementById("decor");
+            const newDecor = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
+            
+            if (newDecor && decorEl.src !== newDecor) {
+                decorEl.src = newDecor;
+                decorEl.style.display = "block";
+            } else if (!newDecor) {
+                decorEl.style.display = "none";
+            }
+
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            document.getElementById("status").className = "status " + data.discord_status;
+
+            // Aktivite Listesini Sadece Aktivite Değişirse Yenile
+            if (JSON.stringify(data.activities) !== JSON.stringify(lastPresence?.activities) || 
+                JSON.stringify(data.spotify) !== JSON.stringify(lastPresence?.spotify)) {
+                
+                let acts = "";
+                if(data.spotify) {
+                    acts += \`
+                    <div class="card">
+                        <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
+                        <div style="flex:1; text-align:left;">
+                            <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
+                            <div style="font-size:11px; opacity:0.5;">\${data.spotify.artist}</div>
+                            <div class="s-bar-container"><div id="spotify-bar" class="s-bar-fill"></div></div>
+                            <div id="spotify-time" class="s-time" style="font-size:10px; margin-top:5px; opacity:0.4;"></div>
+                        </div>
+                        <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px;"></i>
+                    </div>\`;
+                }
+
+                const game = data.activities.find(a => a.type === 0);
+                if(game) {
+                    const isPS = game.application_id === "710548135111163904" || (game.assets?.large_text?.includes("PlayStation"));
+                    acts += \`
+                    <div class="card">
+                        <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                            <i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i>
+                        </div>
+                        <div style="flex:1; text-align:left;">
+                            <div style="font-weight:800; font-size:13px;">\${game.name}</div>
+                            <div style="font-size:11px; opacity:0.5;">\${game.details || 'Oynuyor'}</div>
+                            <div id="game-duration" style="font-size:10px; margin-top:5px; font-weight:bold; color:var(--profile-color)"></div>
+                        </div>
+                    </div>\`;
+                }
+                document.getElementById("act-stack").innerHTML = acts || '<div style="font-size:12px; opacity:0.3; padding:15px;">Aktivite yok...</div>';
+            }
+            lastPresence = data;
+        });
+
+        // Beğeni Butonu
         document.getElementById("like-btn").onclick = function() {
             if(this.classList.contains('liked')) return;
             fetch('/api/like').then(r => r.json()).then(data => {
@@ -152,70 +218,6 @@ app.get("/", async (req, res) => {
                 this.classList.add('liked');
             });
         };
-
-        document.getElementById("theme-btn").onclick = function() {
-            const isDark = html.getAttribute("data-theme") === "dark";
-            html.setAttribute("data-theme", isDark ? "light" : "dark");
-            this.querySelector("i").className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-        };
-
-        socket.on("presence", data => {
-            const u = data.discord_user;
-            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
-            document.getElementById("status").className = "status " + data.discord_status;
-            
-            const decor = document.getElementById("decor");
-            if(u.avatar_decoration_data) {
-                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
-                decor.style.display = "block";
-            } else { decor.style.display = "none"; }
-
-            let acts = "";
-            if(data.spotify) {
-                const total = data.spotify.timestamps.end - data.spotify.timestamps.start;
-                const elapsed = Date.now() - data.spotify.timestamps.start;
-                const prog = Math.min((elapsed / total) * 100, 100);
-                acts += \`
-                <div class="card">
-                    <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
-                    <div style="flex:1">
-                        <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
-                        <div style="font-size:11px; opacity:0.5; font-weight:600;">\${data.spotify.artist}</div>
-                        <div class="s-bar-container"><div class="s-bar-fill" style="width:\${prog}%"></div></div>
-                        <div class="s-time"><span>\${formatTime(elapsed)}</span><span>\${formatTime(total)}</span></div>
-                    </div>
-                    <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px;"></i>
-                </div>\`;
-            }
-
-            const game = data.activities.find(a => a.type === 0);
-            if(game) {
-                const isPS = game.application_id === "710548135111163904" || (game.assets && game.assets.large_text && game.assets.large_text.includes("PlayStation"));
-                const start = game.timestamps ? game.timestamps.start : null;
-                const dur = start ? formatTime(Date.now() - start) : "Oynuyor";
-                acts += \`
-                <div class="card">
-                    <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;">
-                        <i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i>
-                    </div>
-                    <div style="flex:1">
-                        <div style="font-weight:800; font-size:13px;">\${game.name}</div>
-                        <div style="font-size:11px; opacity:0.5;">\${game.details || 'Oynuyor'}</div>
-                        <div style="font-size:10px; margin-top:5px; font-weight:bold; color:var(--profile-color)">\${dur} süredir</div>
-                    </div>
-                </div>\`;
-            }
-            document.getElementById("act-stack").innerHTML = acts || '<div style="font-size:12px; opacity:0.3; font-style:italic; padding:15px;">Aktivite yok...</div>';
-        });
-
-        // Arka plan animasyonu
-        const bg = document.getElementById('bg-canvas');
-        for(let i=0; i<6; i++){
-            let o = document.createElement('div'); o.className='orb';
-            o.style.width='400px'; o.style.height='400px';
-            o.style.left=Math.random()*100+'%'; o.style.top=Math.random()*100+'%';
-            o.style.animationDelay=(i*2)+'s'; bg.appendChild(o);
-        }
     </script>
 </body>
 </html>
