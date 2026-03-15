@@ -28,12 +28,10 @@ async function syncWithGithub(isUpdate = false) {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
         const headers = { Authorization: `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
         const getRes = await axios.get(url, { headers }).catch(() => null);
-        
         if (!isUpdate && getRes) {
             stats = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
             return;
         }
-        
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(stats, null, 2)).toString('base64');
@@ -42,7 +40,6 @@ async function syncWithGithub(isUpdate = false) {
     } catch (e) { console.error("GitHub Sync Error"); }
 }
 
-// Lanyard Verisi Çekme
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
@@ -53,14 +50,13 @@ setInterval(async () => {
 
 syncWithGithub();
 
-// API: Beğeni Artırma
+// API Rotaları
 app.get("/api/like", async (req, res) => {
     stats.likes++;
     res.json({ success: true, likes: stats.likes });
     await syncWithGithub(true); 
 });
 
-// API: Görüntülenme Artırma (Sadece gerçek kullanıcı girdiğinde tetiklenir)
 app.get("/api/view", async (req, res) => {
     stats.views++;
     await syncWithGithub(true);
@@ -68,7 +64,6 @@ app.get("/api/view", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-    // Backend'de doğrudan artış yapmıyoruz, Frontend'den tetikleyeceğiz.
     res.send(`
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -83,7 +78,7 @@ app.get("/", async (req, res) => {
         :root { --profile-color: #7289da; --bg-color: #050505; --card-bg: rgba(15, 15, 15, 0.85); --text-color: #fff; --btn-inactive: #888; }
         [data-theme="light"] { --bg-color: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9); --text-color: #1a1a1a; --btn-inactive: #555; }
         
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition: background 0.5s ease; }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; transition: background 0.8s ease; }
         .bg-wrap { position:fixed; inset:0; z-index:-1; overflow:hidden; }
         .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; background:var(--profile-color); animation:move 15s infinite alternate linear; }
         @keyframes move { 0% { transform: translate(-10%,-10%); } 100% { transform: translate(100%,100%); } }
@@ -95,7 +90,7 @@ app.get("/", async (req, res) => {
         .status { position:absolute; bottom:5px; right:5px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card-bg); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
         
-        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; transition: transform 0.2s; }
+        .card { background:rgba(120,120,120,0.1); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; transition: 0.3s; }
         .s-bar-container { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
         .s-bar-fill { height:100%; background:var(--profile-color); transition: width 1s linear; }
         
@@ -106,12 +101,18 @@ app.get("/", async (req, res) => {
             position:fixed; top:25px; width:52px; height:52px; background:var(--card-bg); border-radius:50%; 
             display:flex; align-items:center; justify-content:center; cursor:pointer; 
             border:1px solid rgba(255,255,255,0.1); color: var(--btn-inactive);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
         }
-        .like-btn { left:25px; }
-        .theme-toggle { right:25px; }
+        .like-btn { left:25px; } .theme-toggle { right:25px; }
         .like-btn:hover, .theme-toggle:hover { transform: scale(1.1); }
-        .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); box-shadow: 0 0 15px rgba(255, 71, 87, 0.2); }
+        .like-btn.liked { color:#ff4757 !important; border-color: rgba(255, 71, 87, 0.3); }
+
+        .theme-toggle.rotating i { animation: rotateAndScale 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes rotateAndScale {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(0.5) rotate(180deg); opacity: 0.5; }
+            100% { transform: scale(1) rotate(360deg); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -133,8 +134,8 @@ app.get("/", async (req, res) => {
             <div id="act-stack"></div>
 
             <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
-                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link"><i class="fa-brands fa-discord fa-2xl"></i><br><span>Profili Görüntüle</span></a>
-                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span>Bot Panel</span></a>
+                <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-link"><i class="fa-brands fa-discord fa-2xl"></i><br><span>Profilim</span></a>
+                <a href="${BOT_PANEL_LINK}" target="_blank" class="social-link"><i class="fa-solid fa-code fa-2xl"></i><br><span>Bot Panelim</span></a>
             </div>
 
             <div style="margin-top:20px; font-size:11px; display:flex; justify-content:center; gap:20px; opacity:0.6;">
@@ -149,15 +150,13 @@ app.get("/", async (req, res) => {
         const socket = io();
         let currentPresence = null;
 
-        // --- GÖRÜNTÜLENME SAYACI (FIX) ---
+        // Görüntülenme Sayacı (Sadece gerçek girişlerde)
         window.addEventListener('load', () => {
             if (!sessionStorage.getItem('viewed')) {
-                fetch('/api/view')
-                    .then(r => r.json())
-                    .then(data => {
-                        sessionStorage.setItem('viewed', 'true');
-                        document.getElementById('view-count').innerText = data.views;
-                    });
+                fetch('/api/view').then(r => r.json()).then(data => {
+                    sessionStorage.setItem('viewed', 'true');
+                    document.getElementById('view-count').innerText = data.views;
+                });
             }
         });
 
@@ -180,58 +179,46 @@ app.get("/", async (req, res) => {
                 if (bar) bar.style.width = prog + "%";
                 if (timeStr) timeStr.innerText = formatTime(elapsed) + " / " + formatTime(total);
             }
-            const game = currentPresence.activities.find(a => a.type === 0);
-            const gameTime = document.getElementById('game-duration');
-            if (game && game.timestamps && gameTime) {
-                gameTime.innerText = formatTime(Date.now() - game.timestamps.start) + " süredir";
-            }
         }, 1000);
 
         socket.on("presence", data => {
             const u = data.discord_user;
             const decorEl = document.getElementById("decor");
             const newDecorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
-            if (newDecorUrl) {
-                if (decorEl.src !== newDecorUrl) { decorEl.src = newDecorUrl; decorEl.style.display = "block"; }
-            } else { decorEl.style.display = "none"; decorEl.src = ""; }
+            if (newDecorUrl) { decorEl.src = newDecorUrl; decorEl.style.display = "block"; } else { decorEl.style.display = "none"; }
 
-            const avatarImg = document.getElementById("avatar");
-            const newAvatar = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
-            if(avatarImg.src !== newAvatar) avatarImg.src = newAvatar;
+            document.getElementById("avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             document.getElementById("status").className = "status " + data.discord_status;
 
-            if (JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || 
-                JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify)) {
+            if (JSON.stringify(data.activities) !== JSON.stringify(currentPresence?.activities) || JSON.stringify(data.spotify) !== JSON.stringify(currentPresence?.spotify)) {
                 let actsHTML = "";
                 if(data.spotify) {
                     actsHTML += \`
-                    <div class="card" id="spotify-card">
+                    <div class="card">
                         <img src="\${data.spotify.album_art_url}" style="width:55px; border-radius:12px;">
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px; width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">\${data.spotify.song}</div>
                             <div style="font-size:11px; opacity:0.5;">\${data.spotify.artist}</div>
                             <div class="s-bar-container"><div id="spotify-bar" class="s-bar-fill"></div></div>
-                            <div id="spotify-time" style="font-size:10px; margin-top:5px; opacity:0.4; font-weight:600;"></div>
+                            <div id="spotify-time" style="font-size:10px; margin-top:5px; opacity:0.4;"></div>
                         </div>
                         <i class="fa-brands fa-spotify" style="color:#1db954; font-size:24px;"></i>
                     </div>\`;
                 }
                 const game = data.activities.find(a => a.type === 0);
                 if(game) {
-                    const isPS = game.application_id === "710548135111163904" || (game.assets?.large_text?.includes("PlayStation"));
                     actsHTML += \`
-                    <div class="card" id="game-card">
-                        <div style="width:55px; height:55px; background:#003087; border-radius:12px; display:flex; align-items:center; justify-content:center;">
-                            <i class="\${isPS ? 'fa-brands fa-playstation' : 'fa-solid fa-gamepad'}" style="font-size:28px; color:white;"></i>
+                    <div class="card">
+                        <div style="width:55px; height:55px; background:var(--profile-color); border-radius:12px; display:flex; align-items:center; justify-content:center; opacity:0.8;">
+                            <i class="fa-solid fa-gamepad" style="font-size:28px; color:white;"></i>
                         </div>
                         <div style="flex:1; text-align:left;">
                             <div style="font-weight:800; font-size:13px;">\${game.name}</div>
                             <div style="font-size:11px; opacity:0.5;">\${game.details || 'Oynuyor'}</div>
-                            <div id="game-duration" style="font-size:10px; margin-top:5px; font-weight:bold; color:var(--profile-color)"></div>
                         </div>
                     </div>\`;
                 }
-                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:12px; opacity:0.3; padding:15px;">Aktivite yok...</div>';
+                document.getElementById("act-stack").innerHTML = actsHTML || '<div style="font-size:12px; opacity:0.3; padding:15px;">Şu an sessizim...</div>';
             }
             currentPresence = data;
         });
@@ -253,12 +240,14 @@ app.get("/", async (req, res) => {
                 if (isDark) {
                     html.setAttribute("data-theme", "light");
                     icon.className = "fa-solid fa-sun";
+                    icon.style.color = "#f39c12";
                 } else {
                     html.setAttribute("data-theme", "dark");
                     icon.className = "fa-solid fa-moon";
+                    icon.style.color = "";
                 }
-            }, 250);
-            setTimeout(() => this.classList.remove('rotating'), 500);
+            }, 300);
+            setTimeout(() => this.classList.remove('rotating'), 600);
         };
 
         const bg = document.getElementById('bg-canvas');
@@ -274,6 +263,4 @@ app.get("/", async (req, res) => {
     `);
 });
 
-server.listen(process.env.PORT || 3000, () => {
-    console.log("Server running...");
-});
+server.listen(process.env.PORT || 3000);
