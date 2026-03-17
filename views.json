@@ -15,5 +15,11 @@
   "lastGame": {
     "name": "Henüz oyun oynanmadı"
   },
-  "messages": []
+  "messages": [
+    {
+      "user": "denmed",
+      "text": "selam",
+      "date": "17:26:38"
+    }
+  ]
 }
