@@ -1,15 +1,20 @@
 {
-  "views": 0,
+  "views": 1,
   "likes": 0,
   "messages": [],
   "lastGame": {
     "name": "Henüz oyun oynanmadı",
-    "timestamps": { "start": 0 }
+    "timestamps": {
+      "start": 0
+    }
   },
   "lastSpotify": {
     "song": "Henüz müzik dinlenmedi",
     "artist": "Valeinsiva",
     "album_art_url": "https://cdn.discordapp.com/attachments/938931634265280543/1218987456742527016/spotify-placeholder.png",
-    "timestamps": { "start": 0, "end": 0 }
+    "timestamps": {
+      "start": 0,
+      "end": 0
+    }
   }
 }
