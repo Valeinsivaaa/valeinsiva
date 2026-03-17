@@ -13,7 +13,7 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/1476308554905555057/ce03e0dbed5f30cd6d5efb6d3c9aa441.png"; // İstediğin link
+const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/1476308554905555057/ce03e0dbed5f30cd6d5efb6d3c9aa441.png";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
@@ -31,7 +31,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Elite Sync", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Aesthetic Update", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -71,51 +71,58 @@ app.get("/", (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valeinsiva | Developer</title>
+    <title>Valeinsiva | Premium Developer</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        :root { --accent: #7289da; --bg: #050505; --card: rgba(15, 15, 15, 0.9); --text: #fff; }
-        [data-theme="light"] { --bg: #f2f4f7; --card: rgba(255, 255, 255, 0.98); --text: #1a1a1a; }
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: 0.5s; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; }
+        :root { --accent: #7289da; --bg: #050505; --card: rgba(18, 18, 18, 0.75); --text: #fff; }
+        [data-theme="light"] { --bg: #f5f7fa; --card: rgba(255, 255, 255, 0.85); --text: #1a1a1a; }
         
-        /* Kalp Animasyonu */
-        .nav-btn { position:fixed; top:25px; width:52px; height:52px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: #777; }
-        .nav-btn.liked { color: #ff4757 !important; border-color: #ff4757; transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); animation: heartBeat 1.2s infinite; }
-        @keyframes heartBeat { 0% { transform: scale(1.1); } 50% { transform: scale(1.2); } 100% { transform: scale(1.1); } }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: 0.5s; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; position: relative; }
 
-        .wrapper { width:100%; max-width:400px; padding:80px 15px 40px; box-sizing:border-box; }
-        .main-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.08); overflow:hidden; position:relative; backdrop-filter: blur(25px); }
+        /* Hareketli Arka Plan */
+        .bg-wrap { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; background: var(--accent); animation: float 25s infinite alternate ease-in-out; }
+        @keyframes float { 0% { transform: translate(-10%, -10%) scale(1); } 100% { transform: translate(50%, 40%) scale(1.2); } }
+
+        .wrapper { width:100%; max-width:400px; padding:80px 15px 40px; box-sizing:border-box; z-index: 10; }
+        
+        /* Glassmorphism Kartlar */
+        .glass-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); overflow: hidden; margin-bottom: 25px; }
         
         .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
         .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
         
-        /* Durum Renkleri */
         .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); transition: 0.3s; }
-        .online { background:#23a55a; box-shadow: 0 0 10px #23a55a; } 
-        .idle { background:#f0b232; box-shadow: 0 0 10px #f0b232; } 
-        .dnd { background:#f23f43; box-shadow: 0 0 10px #f23f43; } 
-        .offline { background:#80848e; }
+        .online { background:#23a55a; box-shadow: 0 0 15px #23a55a; } .idle { background:#f0b232; box-shadow: 0 0 15px #f0b232; } .dnd { background:#f23f43; box-shadow: 0 0 15px #f23f43; } .offline { background:#80848e; }
 
-        .card-item { background:rgba(120,120,120,0.05); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; text-align:left; border:1px solid rgba(255,255,255,0.02); }
-        .s-bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; position: relative; }
+        .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); }
+        .s-bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
         .s-bar-fill { height:100%; background:#1db954; width:0%; transition: none; }
-        .s-time-row { display: flex; justify-content: space-between; font-size: 9px; opacity: 0.4; margin-top: 4px; font-family: monospace; }
 
-        .in-style { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; transition: 0.3s; }
+        /* Mesaj Kutusu Canlandırma */
+        .msg-bubble { background: linear-gradient(135deg, rgba(114, 137, 218, 0.1), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; transition: 0.3s; }
+        .msg-bubble:hover { transform: scale(1.02); background: rgba(114, 137, 218, 0.15); }
+        .msg-time { font-size: 9px; opacity: 0.5; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
         .in-style:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
-        
-        #theme-icon { transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .nav-btn { position:fixed; top:25px; width:52px; height:52px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.4s; color: #777; backdrop-filter: blur(10px); }
+        .nav-btn.liked { color: #ff4757 !important; border-color: #ff4757; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
     </style>
 </head>
 <body>
+    <div class="bg-wrap" id="orb-container"></div>
+    
     <div class="nav-btn" id="btn-like" style="left:25px;"><i class="fa-solid fa-heart"></i></div>
     <div class="nav-btn" id="btn-theme" style="right:25px;"><i id="theme-icon" class="fa-solid fa-moon"></i></div>
 
     <div class="wrapper">
-        <div class="main-card">
+        <div class="glass-card">
             <div style="height:150px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
             <div style="padding:0 25px 25px; text-align:center;">
                 <div class="avatar-area">
@@ -123,32 +130,32 @@ app.get("/", (req, res) => {
                     <img id="u-decor" class="decor-img" style="display:none;">
                     <div id="u-status" class="status-badge offline"></div>
                 </div>
-                <h2 id="u-nick" style="margin:0; font-weight:800; font-size:25px; letter-spacing:-0.5px;">Valeinsiva</h2>
-                <div style="font-size:12px; opacity:0.4; margin-bottom:15px;">@valeinsiva</div>
+                <h2 id="u-nick" style="margin:0; font-weight:800; font-size:26px; letter-spacing:-1px;">Valeinsiva</h2>
+                <div style="font-size:12px; opacity:0.4; margin-bottom:20px;">@valeinsiva</div>
 
                 <div id="activity-stack"></div>
 
-                <div style="display:flex; justify-content:space-between; margin:20px 0; padding-top:15px; border-top:1px solid rgba(255,255,255,0.05);">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-discord fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Discord</span></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-instagram fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Instagram</span></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-solid fa-laptop-code fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Geliştirici</span></a>
+                <div style="display:flex; justify-content:space-between; margin:25px 0; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08);">
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-discord fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800;">Discord</span></a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-instagram fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800;">Instagram</span></a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-solid fa-terminal fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800;">Panel</span></a>
                 </div>
 
                 <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:900; opacity:0.3;">
                     <span><i class="fa-solid fa-eye"></i> <span id="view-txt">0</span></span>
                     <span><i class="fa-solid fa-heart"></i> <span id="like-txt">0</span></span>
-                    <span><i class="fa-solid fa-location-dot"></i> TÜRKİYE</span>
+                    <span><i class="fa-solid fa-location-dot"></i> TURKEY</span>
                 </div>
             </div>
         </div>
 
-        <div style="background:var(--card); border-radius:30px; padding:20px; margin-top:20px; width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,0.08);">
-            <h4 style="margin:0 0 15px 0; font-size:11px; opacity:0.4; text-transform:uppercase;">Gelen Kutusu</h4>
+        <div class="glass-card" style="padding:25px;">
+            <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:1.5px;">Gelen Kutusu</h4>
             <div id="msg-feed"></div>
-            <div id="msg-form-area" style="margin-top:10px;">
-                <input id="in-user" class="in-style" maxlength="15" placeholder="Sizi tanıyabilmek adına kullanıcı adınız">
-                <textarea id="in-text" class="in-style" maxlength="80" style="height:65px; resize:none;" placeholder="Mesajınızı yazın..."></textarea>
-                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-weight:800; transition:0.3s;">GÖNDER</button>
+            <div id="msg-form-area" style="margin-top:15px;">
+                <input id="in-user" class="in-style" maxlength="15" placeholder="Kullanıcı adınız">
+                <textarea id="in-text" class="in-style" maxlength="80" style="height:70px; resize:none;" placeholder="Mesajınızı buraya bırakın..."></textarea>
+                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:15px; border-radius:18px; cursor:pointer; font-weight:800; transition:0.3s; box-shadow: 0 10px 20px rgba(114, 137, 218, 0.2);">GÖNDER</button>
             </div>
         </div>
     </div>
@@ -156,6 +163,17 @@ app.get("/", (req, res) => {
     <script>
         const socket = io();
         let gActive = false, gStart = null, sActive = false, sRef = null;
+
+        // Dinamik Zaman Hesaplayıcı (1 dk önce, 5 sa önce vb.)
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'şimdi';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return minutes + ' dk önce';
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return hours + ' sa önce';
+            return Math.floor(hours / 24) + ' gün önce';
+        }
 
         function fmt(ms) {
             if(!ms || ms < 0) return "00:00";
@@ -190,7 +208,7 @@ app.get("/", (req, res) => {
                     <div style="flex:1;">
                         <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'ŞU AN OYUNDA' : 'SON OYNANAN'}</div>
                         <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
-                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${gActive ? 'Yükleniyor...' : 'Çevrimdışı'}</div>
+                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${gActive ? '00:00' : 'Çevrimdışı'}</div>
                     </div>
                 </div>\`;
             }
@@ -198,19 +216,17 @@ app.get("/", (req, res) => {
             const spot = data.spotify || data.lastSpotify;
             if(spot) {
                 sActive = !!data.spotify && isOnline;
-                // Sadece şarkı değişirse referansı güncelle ki bar atlamasın
                 if(!sRef || sRef.track_id !== spot.track_id) sRef = spot;
-                
                 html += \`
                 <div class="card-item">
-                    <img src="\${spot.album_art_url}" style="width:48px; height:48px; border-radius:12px;">
+                    <img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
                     <div style="flex:1; overflow:hidden;">
                         <div style="font-size:9px; font-weight:900; color:#1db954;">\${sActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div>
                         <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
                         <div style="font-size:11px; opacity:0.5;">\${spot.artist}</div>
                         \${sActive ? \`
                             <div class="s-bar-bg"><div id="s-fill" class="s-bar-fill"></div></div>
-                            <div class="s-time-row"><span id="s-cur">00:00</span><span id="s-end">00:00</span></div>
+                            <div style="display:flex; justify-content:space-between; font-size:9px; opacity:0.4; margin-top:4px; font-family:monospace;"><span id="s-cur">00:00</span><span id="s-end">00:00</span></div>
                         \` : ''}
                     </div>
                 </div>\`;
@@ -226,7 +242,6 @@ app.get("/", (req, res) => {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
                 const elapsed = Date.now() - sRef.timestamps.start;
                 const pct = Math.min((elapsed / total) * 100, 100);
-                
                 const fill = document.getElementById("s-fill");
                 if(fill) {
                     fill.style.width = pct + "%";
@@ -234,6 +249,10 @@ app.get("/", (req, res) => {
                     document.getElementById("s-end").innerText = fmt(total);
                 }
             }
+            // Mesaj sürelerini her saniye güncelle
+            document.querySelectorAll('.msg-time').forEach(el => {
+                el.innerText = getTimeAgo(parseInt(el.dataset.time));
+            });
             requestAnimationFrame(engine);
         }
         engine();
@@ -244,7 +263,7 @@ app.get("/", (req, res) => {
             if(u && t) {
                 socket.emit('send_msg', {user:u, text:t});
                 sessionStorage.setItem('sent', '1');
-                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; opacity:0.5;'>Mesajınız için teşekkürler!</p>";
+                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; opacity:0.5; font-weight:800;'>İletildi!</p>";
             }
         }
 
@@ -253,11 +272,11 @@ app.get("/", (req, res) => {
         function renderMsgs(m) {
             document.getElementById("msg-feed").innerHTML = m.map(x => \`
                 <div class="msg-bubble">
-                    <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:2px;">
-                        <b style="color:var(--accent);">\${x.user}</b>
-                        <span style="opacity:0.3;">\${new Date(x.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
+                        <span class="msg-time" data-time="\${x.time}">\${getTimeAgo(x.time)}</span>
                     </div>
-                    <div style="font-size:12px; opacity:0.8;">\${x.text}</div>
+                    <div style="font-size:13px; opacity:0.9; line-height:1.4;">\${x.text}</div>
                 </div>\`).join('');
         }
 
@@ -289,7 +308,19 @@ app.get("/", (req, res) => {
             });
             if(!sessionStorage.getItem('v')) { fetch('/api/view'); sessionStorage.setItem('v','1'); }
             if(localStorage.getItem('L')) document.getElementById('btn-like').classList.add('liked');
-            if(sessionStorage.getItem('sent')) document.getElementById('msg-form-area').style.display="none";
+            
+            // Arka plan kürelerini oluştur
+            const container = document.getElementById('orb-container');
+            for(let i=0; i<3; i++) {
+                const o = document.createElement('div');
+                o.className = 'orb';
+                o.style.width = (200 + Math.random()*200) + 'px';
+                o.style.height = o.style.width;
+                o.style.left = (Math.random()*80) + '%';
+                o.style.top = (Math.random()*80) + '%';
+                o.style.animationDelay = (i*5) + 's';
+                container.appendChild(o);
+            }
         };
     </script>
 </body>
