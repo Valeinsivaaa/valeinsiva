@@ -24,12 +24,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "song": "Henüz müzik dinlenmedi",
-    "artist": "Valeinsiva",
-    "album_art_url": "https://cdn.discordapp.com/attachments/938931634265280543/1218987456742527016/spotify-placeholder.png",
+    "album": "Yağmur Yağar İnceden",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27340f9063ebe349c1f9dd1555f",
+    "artist": "Ebrulimuharrem",
+    "song": "Yağmur Yağar İnceden",
     "timestamps": {
-      "start": 0,
-      "end": 0
-    }
+      "end": 1773775724175,
+      "start": 1773775437685
+    },
+    "track_id": "6ef4YW5swinsVZmaPVyOxR"
   }
 }
