@@ -23,7 +23,12 @@ let cachedData = null;
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const headers = { Authorization: token ${GITHUB_TOKEN}, "Accept": "application/vnd.github.v3+json" };
+        // HATA BURADAYDI: Backtick (`) eklendi
+        const headers = { 
+            "Authorization": `token ${GITHUB_TOKEN}`, 
+            "Accept": "application/vnd.github.v3+json" 
+        };
+        
         const getRes = await axios.get(url, { headers }).catch(() => null);
         if (!isUpdate && getRes) {
             db = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
@@ -42,9 +47,13 @@ setInterval(async () => {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         cachedData = r.data.data;
         if(cachedData.spotify) db.lastSpotify = cachedData.spotify;
-        io.emit("presence", { ...cachedData, lastSpotify: db.lastSpotify });
+        // PS / Oyun verisini de yedekle
+        const game = cachedData.activities.find(a => a.type === 0);
+        if(game) db.lastGame = game;
+        
+        io.emit("presence", { ...cachedData, lastSpotify: db.lastSpotify, lastGame: db.lastGame });
     } catch (e) {}
-}, 5000); // Ana veri 5 saniyede bir çekilir ama arayüz bağımsız akar.
+}, 5000);
 
 syncWithGithub();
 
@@ -62,7 +71,7 @@ io.on("connection", (socket) => {
     socket.emit("init_messages", db.messages);
     socket.on("send_msg", async (data) => {
         if(!data.user || !data.text) return;
-        db.messages.unshift({ user: data.user, text: data.text, time: Date.now() });
+        db.messages.unshift({ user: data.user.substring(0,20), text: data.text.substring(0,100), time: Date.now() });
         db.messages = db.messages.slice(0, 5);
         io.emit("new_msg", db.messages);
         await syncWithGithub(true);
@@ -84,42 +93,41 @@ app.get("/", (req, res) => {
         :root { --accent: #7289da; --bg: #030303; --card: rgba(18, 18, 18, 0.98); --text: #fff; --dev: #00d2ff; }
         [data-theme="light"] { --bg: #f8f9fa; --card: #ffffff; --text: #1a1a1a; }
 
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); display:flex; flex-direction:column; align-items:center; min-height:100vh; transition: 0.5s; }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); display:flex; flex-direction:column; align-items:center; min-height:100vh; transition: 0.5s; overflow-x:hidden; }
+        .wrapper { width:100%; max-width:420px; padding:80px 15px 40px; }
         
-        /* Container & Card */
-        .wrapper { width:100%; max-width:420px; padding:100px 15px 40px; }
         .main-card { background:var(--card); border-radius:38px; border:1px solid rgba(255,255,255,0.05); overflow:hidden; position:relative; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-        
         .banner { height:160px; width:100%; background-size:cover; background-position:center; }
+        
         .avatar-area { position:relative; width:110px; height:110px; margin:-55px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card); z-index:1; position:relative; }
         .decoration { position:absolute; inset:-12%; width:124%; z-index:2; pointer-events:none; }
+
+        /* Spotify Engine - Bağımsız */
+        .spot-card { background:rgba(255,255,255,0.03); border-radius:24px; padding:18px; margin-bottom:12px; }
+        .spot-bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin:12px 0 6px; overflow:hidden; }
+        .spot-bar-fill { height:100%; background:#1db954; width:0%; border-radius:10px; transition: width 1s linear; }
+        .spot-time { display:flex; justify-content:space-between; font-size:10px; font-weight:800; opacity:0.5; font-family:'Courier New', monospace; }
+
+        /* Game Engine */
+        .game-card { background:rgba(114, 137, 218, 0.05); border-radius:24px; padding:18px; margin-bottom:12px; display:flex; align-items:center; gap:15px; }
         
-        /* Spotify Bağımsız Tasarım */
-        .spot-card { background:rgba(255,255,255,0.03); border-radius:24px; padding:18px; margin-bottom:15px; }
-        .spot-bar-bg { height:4px; background:rgba(255,255,255,0.1); border-radius:10px; margin:12px 0 6px; position:relative; }
-        .spot-bar-fill { height:100%; background:#1db954; width:0%; border-radius:10px; transition: width 0.1s linear; }
-        .spot-time { display:flex; justify-content:space-between; font-size:10px; font-weight:800; opacity:0.5; font-family:monospace; }
-
-        /* Mesajlar */
+        /* Mesaj Bölümü - Estetik */
         .msg-section { background:var(--card); border-radius:32px; padding:25px; margin-top:20px; width:100%; border:1px solid rgba(255,255,255,0.05); }
-        .msg-item { background:rgba(120,120,120,0.05); padding:12px 16px; border-radius:18px; margin-bottom:10px; animation: slideIn 0.4s ease; border-left: 3px solid var(--accent); }
-        @keyframes slideIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        .msg-item { background:rgba(255,255,255,0.02); padding:15px; border-radius:20px; margin-bottom:12px; border-left: 4px solid var(--accent); animation: fadeInUp 0.5s ease backwards; }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-        .input-box { width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:15px; padding:12px; color:var(--text); margin-bottom:10px; outline:none; transition: 0.3s; }
-        .input-box:focus { border-color:var(--accent); background:rgba(255,255,255,0.06); }
+        .input-box { width:100%; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:15px; padding:12px; color:var(--text); margin-bottom:10px; outline:none; transition: 0.3s; font-family:inherit; }
+        .input-box:focus { border-color:var(--accent); background:rgba(255,255,255,0.05); }
 
-        /* Butonlar */
-        .nav-btns { position:fixed; top:25px; width:100%; max-width:420px; display:flex; justify-content:space-between; padding:0 20px; z-index:1000; }
-        .circle-btn { width:52px; height:52px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); color:#777; transition:0.3s; cursor:pointer; }
-        .circle-btn.liked { color:#ff4757; border-color:#ff4757; transform:scale(1.1); }
+        .nav-btns { position:fixed; top:20px; width:100%; max-width:420px; display:flex; justify-content:space-between; padding:0 20px; z-index:1000; }
+        .circle-btn { width:48px; height:48px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); color:#777; transition:0.3s; cursor:pointer; }
+        .circle-btn.liked { color:#ff4757; border-color:#ff4757; }
         
         .status-dot { position:absolute; bottom:8px; right:8px; width:22px; height:22px; border-radius:50%; border:4px solid var(--card); z-index:3; }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
         
-        .social-icon { font-size:24px; transition:0.3s; text-align:center; text-decoration:none; }
-        .social-icon:hover { transform:translateY(-3px); }
-        .dev-color { color: var(--dev); }
+        .dev-color { color: var(--dev); text-shadow: 0 0 10px rgba(0, 210, 255, 0.3); }
     </style>
 </head>
 <body>
@@ -138,15 +146,15 @@ app.get("/", (req, res) => {
                     <div id="u-status" class="status-dot"></div>
                 </div>
                 <h2 id="u-name" style="margin:0; font-weight:800; letter-spacing:-0.5px;">Valeinsiva</h2>
-                <div id="u-tag" style="font-size:12px; opacity:0.4; margin-bottom:20px;">@valeinsiva</div>
+                <div id="u-tag" style="font-size:12px; opacity:0.4; margin-bottom:20px;">@valeinsiva.</div>
 
                 <div id="spotify-engine"></div>
                 <div id="game-engine"></div>
 
                 <div style="display:flex; justify-content:center; gap:40px; margin:25px 0; border-top:1px solid rgba(255,255,255,0.05); padding-top:20px;">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-icon" style="color:var(--accent)"><i class="fa-brands fa-discord"></i><br><span style="font-size:9px;color:var(--text);opacity:0.4">Discord</span></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" class="social-icon" style="color:#E1306C"><i class="fa-brands fa-instagram"></i><br><span style="font-size:9px;color:var(--text);opacity:0.4">Instagram</span></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" class="social-icon dev-color"><i class="fa-solid fa-code"></i><br><span style="font-size:9px;color:var(--text);opacity:0.4">Developer</span></a>
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:var(--accent); font-size:24px;"><i class="fa-brands fa-discord"></i></a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:#E1306C; font-size:24px;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:var(--dev); font-size:24px;"><i class="fa-solid fa-code"></i></a>
                 </div>
 
                 <div style="display:flex; justify-content:space-around; font-size:11px; opacity:0.5; font-weight:600;">
@@ -158,12 +166,12 @@ app.get("/", (req, res) => {
         </div>
 
         <div class="msg-section">
-            <h3 style="margin:0 0 15px 0; font-size:16px;"><i class="fa-solid fa-feather-pointed"></i> İz Bırak</h3>
+            <h3 style="margin:0 0 15px 0; font-size:15px; opacity:0.7;"><i class="fa-solid fa-feather"></i> Mesaj Bırak</h3>
             <div id="msg-list"></div>
             <div style="margin-top:20px;">
                 <input id="in-user" class="input-box" placeholder="İsminiz...">
-                <textarea id="in-text" class="input-box" style="resize:none;" placeholder="Mesajınız..."></textarea>
-                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:14px; border-radius:15px; cursor:pointer; font-weight:800;">GÖNDER</button>
+                <textarea id="in-text" class="input-box" style="height:80px; resize:none;" placeholder="Bir şeyler yaz..."></textarea>
+                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:15px; border-radius:18px; cursor:pointer; font-weight:800; transition:0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">GÖNDER</button>
             </div>
         </div>
     </div>
@@ -176,11 +184,11 @@ app.get("/", (req, res) => {
         function timeAgo(ms) {
             const sec = Math.floor((Date.now() - ms) / 1000);
             if(sec < 60) return 'şimdi';
-            const min = Math.floor(sec / 60);
-            return \`\${min} dk önce\`;
+            return Math.floor(sec / 60) + ' dk önce';
         }
 
         function fmt(ms) {
+            if (isNaN(ms) || ms < 0) return "00:00";
             const s = Math.floor(ms / 1000);
             return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
         }
@@ -189,36 +197,35 @@ app.get("/", (req, res) => {
             lanyard = data;
             const u = data.discord_user;
             
-            // Nick & Font & Dekor Entegrasyonu
             document.getElementById("u-name").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             
+            const decor = document.getElementById("u-decor");
             if(u.avatar_decoration_data) {
-                document.getElementById("u-decor").src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
-                document.getElementById("u-decor").style.display = "block";
-            } else {
-                document.getElementById("u-decor").style.display = "none";
-            }
+                const newDecor = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
+                if(decor.src !== newDecor) decor.src = newDecor;
+                decor.style.display = "block";
+            } else { decor.style.display = "none"; }
 
             const banner = document.getElementById("u-banner");
             if(u.banner) {
                 banner.style.backgroundImage = \`url(https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.png?size=600)\`;
             } else {
                 banner.style.backgroundColor = u.banner_color || "#111";
+                banner.style.backgroundImage = "none";
             }
 
             document.getElementById("u-status").className = "status-dot " + data.discord_status;
             
-            // Aktivite Motoru
-            let spotHTML = "";
+            // Spotify UI
             const s = data.spotify || data.lastSpotify;
             if(s) {
-                spotHTML = \`
+                document.getElementById("spotify-engine").innerHTML = \`
                 <div class="spot-card">
                     <div style="display:flex; gap:12px; align-items:center;">
-                        <img src="\${s.album_art_url}" style="width:50px; border-radius:12px; box-shadow:0 10px 20px rgba(0,0,0,0.3)">
+                        <img src="\${s.album_art_url}" style="width:50px; height:50px; border-radius:12px; box-shadow:0 8px 16px rgba(0,0,0,0.4)">
                         <div style="text-align:left; overflow:hidden;">
-                            <div style="font-size:10px; font-weight:800; color:#1db954;">SPOTIFY</div>
+                            <div style="font-size:10px; font-weight:800; color:#1db954; letter-spacing:1px;">\${data.spotify ? 'ŞU AN DİNLİYOR' : 'SON DİNLENEN'}</div>
                             <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${s.song}</div>
                             <div style="font-size:11px; opacity:0.5;">\${s.artist}</div>
                         </div>
@@ -227,23 +234,38 @@ app.get("/", (req, res) => {
                     <div class="spot-time"><span id="s-cur">00:00</span><span id="s-tot">00:00</span></div>
                 </div>\`;
             }
-            document.getElementById("spotify-engine").innerHTML = spotHTML;
+
+            // Game UI
+            const g = data.activities.find(a => a.type === 0) || data.lastGame;
+            if(g && g.name !== "Henüz oyun oynanmadı") {
+                document.getElementById("game-engine").innerHTML = \`
+                <div class="game-card">
+                    <div style="width:45px; height:45px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:10px; font-weight:800; color:var(--accent);">\${data.activities.find(a=>a.type===0) ? 'OYNANIYOR' : 'SON OYNANAN'}</div>
+                        <div style="font-size:13px; font-weight:800;">\${g.name}</div>
+                        <div id="g-time" style="font-size:10px; opacity:0.5;">Aktivite süresi...</div>
+                    </div>
+                </div>\`;
+            }
         });
 
-        // Saniyelik Bağımsız Motor
+        // Bağımsız Milisaniyelik Motor
         setInterval(() => {
             if(lanyard?.spotify) {
                 const total = lanyard.spotify.timestamps.end - lanyard.spotify.timestamps.start;
                 const elapsed = Date.now() - lanyard.spotify.timestamps.start;
                 const pct = Math.min((elapsed / total) * 100, 100);
                 
-                const fill = document.getElementById("s-fill");
-                const cur = document.getElementById("s-cur");
-                const tot = document.getElementById("s-tot");
-                
-                if(fill) fill.style.width = pct + "%";
-                if(cur) cur.innerText = fmt(elapsed);
-                if(tot) tot.innerText = fmt(total);
+                if(document.getElementById("s-fill")) document.getElementById("s-fill").style.width = pct + "%";
+                if(document.getElementById("s-cur")) document.getElementById("s-cur").innerText = fmt(elapsed);
+                if(document.getElementById("s-tot")) document.getElementById("s-tot").innerText = fmt(total);
+            }
+            const gAct = lanyard?.activities?.find(a => a.type === 0);
+            if(gAct?.timestamps && document.getElementById("g-time")) {
+                document.getElementById("g-time").innerText = fmt(Date.now() - gAct.timestamps.start) + " süredir";
             }
         }, 1000);
 
@@ -258,11 +280,11 @@ app.get("/", (req, res) => {
         function renderMsgs(m) {
             document.getElementById("msg-list").innerHTML = m.map(x => \`
                 <div class="msg-item">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                         <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
                         <span style="font-size:9px; opacity:0.4;">\${timeAgo(x.time)}</span>
                     </div>
-                    <div style="font-size:13px; opacity:0.8;">\${x.text}</div>
+                    <div style="font-size:13px; opacity:0.8; line-height:1.4;">\${x.text}</div>
                 </div>\`).join('');
         }
 
@@ -271,13 +293,13 @@ app.get("/", (req, res) => {
             lastLike = Date.now();
             fetch('/api/like').then(r=>r.json()).then(d => {
                 document.getElementById("like-count").innerText = d.likes;
-                this.classList.add('liked');
+                this.style.color = "#ff4757";
             });
         };
 
-        window.addEventListener('load', () => {
+        window.onload = () => {
             fetch('/api/view').then(r=>r.json()).then(d => document.getElementById("view-count").innerText = d.views);
-        });
+        };
     </script>
 </body>
 </html>
