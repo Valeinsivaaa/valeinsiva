@@ -13,7 +13,7 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/1475226794943844432/1483173406378561648/hhfhf.jpg?ex=69baf1e0&is=69b9a060&hm=055e79c39eac872b9a954a5e23d3cf66752b4ff23dc04cde077bba87e94e8fcf&";
+const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/1476308554905555057/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69ba5c3b&is=69b90abb&hm=ac2359e0d1121b2205cc2066807843512b2f95d594aa5642985524513610398e&";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
