@@ -1,16 +1,16 @@
 {
-  "views": 12,
+  "views": 13,
   "likes": 3,
   "lastSpotify": {
-    "album": "Çapkın",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a8d9fd4cc1d1c8a2243bf5a6",
-    "artist": "Candan Erçetin",
-    "song": "Yalan",
+    "album": "Gökyüzünü Tutamam",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273183337eef9318285b10d6164",
+    "artist": "Can Koç",
+    "song": "Gökyüzünü Tutamam",
     "timestamps": {
-      "end": 1773769496327,
-      "start": 1773769254821
+      "end": 1773769646719,
+      "start": 1773769451719
     },
-    "track_id": "4M499X5EOuC6TzwYmHZ42j"
+    "track_id": "4O9hcXs1ohtbw4xnMU8wfo"
   },
   "lastGame": {
     "name": "Henüz oyun oynanmadı"
