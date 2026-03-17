@@ -1,7 +1,13 @@
 {
   "views": 1,
   "likes": 2,
-  "messages": [],
+  "messages": [
+    {
+      "user": "deneme",
+      "text": "deneme",
+      "time": 1773775429931
+    }
+  ],
   "lastGame": {
     "name": "Henüz oyun oynanmadı",
     "timestamps": {
