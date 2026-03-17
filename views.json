@@ -1,5 +1,5 @@
 {
-  "views": 211,
+  "views": 212,
   "likes": 18,
   "messages": [
     {
@@ -24,14 +24,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Sarılsak Mı Artık",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738635454d0759cc299caca025",
-    "artist": "Sezer Sarıgöz; Tekir",
-    "song": "Sarılsak Mı Artık",
+    "album": "Halil İbrahim / Kerbela Destanı",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e77bb2ef172fe9bb316d02d0",
+    "artist": "Musa Eroğlu",
+    "song": "Halil İbrahim",
     "timestamps": {
-      "end": 1773776156837,
-      "start": 1773776005885
+      "end": 1773776651401,
+      "start": 1773776353495
     },
-    "track_id": "3W9iHIZbnc39LqKXfnYXwa"
+    "track_id": "2dNnD2KwqEWDk4BTaDnkxm"
   }
 }
