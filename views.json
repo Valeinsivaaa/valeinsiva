@@ -1,57 +1,15 @@
 {
-  "views": 54,
-  "likes": 13,
-  "lastSpotify": {
-    "album": "Кайфуша",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273b1acdbbbca893eb2b3f86e2d",
-    "artist": "Santiz",
-    "song": "Кайфуша",
-    "timestamps": {
-      "end": 1773773412381,
-      "start": 1773773212876
-    },
-    "track_id": "3vN46oTh7qRbGvfouGzdWu"
-  },
+  "views": 0,
+  "likes": 0,
+  "messages": [],
   "lastGame": {
-    "assets": {
-      "small_image": "mp:external/p6myHiQuLBWF3ICZ2K-DzlxS1GQhbZtAC5lF2z2tTOw/https/image.api.playstation.com/vulcan/ap/rnd/202202/2816/K6mmm89oNII1iI1aqaClO0wh.png"
-    },
-    "created_at": 1773772418651,
-    "flags": 192,
-    "id": "aa103755dd991d5d",
-    "name": "Grand Theft Auto V",
-    "platform": "ps5",
-    "session_id": "playstation:877946035408891945",
-    "timestamps": {
-      "start": 1773772418651
-    },
-    "type": 0
+    "name": "Henüz oyun oynanmadı",
+    "timestamps": { "start": 0 }
   },
-  "messages": [
-    {
-      "user": "kskd",
-      "text": "sisi",
-      "time": 1773773647676
-    },
-    {
-      "user": "sa",
-      "text": "sa",
-      "time": 1773770835055
-    },
-    {
-      "user": "sa",
-      "text": "sa",
-      "time": 1773770620409
-    },
-    {
-      "user": "sa",
-      "text": "sa",
-      "time": 1773770302427
-    },
-    {
-      "user": "sa",
-      "text": "sa",
-      "time": 1773770046790
-    }
-  ]
+  "lastSpotify": {
+    "song": "Henüz müzik dinlenmedi",
+    "artist": "Valeinsiva",
+    "album_art_url": "https://cdn.discordapp.com/attachments/938931634265280543/1218987456742527016/spotify-placeholder.png",
+    "timestamps": { "start": 0, "end": 0 }
+  }
 }
