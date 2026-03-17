@@ -17,6 +17,8 @@ const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/14
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
+// ... (Üst kısımdaki Express ve Ayarlar aynı kalsın)
+
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null };
 
 async function syncWithGithub(isUpdate = false) {
@@ -24,45 +26,62 @@ async function syncWithGithub(isUpdate = false) {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
         const headers = { Authorization: `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
         const getRes = await axios.get(url, { headers }).catch(() => null);
+        
         if (getRes) {
             const remoteDb = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
-            if (!isUpdate) { db = remoteDb; return; }
+            // KRİTİK FİX: Sadece ilk açılışta veya ciddi fark varsa eşitle, 
+            // yoksa anlık mesajları siler.
+            if (!isUpdate) { 
+                db = remoteDb; 
+            } else {
+                // Güncelleme yaparken remote'daki views ve likes'ı koru
+                db.views = Math.max(db.views, remoteDb.views);
+                db.likes = Math.max(db.likes, remoteDb.likes);
+            }
         }
+
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Aesthetic Update", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { 
+                message: "💎 Message Sync Fix", 
+                content: newContent, 
+                sha: sha 
+            }, { headers });
         }
-    } catch (e) { console.error("Sync Error"); }
+    } catch (e) { console.error("Sync Error:", e.message); }
 }
 
-setInterval(async () => {
-    try {
-        const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
-        const data = r.data.data;
-        if (data.spotify) db.lastSpotify = data.spotify;
-        const game = data.activities.find(a => a.type === 0);
-        if (game) db.lastGame = game;
-        io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame });
-    } catch (e) {}
-}, 4000);
-
-syncWithGithub();
-
-app.get("/api/stats", (req, res) => res.json({ views: db.views, likes: db.likes }));
-app.get("/api/like", async (req, res) => { db.likes++; await syncWithGithub(true); res.json({ success: true, likes: db.likes }); });
-app.get("/api/view", async (req, res) => { db.views++; await syncWithGithub(true); res.json({ success: true, views: db.views }); });
-
+// Socket.io Mesaj Mantığı (Düzenlendi)
 io.on("connection", (socket) => {
+    // Yeni bağlanan kişiye mevcut mesajları hemen gönder
     socket.emit("init_messages", db.messages);
+
     socket.on("send_msg", async (data) => {
         if(!data.user || !data.text || data.text.length > 80) return;
-        db.messages.unshift({ user: data.user.substring(0,15), text: data.text, time: Date.now() });
-        db.messages = db.messages.slice(0, 5);
+        
+        // Yeni mesajı en başa ekle
+        const newMsg = { 
+            user: data.user.substring(0,15), 
+            text: data.text, 
+            time: Date.now() 
+        };
+
+        db.messages.unshift(newMsg);
+        
+        // Sadece son 10 mesajı tut (Kutu taşmasın diye biraz artırdık)
+        if (db.messages.length > 10) db.messages = db.messages.slice(0, 10);
+
+        // Herkese anında yayınla (Refresh yapmadan görünmesi için)
         io.emit("new_msg", db.messages);
+        
+        // GitHub'a yedekle
         await syncWithGithub(true);
     });
 });
+
+// ... (Geri kalan Frontend ve CSS kısımları aynı, dokunmana gerek yok)
+
 
 app.get("/", (req, res) => {
     res.send(`
