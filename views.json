@@ -1,5 +1,5 @@
 {
-  "views": 212,
+  "views": 213,
   "likes": 18,
   "messages": [
     {
@@ -24,14 +24,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Halil İbrahim / Kerbela Destanı",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e77bb2ef172fe9bb316d02d0",
-    "artist": "Musa Eroğlu",
-    "song": "Halil İbrahim",
+    "album": "Hayalet Islığı (Instrumentals)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273807a5384120b502d9ee0e08c",
+    "artist": "Farazi",
+    "song": "Dobro Vecer",
     "timestamps": {
-      "end": 1773776651401,
-      "start": 1773776353495
+      "end": 1773776814035,
+      "start": 1773776587607
     },
-    "track_id": "2dNnD2KwqEWDk4BTaDnkxm"
+    "track_id": "7koqYCHESDGTORau9emDO1"
   }
 }
