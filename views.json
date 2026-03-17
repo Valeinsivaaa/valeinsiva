@@ -1,5 +1,5 @@
 {
-  "views": 41,
+  "views": 42,
   "likes": 11,
   "lastSpotify": {
     "album": "DÖNMEK İÇİN EVE",
@@ -13,11 +13,19 @@
     "track_id": "4hfRnkDbO4FuisvfjAa0ZT"
   },
   "lastGame": {
-    "name": "Grand Theft Auto V",
-    "start": 1773772418651,
     "assets": {
       "small_image": "mp:external/p6myHiQuLBWF3ICZ2K-DzlxS1GQhbZtAC5lF2z2tTOw/https/image.api.playstation.com/vulcan/ap/rnd/202202/2816/K6mmm89oNII1iI1aqaClO0wh.png"
-    }
+    },
+    "created_at": 1773772418651,
+    "flags": 192,
+    "id": "aa103755dd991d5d",
+    "name": "Grand Theft Auto V",
+    "platform": "ps5",
+    "session_id": "playstation:877946035408891945",
+    "timestamps": {
+      "start": 1773772418651
+    },
+    "type": 0
   },
   "messages": [
     {
