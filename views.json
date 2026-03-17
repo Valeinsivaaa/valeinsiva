@@ -1,10 +1,16 @@
 {
-  "views": 0,
+  "views": 1,
   "likes": 0,
   "lastSpotify": {
-    "song": "Henüz müzik dinlenmedi",
-    "artist": "Bilinmiyor",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273b2591aa570b55ec741981d36"
+    "album": "Na-Mükemmel",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27359f5aaff53c6a635b235d151",
+    "artist": "Ahmet Aslan",
+    "song": "Şu Kanlı Zalimin Ettiği İşler",
+    "timestamps": {
+      "end": 1773768579164,
+      "start": 1773768310697
+    },
+    "track_id": "2Qvdi3adxxWMOJISey2EL4"
   },
   "lastGame": {
     "name": "Henüz oyun oynanmadı"
