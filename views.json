@@ -1,5 +1,5 @@
 {
-  "views": 1,
+  "views": 2,
   "likes": 2,
   "messages": [
     {
@@ -24,14 +24,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yağmur Yağar İnceden",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27340f9063ebe349c1f9dd1555f",
-    "artist": "Ebrulimuharrem",
-    "song": "Yağmur Yağar İnceden",
+    "album": "Sarılsak Mı Artık",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738635454d0759cc299caca025",
+    "artist": "Sezer Sarıgöz; Tekir",
+    "song": "Sarılsak Mı Artık",
     "timestamps": {
-      "end": 1773775724175,
-      "start": 1773775437685
+      "end": 1773776156837,
+      "start": 1773776005885
     },
-    "track_id": "6ef4YW5swinsVZmaPVyOxR"
+    "track_id": "3W9iHIZbnc39LqKXfnYXwa"
   }
 }
