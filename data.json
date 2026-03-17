@@ -3,5 +3,11 @@
     "views": 1,
     "likes": 0
   },
-  "messages": []
+  "messages": [
+    {
+      "user": "deneme",
+      "text": "denmed",
+      "date": "16:56"
+    }
+  ]
 }
