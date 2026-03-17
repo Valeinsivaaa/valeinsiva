@@ -16,9 +16,9 @@ const DISCORD_ID = "877946035408891945";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
-let db = { views: 0, likes: 0, lastSpotify: null, lastGame: null, messages: [] };
+let db = { views: 0, likes: 0, lastSpotify: null, messages: [] };
 let cachedData = null;
-let lastMessageTime = {}; 
+let cooldowns = {}; 
 
 async function syncWithGithub(isUpdate = false) {
     try {
@@ -32,9 +32,9 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Elite Sync v6", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Elite Sync Final", content: newContent, sha: sha }, { headers });
         }
-    } catch (e) { console.error("GitHub Error"); }
+    } catch (e) { console.error("GitHub Sync Error"); }
 }
 
 setInterval(async () => {
@@ -62,13 +62,12 @@ io.on("connection", (socket) => {
     socket.emit("init_messages", db.messages);
     socket.on("send_msg", async (data) => {
         const userIp = socket.handshake.address;
-        const now = Date.now();
-        if (lastMessageTime[userIp] && (now - lastMessageTime[userIp] < 300000)) return;
-
+        if (cooldowns[userIp] && (Date.now() - cooldowns[userIp] < 300000)) return;
         if(!data.user || !data.text) return;
-        db.messages.unshift({ user: data.user.substring(0,15), text: data.text.substring(0,80), time: now });
-        db.messages = db.messages.slice(0, 5);
-        lastMessageTime[userIp] = now;
+        
+        db.messages.unshift({ user: data.user.substring(0,12), text: data.text.substring(0,60), time: Date.now() });
+        db.messages = db.messages.slice(0, 4);
+        cooldowns[userIp] = Date.now();
         io.emit("new_msg", db.messages);
         await syncWithGithub(true);
     });
@@ -81,87 +80,98 @@ app.get("/", (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valeinsiva | Developer</title>
+    <title>Valeinsiva | Profile</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        :root { --accent: #7289da; --bg: #030303; --card: rgba(18, 18, 18, 0.98); --text: #fff; --dev: #00d2ff; }
-        
+        :root { --accent: #7289da; --bg: #030303; --card: rgba(18, 18, 18, 0.95); --text: #fff; --dev: #00d2ff; }
+        [data-theme="light"] { --bg: #f0f0f2; --card: #ffffff; --text: #111; }
+
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: 0.5s; overflow-x:hidden; display:flex; flex-direction:column; align-items:center; }
-        .wrapper { width:100%; max-width:420px; padding:80px 12px 40px; box-sizing: border-box; }
+        .wrapper { width:100%; max-width:400px; padding:70px 15px 40px; box-sizing: border-box; }
         
-        .main-card { background:var(--card); border-radius:40px; border:1px solid rgba(255,255,255,0.06); overflow:hidden; position:relative; width: 100%; box-shadow: 0 0 40px rgba(0,210,255,0.05); }
-        .banner-container { height:170px; width:100%; background-size:cover; background-position:center; position:relative; background-color: #111; }
+        .main-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.06); overflow:hidden; position:relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .banner { height:150px; width:100%; background-size:cover; background-position:center; background-color:#111; transition: 0.5s; }
         
-        .avatar-area { position:relative; width:110px; height:110px; margin:-55px auto 10px; }
+        .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 10px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card); z-index:2; position:relative; object-fit: cover; }
         .decoration { position:absolute; inset:-12%; width:124%; z-index:3; pointer-events:none; }
 
-        /* Spotify Mobil Uyum */
-        .spot-card { background:rgba(255,255,255,0.02); border-radius:22px; padding:15px; margin:15px; border:1px solid rgba(255,255,255,0.04); }
-        .bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin:12px 0 6px; overflow:hidden; }
-        .bar-fill { height:100%; background:#1db954; width:0%; transition: width 0.5s linear; }
-        .time-txt { display:flex; justify-content:space-between; font-size:10px; font-weight:800; opacity:0.4; }
+        /* Spotify Ufak & Sabit */
+        .spot-mini { background:rgba(255,255,255,0.02); border-radius:20px; padding:12px; margin:10px 15px; border:1px solid rgba(255,255,255,0.05); }
+        .bar-bg { height:4px; background:rgba(255,255,255,0.1); border-radius:10px; margin:10px 0 4px; overflow:hidden; }
+        .bar-fill { height:100%; background:#1db954; width:0%; transition: width 1s linear; }
 
-        /* Mesaj Alanı */
-        .msg-section { background:var(--card); border-radius:35px; padding:20px; margin-top:15px; width:100%; box-sizing: border-box; border:1px solid rgba(255,255,255,0.06); }
-        .msg-item { background:rgba(255,255,255,0.02); padding:12px 15px; border-radius:18px; margin-bottom:10px; border-left: 3px solid var(--dev); animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        /* Mesaj Kutusu Estetik */
+        .msg-section { background:var(--card); border-radius:30px; padding:15px; margin-top:12px; border:1px solid rgba(255,255,255,0.05); }
+        .msg-item { background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:15px; margin-bottom:8px; border-left: 3px solid var(--dev); font-size:12px; }
 
-        .input-box { width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:15px; padding:12px; color:var(--text); margin-bottom:10px; outline:none; box-sizing: border-box; font-family: inherit; }
+        .input-mini { width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px; color:var(--text); margin-bottom:8px; outline:none; font-family:inherit; font-size:13px; box-sizing: border-box; }
         
-        #send-btn { width:100%; background:var(--dev); color:#000; border:none; padding:14px; border-radius:15px; cursor:pointer; font-weight:800; transition:0.3s; }
-        #send-btn:disabled { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.3); cursor: not-allowed; }
+        #send-btn { width:100%; background:var(--dev); color:#000; border:none; padding:12px; border-radius:12px; cursor:pointer; font-weight:800; font-size:13px; }
 
-        /* Nav */
-        .top-nav { position:fixed; top:20px; width:100%; max-width:420px; display:flex; justify-content:space-between; padding:0 20px; z-index:1000; box-sizing: border-box; }
-        .nav-icon { width:48px; height:48px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); color:#666; cursor:pointer; }
-        .nav-icon.active { color:#ff4757; border-color:#ff4757; }
+        /* Sosyal Butonlar & Yazılar */
+        .social-flex { display:flex; justify-content:center; gap:25px; margin:15px 0; }
+        .s-box { text-align:center; text-decoration:none; color:inherit; opacity:0.7; transition:0.3s; }
+        .s-box i { font-size:22px; display:block; margin-bottom:4px; }
+        .s-box span { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+        .s-box:hover { opacity:1; transform:translateY(-2px); }
 
-        .status-dot { position:absolute; bottom:6px; right:6px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card); z-index:4; }
+        /* Animasyonlu Tema Butonu */
+        .nav-float { position:fixed; top:20px; width:100%; max-width:400px; display:flex; justify-content:space-between; padding:0 20px; z-index:1000; box-sizing: border-box; }
+        .btn-circle { width:45px; height:45px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; transition:0.5s; color:#777; }
+        .btn-circle i { transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .active-heart { color:#ff4757 !important; transform: scale(1.1); }
+
+        .status-dot { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); z-index:4; }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
     </style>
 </head>
 <body>
-    <div class="top-nav">
-        <div class="nav-icon" id="like-btn"><i class="fa-solid fa-heart"></i></div>
-        <div class="nav-icon" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')"><i class="fa-solid fa-circle-half-stroke"></i></div>
+    <div class="nav-float">
+        <div class="btn-circle" id="like-btn"><i class="fa-solid fa-heart"></i></div>
+        <div class="btn-circle" id="theme-btn"><i class="fa-solid fa-moon"></i></div>
     </div>
 
     <div class="wrapper">
         <div class="main-card">
-            <div id="u-banner" class="banner-container"></div>
-            <div style="padding:0 0 20px; text-align:center;">
+            <div id="u-banner" class="banner"></div>
+            <div style="padding:0 0 15px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
                     <img id="u-decor" class="decoration" src="">
                     <div id="u-status" class="status-dot"></div>
                 </div>
-                <h2 id="u-name" style="margin:0; font-weight:800; letter-spacing:-1px;">Valeinsiva</h2>
-                <div id="u-tag" style="font-size:12px; opacity:0.3; margin-bottom:15px;">@valeinsiva.</div>
+                <h3 id="u-name" style="margin:0; font-weight:800;">Valeinsiva</h3>
+                <div style="font-size:11px; opacity:0.3; margin-bottom:10px;">@valeinsiva.</div>
 
-                <div id="spotify-box"></div>
+                <div id="spotify-ui"></div>
 
-                <div style="display:flex; justify-content:center; gap:35px; margin:20px 0;">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="color:var(--accent); text-decoration:none;"><i class="fa-brands fa-discord fa-xl"></i></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" style="color:#E1306C; text-decoration:none;"><i class="fa-brands fa-instagram fa-xl"></i></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" style="color:var(--dev); text-decoration:none;"><i class="fa-solid fa-code fa-xl"></i></a>
+                <div class="social-flex">
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="s-box" style="color:var(--accent)">
+                        <i class="fa-brands fa-discord"></i><span>Discord</span>
+                    </a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" class="s-box" style="color:#E1306C">
+                        <i class="fa-brands fa-instagram"></i><span>Instagram</span>
+                    </a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" class="s-box" style="color:var(--dev)">
+                        <i class="fa-solid fa-code"></i><span>Developer</span>
+                    </a>
                 </div>
 
-                <div style="display:flex; justify-content:center; gap:25px; font-size:11px; font-weight:700; opacity:0.3;">
+                <div style="display:flex; justify-content:center; gap:20px; font-size:10px; font-weight:700; opacity:0.3; border-top:1px solid rgba(255,255,255,0.03); padding-top:10px;">
                     <span><i class="fa-solid fa-eye"></i> <span id="v-count">0</span></span>
-                    <span><i class="fa-solid fa-heart"></i> <span id="l-count">0</span></span>
+                    <span><i class="fa-solid fa-heart"></i> <span id="l-count">0</span> Beğeni</span>
                 </div>
             </div>
         </div>
 
         <div class="msg-section">
-            <h4 style="margin:0 0 15px 0; font-size:13px; opacity:0.5; text-transform:uppercase; letter-spacing:1px;">Mesajlar</h4>
             <div id="msg-list"></div>
-            <div style="margin-top:20px;">
-                <input id="in-name" class="input-box" placeholder="İsminiz">
-                <textarea id="in-text" class="input-box" style="height:70px; resize:none;" placeholder="Mesajınızı buraya bırakın..."></textarea>
+            <div style="margin-top:15px;">
+                <input id="in-name" class="input-mini" placeholder="Adınız">
+                <textarea id="in-text" class="input-mini" style="height:50px; resize:none;" placeholder="Kısa bir not bırak..."></textarea>
                 <button id="send-btn" onclick="handleSend()">GÖNDER</button>
             </div>
         </div>
@@ -170,7 +180,7 @@ app.get("/", (req, res) => {
     <script>
         const socket = io();
         let lanyard = null;
-        let cooldown = 0;
+        let cd = 0;
 
         function fmt(ms) {
             if(!ms || ms < 0) return "00:00";
@@ -184,38 +194,33 @@ app.get("/", (req, res) => {
             document.getElementById("u-name").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             
-            // BANNER KESİN ÇÖZÜM
-            const bannerDiv = document.getElementById("u-banner");
+            // Banner Fix
+            const b = document.getElementById("u-banner");
             if(u.banner) {
-                const isGif = u.banner.startsWith("a_");
-                bannerDiv.style.backgroundImage = \`url(https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.\${isGif ? 'gif' : 'png'}?size=1024)\`;
-            } else if(u.banner_color) {
-                bannerDiv.style.backgroundColor = u.banner_color;
-                bannerDiv.style.backgroundImage = "none";
-            }
+                const ext = u.banner.startsWith("a_") ? "gif" : "png";
+                b.style.backgroundImage = \`url(https://cdn.discordapp.com/banners/\${u.id}/\${u.banner}.\${ext}?size=1024)\`;
+            } else { b.style.backgroundColor = u.banner_color || "#111"; b.style.backgroundImage = "none"; }
 
-            const decor = document.getElementById("u-decor");
+            const d = document.getElementById("u-decor");
             if(u.avatar_decoration_data) {
-                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
-                decor.style.display = "block";
-            } else { decor.style.display = "none"; }
+                d.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
+                d.style.display = "block";
+            } else { d.style.display = "none"; }
 
             document.getElementById("u-status").className = "status-dot " + data.discord_status;
             
             const s = data.spotify || data.lastSpotify;
             if(s) {
-                document.getElementById("spotify-box").innerHTML = \`
-                <div class="spot-card">
-                    <div style="display:flex; gap:12px; align-items:center; text-align:left;">
-                        <img src="\${s.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
-                        <div style="overflow:hidden;">
-                            <div style="font-size:9px; font-weight:800; color:#1db954;">\${data.spotify ? 'DİNLENİYOR' : 'SON DİNLENEN'}</div>
-                            <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${s.song}</div>
-                            <div style="font-size:11px; opacity:0.5;">\${s.artist}</div>
+                document.getElementById("spotify-ui").innerHTML = \`
+                <div class="spot-mini">
+                    <div style="display:flex; gap:10px; align-items:center; text-align:left;">
+                        <img src="\${s.album_art_url}" style="width:40px; height:40px; border-radius:10px;">
+                        <div style="overflow:hidden; flex:1;">
+                            <div style="font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${s.song}</div>
+                            <div style="font-size:10px; opacity:0.5;">\${s.artist}</div>
                         </div>
                     </div>
                     <div class="bar-bg"><div id="s-fill" class="bar-fill"></div></div>
-                    <div class="time-txt"><span id="s-cur">00:00</span><span id="s-tot">00:00</span></div>
                 </div>\`;
             }
         });
@@ -225,54 +230,63 @@ app.get("/", (req, res) => {
                 const total = lanyard.spotify.timestamps.end - lanyard.spotify.timestamps.start;
                 const elapsed = Date.now() - lanyard.spotify.timestamps.start;
                 const pct = Math.max(0, Math.min((elapsed / total) * 100, 100));
-                if(document.getElementById("s-fill")) document.getElementById("s-fill").style.width = pct + "%";
-                if(document.getElementById("s-cur")) document.getElementById("s-cur").innerText = fmt(elapsed);
-                if(document.getElementById("s-tot")) document.getElementById("s-tot").innerText = fmt(total);
+                const bar = document.getElementById("s-fill");
+                if(bar) bar.style.width = pct + "%";
             }
-            // Geri sayım motoru
-            if(cooldown > 0) {
-                cooldown -= 1000;
-                const btn = document.getElementById("send-btn");
-                btn.disabled = true;
-                btn.innerText = fmt(cooldown);
-            } else if(cooldown <= 0) {
-                const btn = document.getElementById("send-btn");
-                btn.disabled = false;
-                btn.innerText = "GÖNDER";
+            if(cd > 0) {
+                cd -= 1000;
+                const b = document.getElementById("send-btn");
+                b.disabled = true; b.innerText = fmt(cd);
+            } else {
+                const b = document.getElementById("send-btn");
+                b.disabled = false; b.innerText = "GÖNDER";
             }
         }, 1000);
 
         function handleSend() {
             const n = document.getElementById('in-name').value;
             const t = document.getElementById('in-text').value;
-            if(n && t && cooldown <= 0) { 
-                socket.emit('send_msg', {user:n, text:t});
-                cooldown = 300000; // 5 Dakika
-            }
+            if(n && t && cd <= 0) { socket.emit('send_msg', {user:n, text:t}); cd = 300000; }
         }
 
-        socket.on('init_messages', r);
-        socket.on('new_msg', r);
-        function r(arr) {
+        socket.on('init_messages', render);
+        socket.on('new_msg', render);
+        function render(arr) {
             document.getElementById("msg-list").innerHTML = arr.map(x => \`
                 <div class="msg-item">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
                         <b style="color:var(--dev)">\${x.user}</b>
-                        <span style="opacity:0.3">\${new Date(x.time).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}</span>
+                        <span style="opacity:0.3; font-size:9px;">\${new Date(x.time).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>
-                    <div style="font-size:13px; opacity:0.8;">\${x.text}</div>
+                    <div style="opacity:0.8;">\${x.text}</div>
                 </div>\`).join('');
         }
 
         document.getElementById("like-btn").onclick = function() {
-            fetch('/api/like').then(res=>res.json()).then(d => {
+            fetch('/api/like').then(r=>r.json()).then(d => {
                 document.getElementById("l-count").innerText = d.likes;
-                this.classList.add('active');
+                this.classList.add('active-heart');
             });
         };
 
+        document.getElementById("theme-btn").onclick = function() {
+            const h = document.documentElement;
+            const i = this.querySelector('i');
+            const isDark = h.getAttribute("data-theme") === "dark";
+            
+            i.style.transform = "rotate(360deg) scale(0)";
+            setTimeout(() => {
+                h.setAttribute("data-theme", isDark ? "light" : "dark");
+                i.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+                i.style.transform = "rotate(0deg) scale(1)";
+            }, 250);
+        };
+
         window.onload = () => {
-            fetch('/api/view').then(res=>res.json()).then(d => document.getElementById("v-count").innerText = d.views);
+            fetch('/api/view').then(r=>r.json()).then(d => {
+                document.getElementById("v-count").innerText = d.views;
+                document.getElementById("l-count").innerText = d.likes;
+            });
         };
     </script>
 </body>
