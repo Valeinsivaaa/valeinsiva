@@ -13,18 +13,11 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/1476308554905555057/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69b861fb&is=69b7107b&hm=f0dc11c4677d60906a28dc07b23da32d87633a0657edd91c206503113fcca4cc&";
+const BANNER_URL = "https://cdn.discordapp.com/attachments/938931634265280543/1476308554905555057/ce03e0dbed5f30cd6d5efb6d3c9aa441.png";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
-// Veritabanı (Son aktiviteleri de artık burada saklıyoruz ki offline olunca gitmesin)
-let db = { 
-    views: 0, 
-    likes: 0, 
-    messages: [], 
-    lastGame: null, 
-    lastSpotify: null 
-};
+let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null };
 
 async function syncWithGithub(isUpdate = false) {
     try {
@@ -38,24 +31,26 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Elite Sync", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Auto-Sync", content: newContent, sha: sha }, { headers });
         }
-    } catch (e) { console.error("Sync Error"); }
+    } catch (e) { console.error("Sync Hatası"); }
 }
 
+// 5 Saniyede Bir Kontrol
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         const data = r.data.data;
         
-        // Aktiviteleri veritabanına yedekle (Çevrimdışı görünüm için)
-        if (data.spotify) db.lastSpotify = data.spotify;
+        let changed = false;
+        if (data.spotify) { db.lastSpotify = data.spotify; changed = true; }
         const game = data.activities.find(a => a.type === 0);
-        if (game) db.lastGame = game;
+        if (game) { db.lastGame = game; changed = true; }
 
+        if(changed) await syncWithGithub(true); // Veri değiştikçe JSON'u güncelle
         io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame });
     } catch (e) {}
-}, 4000);
+}, 5000);
 
 syncWithGithub();
 
@@ -80,220 +75,170 @@ app.get("/", (req, res) => {
 <html lang="tr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valeinsiva | Premium Developer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valeinsiva | Portfolio</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         :root { --accent: #7289da; --bg: #050505; --card: rgba(15, 15, 15, 0.9); --text: #fff; }
-        [data-theme="light"] { --bg: #f5f7f9; --card: rgba(255, 255, 255, 0.95); --text: #1a1a1a; }
-
-        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: 0.5s ease; overflow-x:hidden; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+        [data-theme="light"] { --bg: #f8f9fc; --card: rgba(255, 255, 255, 0.98); --text: #1a1a1a; }
+        body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: 0.5s; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; }
         
-        #loader { position: fixed; inset: 0; background: #050505; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.8s ease; }
-        .spinner { width: 40px; height: 40px; border: 3px solid rgba(114, 137, 218, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s infinite linear; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.12; background:var(--accent); animation:move 20s infinite alternate ease-in-out; pointer-events:none; }
-        @keyframes move { 0% { transform: translate(-10%, -10%); } 100% { transform: translate(40%, 40%); } }
-
+        .nav-btn { position:fixed; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.3s; }
+        .nav-btn.liked { color:#ff4757; border-color:#ff4757; }
+        
         .wrapper { width:100%; max-width:400px; padding:80px 15px 40px; box-sizing:border-box; }
-        .main-card { background:var(--card); border-radius:40px; border:1px solid rgba(255,255,255,0.08); overflow:hidden; position:relative; backdrop-filter: blur(25px); box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+        .main-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.08); overflow:hidden; position:relative; backdrop-filter: blur(25px); }
         
-        .avatar-area { position:relative; width:105px; height:105px; margin:-52px auto 15px; }
-        .avatar { width:100%; height:100%; border-radius:50%; border:5px solid var(--card); object-fit: cover; }
-        .decor-img { position:absolute; inset:-15%; width:130%; z-index:11; pointer-events:none; }
-        .status-badge { position:absolute; bottom:6px; right:6px; width:20px; height:20px; border-radius:50%; border:4px solid var(--card); }
+        .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
+        .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
+        .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
+        .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
 
-        /* Kartlar */
-        .card-item { background:rgba(120,120,120,0.06); border-radius:22px; padding:15px; display:flex; align-items:center; gap:15px; margin-bottom:12px; border: 1px solid rgba(255,255,255,0.03); text-align:left; }
-        .s-bar-bg { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px; overflow:hidden; }
-        .s-bar-fill { height:100%; background:var(--accent); width:0%; }
+        .card-item { background:rgba(120,120,120,0.05); border-radius:20px; padding:12px 15px; display:flex; align-items:center; gap:12px; margin-bottom:10px; text-align:left; border:1px solid rgba(255,255,255,0.02); }
+        .s-bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
+        .s-bar-fill { height:100%; background:var(--accent); width:0%; transition: width 0.5s linear; }
 
-        .social-row { display:flex; justify-content:center; gap:30px; margin:20px 0; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05); }
-        .social-btn { text-decoration:none; color:inherit; opacity:0.6; transition:0.3s; text-align:center; font-size:10px; }
-        .social-btn:hover { opacity:1; transform:translateY(-3px); color:var(--accent); }
+        .social-btn { text-decoration:none; color:inherit; opacity:0.6; transition:0.3s; text-align:center; font-size:10px; flex:1; }
+        .social-btn i { font-size: 24px; margin-bottom: 5px; display: block; }
+        .social-btn:hover { opacity:1; color:var(--accent); transform:translateY(-2px); }
 
-        /* Mesajlar */
-        .msg-section { background:var(--card); border-radius:35px; padding:20px; margin-top:20px; width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
-        .msg-bubble { background:rgba(255,255,255,0.02); padding:12px; border-radius:18px; margin-bottom:10px; border-left:3px solid var(--accent); }
-        .in-style { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family: inherit; box-sizing: border-box; }
+        .msg-section { background:var(--card); border-radius:30px; padding:20px; margin-top:20px; width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,0.08); }
+        .msg-bubble { background:rgba(255,255,255,0.02); padding:10px 14px; border-radius:15px; margin-bottom:10px; border-left:3px solid var(--accent); }
+        .in-style { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
         
-        /* Butonlar */
-        .nav-btn { position:fixed; top:25px; width:52px; height:52px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition: 0.4s; color: #777; }
-        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .nav-btn.liked { color: #ff4757 !important; border-color: #ff4757; animation: heart-beat 0.8s infinite alternate; }
-        @keyframes heart-beat { to { transform: scale(1.1); filter: drop-shadow(0 0 5px #ff4757); } }
-
-        #theme-icon { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        #theme-icon { transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body>
-    <div id="loader"><div class="spinner"></div></div>
-    <div id="bg-canvas" style="position:fixed; inset:0; z-index:-1; pointer-events:none;"></div>
-    
     <div class="nav-btn" id="btn-like" style="left:25px;"><i class="fa-solid fa-heart"></i></div>
     <div class="nav-btn" id="btn-theme" style="right:25px;"><i id="theme-icon" class="fa-solid fa-moon"></i></div>
 
     <div class="wrapper">
         <div class="main-card">
-            <div style="height:160px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
-            <div style="padding:0 25px 25px; text-align:center;">
+            <div style="height:150px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="padding:0 20px 20px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
                     <img id="u-decor" class="decor-img" style="display:none;">
                     <div id="u-status" class="status-badge offline"></div>
                 </div>
-                <h2 id="u-nick" style="margin:0; font-weight:800; font-size:26px; letter-spacing:-0.5px;">Valeinsiva</h2>
-                <div style="font-size:13px; opacity:0.4; margin-bottom:20px;">@valeinsiva</div>
+                <h2 id="u-nick" style="margin:0; font-weight:800; font-size:24px;">Valeinsiva</h2>
+                <div style="font-size:12px; opacity:0.4; margin-bottom:15px;">@valeinsiva</div>
 
                 <div id="activity-stack"></div>
 
-                <div class="social-row">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-btn"><i class="fa-brands fa-discord fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:700;">Discord</span></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" class="social-btn"><i class="fa-brands fa-instagram fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:700;">Instagram</span></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" class="social-btn"><i class="fa-solid fa-shield-halved fa-2xl"></i><br><span style="display:block; margin-top:8px; font-weight:700;">Developer</span></a>
+                <div style="display:flex; justify-content:space-between; margin:20px 0; padding-top:15px; border-top:1px solid rgba(255,255,255,0.05);">
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" class="social-btn"><i class="fa-brands fa-discord"></i><b>Discord</b></a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" class="social-btn"><i class="fa-brands fa-instagram"></i><b>Instagram</b></a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" class="social-btn"><i class="fa-solid fa-code-commit"></i><b>Geliştirici</b></a>
                 </div>
 
-                <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:900; opacity:0.3; margin-top:10px;">
+                <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:900; opacity:0.3;">
                     <span><i class="fa-solid fa-eye"></i> <span id="view-txt">0</span></span>
                     <span><i class="fa-solid fa-heart"></i> <span id="like-txt">0</span></span>
-                    <span><i class="fa-solid fa-location-dot"></i> TÜRKİYE</span>
+                    <span><i class="fa-solid fa-location-dot"></i> TR</span>
                 </div>
             </div>
         </div>
 
         <div class="msg-section">
-            <h4 style="margin:0 0 15px 0; font-size:12px; opacity:0.5; text-transform:uppercase; letter-spacing:1px;">Son Mesajlar</h4>
+            <h4 style="margin:0 0 12px 0; font-size:11px; opacity:0.4; text-transform:uppercase;">Anonim Mesajlar</h4>
             <div id="msg-feed"></div>
-            <div id="msg-form-area" style="margin-top:15px;">
+            <div id="msg-form-area" style="margin-top:10px;">
                 <input id="in-user" class="in-style" maxlength="15" placeholder="Kullanıcı adınız">
-                <textarea id="in-text" class="in-style" maxlength="80" style="height:65px; resize:none;" placeholder="Mesajınızı buraya bırakın..."></textarea>
-                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:14px; border-radius:15px; cursor:pointer; font-weight:800; transition:0.3s; box-shadow: 0 4px 15px rgba(114, 137, 218, 0.3);">MESAJI GÖNDER</button>
+                <textarea id="in-text" class="in-style" maxlength="80" style="height:60px; resize:none;" placeholder="Mesajınız..."></textarea>
+                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-weight:800;">GÖNDER</button>
             </div>
         </div>
     </div>
 
     <script>
         const socket = io();
-        let currentP = null;
-        let gameStart = null;
-        let spotData = null;
+        let gameActive = false, gameStart = null, spotActive = false, spotRef = null;
 
-        // Loader
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => document.getElementById('loader').style.display = 'none', 800);
-            }, 1000);
-        });
-
-        function timeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return 'şimdi';
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return minutes + 'dk önce';
-            const hours = Math.floor(minutes / 60);
-            if (hours < 24) return hours + 'sa önce';
-            return Math.floor(hours / 24) + ' gün önce';
-        }
-
-        function fmt(ms) {
-            if(!ms || ms < 0) return "00:00";
-            const s = Math.floor(ms / 1000);
-            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
+        function timeSince(d) {
+            const s = Math.floor((new Date() - d) / 1000);
+            if (s < 60) return 'şimdi';
+            if (s < 3600) return Math.floor(s/60) + 'dk önce';
+            return Math.floor(s/3600) + 'sa önce';
         }
 
         socket.on("presence", data => {
-            if(!currentP || JSON.stringify(data.activities) !== JSON.stringify(currentP.activities) || data.discord_status !== currentP.discord_status) {
-                renderUI(data);
-            }
-            currentP = data;
-        });
-
-        function renderUI(data) {
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             
             const decor = document.getElementById("u-decor");
-            const decorUrl = u.avatar_decoration_data ? \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\` : null;
-            if(decorUrl) { decor.src = decorUrl; decor.style.display = "block"; } else { decor.style.display = "none"; }
+            const dData = u.avatar_decoration_data;
+            if(dData) { decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${dData.asset}.png\`; decor.style.display="block"; }
+            else { decor.style.display="none"; }
             
             document.getElementById("u-status").className = "status-badge " + data.discord_status;
 
             let html = "";
-            const game = data.activities.find(a => a.type === 0) || data.lastGame;
-            const isOffline = data.discord_status === "offline";
+            const game = data.activities.find(a => a.type === 0);
+            const isOnline = data.discord_status !== "offline";
 
-            if(game) {
-                gameStart = isOffline ? null : (game.timestamps?.start || Date.now());
+            // Oyun Kartı
+            const activeGame = game || data.lastGame;
+            if(activeGame) {
+                gameActive = !!game && isOnline;
+                gameStart = gameActive ? (activeGame.timestamps?.start || Date.now()) : null;
                 html += \`
                 <div class="card-item">
-                    <div style="width:50px; height:50px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad fa-xl"></i></div>
+                    <div style="width:45px; height:45px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad fa-lg"></i></div>
                     <div style="flex:1;">
-                        <div style="font-size:9px; font-weight:900; color:var(--accent); letter-spacing:1px; text-transform:uppercase;">\${isOffline ? 'SON OYNANAN' : 'ŞU AN OYUNDA'}</div>
-                        <div style="font-size:13px; font-weight:800;">\${game.name}</div>
-                        <div id="game-timer" style="font-size:10px; opacity:0.6; font-weight:bold;">\${isOffline ? 'Çevrimdışı' : '00:00 süredir'}</div>
+                        <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gameActive ? 'ŞU AN OYUNDA' : 'SON OYNANAN'}</div>
+                        <div style="font-size:13px; font-weight:800;">\${activeGame.name}</div>
+                        <div id="game-timer" style="font-size:10px; opacity:0.5;">\${gameActive ? 'Başlıyor...' : 'Çevrimdışı'}</div>
                     </div>
                 </div>\`;
             }
 
-            const spot = data.spotify || data.lastSpotify;
-            if(spot) {
-                spotData = isOffline ? null : spot;
+            // Spotify Kartı
+            const activeSpot = data.spotify || data.lastSpotify;
+            if(activeSpot) {
+                spotActive = !!data.spotify && isOnline;
+                spotRef = spotActive ? data.spotify : null;
                 html += \`
                 <div class="card-item">
-                    <img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
+                    <img src="\${activeSpot.album_art_url}" style="width:45px; height:45px; border-radius:12px;">
                     <div style="flex:1; overflow:hidden;">
-                        <div style="font-size:9px; font-weight:900; color:#1db954; letter-spacing:1px; text-transform:uppercase;">\${isOffline ? 'SON DİNLENEN' : 'SPOTIFY'}</div>
-                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
-                        <div style="font-size:11px; opacity:0.5;">\${spot.artist}</div>
-                        \${!isOffline ? '<div class="s-bar-bg"><div id="s-fill" class="s-bar-fill" style="background:#1db954"></div></div>' : ''}
+                        <div style="font-size:9px; font-weight:900; color:#1db954;">\${spotActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div>
+                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${activeSpot.song}</div>
+                        <div style="font-size:11px; opacity:0.5;">\${activeSpot.artist}</div>
+                        \${spotActive ? '<div class="s-bar-bg"><div id="s-fill" class="s-bar-fill" style="background:#1db954"></div></div>' : ''}
                     </div>
                 </div>\`;
             }
-            document.getElementById("activity-stack").innerHTML = html || '<div style="font-size:11px; opacity:0.2; padding:15px;">SESSİZ MOD</div>';
-        }
+            document.getElementById("activity-stack").innerHTML = html;
+        });
 
         function engine() {
-            const gTime = document.getElementById("game-timer");
-            if(gTime && gameStart) { gTime.innerText = fmt(Date.now() - gameStart) + " süredir"; }
-
-            if(spotData) {
-                const total = spotData.timestamps.end - spotData.timestamps.start;
-                const elapsed = Date.now() - spotData.timestamps.start;
-                const pct = Math.min((elapsed / total) * 100, 100);
+            if(gameActive && gameStart) {
+                const s = Math.floor((Date.now() - gameStart) / 1000);
+                document.getElementById("game-timer").innerText = Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0') + " süredir";
+            }
+            if(spotActive && spotRef) {
+                const pct = Math.min(((Date.now() - spotRef.timestamps.start) / (spotRef.timestamps.end - spotRef.timestamps.start)) * 100, 100);
                 const fill = document.getElementById("s-fill");
                 if(fill) fill.style.width = pct + "%";
             }
-            
-            // Mesaj zamanlarını güncelle (X dk önce)
-            document.querySelectorAll('.msg-time').forEach(el => {
-                const time = parseInt(el.getAttribute('data-time'));
-                el.innerText = timeAgo(time);
-            });
-
+            document.querySelectorAll('.msg-time').forEach(el => { el.innerText = timeSince(parseInt(el.dataset.time)); });
             requestAnimationFrame(engine);
         }
         engine();
 
         function sendMsg() {
-            if(localStorage.getItem('v_m_s')) return;
-            const u = document.getElementById('in-user').value;
-            const t = document.getElementById('in-text').value;
+            if(sessionStorage.getItem('msg_sent')) return alert("Bu sekmeden sadece 1 mesaj gönderebilirsiniz!");
+            const u = document.getElementById('in-user').value, t = document.getElementById('in-text').value;
             if(u && t) {
                 socket.emit('send_msg', {user:u, text:t});
-                localStorage.setItem('v_m_s', 'true');
-                checkLimit();
-            }
-        }
-
-        function checkLimit() {
-            if(localStorage.getItem('v_m_s')) {
-                document.getElementById('msg-form-area').innerHTML = '<div style="text-align:center; padding:15px; background:rgba(255,71,87,0.08); border-radius:14px; color:#ff4757; font-size:11px; font-weight:800; border:1px solid rgba(255,71,87,0.2);">Bugünlük mesaj limitiniz doldu.</div>';
+                sessionStorage.setItem('msg_sent', '1');
+                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; color:gray;'>Mesajınız iletildi.</p>";
             }
         }
 
@@ -302,33 +247,32 @@ app.get("/", (req, res) => {
         function renderMsgs(m) {
             document.getElementById("msg-feed").innerHTML = m.map(x => \`
                 <div class="msg-bubble">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px;">
                         <b style="color:var(--accent);">\${x.user}</b>
-                        <span class="msg-time" data-time="\${x.time}" style="opacity:0.3;">\${timeAgo(x.time)}</span>
+                        <span class="msg-time" data-time="\${x.time}">\${timeSince(x.time)}</span>
                     </div>
-                    <div style="font-size:12px; opacity:0.8; word-break: break-word;">\${x.text}</div>
+                    <div style="font-size:12px; opacity:0.8;">\${x.text}</div>
                 </div>\`).join('');
         }
 
         document.getElementById("btn-like").onclick = function() {
-            if(localStorage.getItem('v_l')) return;
+            if(localStorage.getItem('liked')) return;
             fetch('/api/like').then(r=>r.json()).then(d => {
                 document.getElementById("like-txt").innerText = d.likes;
-                this.classList.add('liked');
-                localStorage.setItem('v_l', 'true');
+                this.classList.add('liked'); localStorage.setItem('liked', '1');
             });
         };
 
         document.getElementById("btn-theme").onclick = function() {
             const h = document.documentElement;
             const icon = document.getElementById("theme-icon");
-            icon.style.transform = 'rotate(360deg) scale(0)';
+            const isDark = h.getAttribute("data-theme") === "dark";
+            icon.style.transform = "rotate(360deg) scale(0)";
             setTimeout(() => {
-                const isDark = h.getAttribute("data-theme") === "dark";
                 h.setAttribute("data-theme", isDark ? "light" : "dark");
                 icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-                icon.style.transform = 'rotate(0deg) scale(1)';
-                if(isDark) icon.style.color = "#f1c40f"; else icon.style.color = "#777";
+                icon.style.transform = "rotate(0deg) scale(1)";
+                icon.style.color = isDark ? "#f1c40f" : "inherit";
             }, 300);
         };
 
@@ -338,16 +282,8 @@ app.get("/", (req, res) => {
                 document.getElementById("view-txt").innerText = d.views;
             });
             if(!sessionStorage.getItem('v')) { fetch('/api/view'); sessionStorage.setItem('v','1'); }
-            if(localStorage.getItem('v_l')) document.getElementById('btn-like').classList.add('liked');
-            checkLimit();
-            
-            const bg = document.getElementById('bg-canvas');
-            for(let i=0; i<3; i++){
-                let o = document.createElement('div'); o.className='orb';
-                o.style.width='300px'; o.style.height='300px';
-                o.style.left=Math.random()*80+'%'; o.style.top=Math.random()*80+'%';
-                o.style.animationDelay=(i*4)+'s'; bg.appendChild(o);
-            }
+            if(localStorage.getItem('liked')) document.getElementById('btn-like').classList.add('liked');
+            if(sessionStorage.getItem('msg_sent')) document.getElementById('msg-form-area').style.display="none";
         };
     </script>
 </body>
