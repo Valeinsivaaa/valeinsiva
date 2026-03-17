@@ -1,19 +1,31 @@
 {
-  "views": 34,
+  "views": 35,
   "likes": 11,
   "lastSpotify": {
-    "album": "Şikayet",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732cb6786605b31ada211dfffb",
-    "artist": "Majorbeatz",
-    "song": "Kader Bekir Abi",
+    "album": "DÖNMEK İÇİN EVE",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27302ae5a96c7d265aaaf826584",
+    "artist": "Gazapizm",
+    "song": "Bir Anne Sohbeti",
     "timestamps": {
-      "end": 1773771784357,
-      "start": 1773771633776
+      "end": 1773772047651,
+      "start": 1773771783731
     },
-    "track_id": "2izsPSwWoWWPbDf6oOQbVz"
+    "track_id": "4hfRnkDbO4FuisvfjAa0ZT"
   },
   "lastGame": {
-    "name": "Henüz oyun oynanmadı"
+    "assets": {
+      "small_image": "mp:external/p6myHiQuLBWF3ICZ2K-DzlxS1GQhbZtAC5lF2z2tTOw/https/image.api.playstation.com/vulcan/ap/rnd/202202/2816/K6mmm89oNII1iI1aqaClO0wh.png"
+    },
+    "created_at": 1773771868281,
+    "flags": 192,
+    "id": "aa103755dd991d5d",
+    "name": "Grand Theft Auto V",
+    "platform": "ps5",
+    "session_id": "playstation:877946035408891945",
+    "timestamps": {
+      "start": 1773771868281
+    },
+    "type": 0
   },
   "messages": [
     {
