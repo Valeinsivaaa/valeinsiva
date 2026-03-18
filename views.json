@@ -1,5 +1,5 @@
 {
-  "views": 248,
+  "views": 249,
   "likes": 20,
   "messages": [
     {
@@ -34,14 +34,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Hayalet Islığı (Instrumentals)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273807a5384120b502d9ee0e08c",
-    "artist": "Farazi",
-    "song": "Dobro Vecer",
+    "album": "Umutlarımı Sattım",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27345d8d2be6192f4107b5eeea2",
+    "artist": "Enes Kurt",
+    "song": "Umutlarımı Sattım",
     "timestamps": {
-      "end": 1773776814035,
-      "start": 1773776587607
+      "end": 1773864237550,
+      "start": 1773864098883
     },
-    "track_id": "7koqYCHESDGTORau9emDO1"
+    "track_id": "7lRhu5mml7UtZnVCvCVtbT"
   }
 }
