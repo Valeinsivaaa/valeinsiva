@@ -33,7 +33,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Animation & Sticky Header Update", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Time Format & Stability Update", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -92,7 +92,6 @@ app.get("/", (req, res) => {
         
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: background 0.5s ease; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; position: relative; }
         
-        /* Mavi blok (selection) engelleyici */
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         ::selection { background: transparent; }
 
@@ -103,15 +102,12 @@ app.get("/", (req, res) => {
         .wrapper { width:100%; max-width:400px; padding:110px 15px 40px; box-sizing:border-box; z-index: 10; }
         .glass-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; margin-bottom: 25px; }
         
-        /* Butonlar: Artık Sabit (Absolute/Fixed Değil) */
         .nav-btn { position:absolute; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .nav-btn:active { transform: scale(0.9); }
 
-        /* Tema Animasyonu */
         #theme-icon { font-size: 20px; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; }
         .rotate-out { transform: rotate(180deg) scale(0); opacity: 0; }
 
-        /* Beğeni Animasyonu */
         .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: pop 0.4s ease-out; }
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
         
@@ -177,6 +173,14 @@ app.get("/", (req, res) => {
     <script>
         const socket = io();
         let gActive = false, gStart = null, sActive = false, sRef = null;
+
+        function getTimeAgo(ts) {
+            const s = Math.floor((Date.now() - ts) / 1000);
+            if (s < 60) return 'az önce';
+            if (s < 3600) return Math.floor(s/60) + 'dk önce';
+            if (s < 86400) return Math.floor(s/3600) + 'sa önce';
+            return Math.floor(s/86400) + 'gün önce';
+        }
 
         function fmt(ms) {
             if(!ms || ms < 0) return "00:00";
@@ -302,7 +306,7 @@ app.get("/", (req, res) => {
                 <div class="msg-bubble">
                     <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                         <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
-                        <span style="font-size:9px; opacity:0.5;">\${new Date(x.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>
+                        <span style="font-size:9px; opacity:0.5; font-weight:800;">\${getTimeAgo(x.time)}</span>
                     </div>
                     <div style="font-size:13px; opacity:0.9;">\${x.text}</div>
                 </div>\`).join('');
