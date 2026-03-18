@@ -12,13 +12,13 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = "Valeinsivaaa"; 
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
-const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/1483558000172990717/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69bb068e&is=69b9b50e&hm=49e2edec926aae5b8f73a686d89e4df9ef55fe48147ed53f53ae0b27bf70b8d6&";
-const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
-const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
+const DISCORD_ID = "877946035408891945"; //
+const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/1483558000172990717/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69bb068e&is=69b9b50e&hm=49e2edec926aae5b8f73a686d89e4df9ef55fe48147ed53f53ae0b27bf70b8d6&"; //
+const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; //
+const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; //
 
-// Xiaomi 13T Pro Model Kodu (Görselden teyit edildi: 23078PND5G)
-const ADMIN_MODEL_ID = "23078PND5G"; 
+// Xiaomi 13T Pro Model Kodu
+const ADMIN_MODEL_ID = "23078PND5G"; //
 
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null };
 
@@ -102,24 +102,17 @@ app.get("/", (req, res) => {
 
         .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); position: relative; }
         
-        /* PS İkonu & Tasarımı */
-        .ps-logo { font-size: 24px; color: #fff; opacity: 0.8; }
-        .ps-badge { position: absolute; top: 12px; right: 12px; font-size: 14px; opacity: 0.5; }
-
+        .ps-badge { position: absolute; top: 12px; right: 45px; font-size: 14px; opacity: 0.3; }
         .game-img { width:45px; height:45px; border-radius:12px; object-fit: cover; background: rgba(255,255,255,0.1); }
 
-        /* Sohbet & Mesajlar */
         .msg-bubble { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; animation: slideIn 0.4s ease; text-align: left; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .msg-user { color: var(--accent); font-weight: 800; font-size: 13px; }
         .msg-date { font-size: 10px; opacity: 0.4; font-weight: 600; }
 
-        /* Buton Animasyonları */
         .nav-btn { position:fixed; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .nav-btn:active { transform: scale(0.9); }
-        #btn-theme i { transition: transform 0.6s ease; }
-        .rotate-icon { transform: rotate(360deg); }
         
         .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: heartBeat 0.4s linear; }
         @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
@@ -170,7 +163,6 @@ app.get("/", (req, res) => {
 
     <script>
         const socket = io();
-        let gActive = false, gStart = null;
 
         function getTimeAgo(ts) {
             const diff = Math.floor((Date.now() - ts) / 1000);
@@ -191,17 +183,27 @@ app.get("/", (req, res) => {
             const currGame = game || data.lastGame;
             
             if(currGame) {
-                gActive = !!game && data.discord_status !== "offline";
-                let gameImg = currGame.application_id ? \`https://cdn.discordapp.com/app-assets/\${currGame.application_id}/\${currGame.assets?.large_image}.png\` : "https://i.imgur.com/8QO9yC2.png";
+                const gActive = !!game && data.discord_status !== "offline";
+                let gameImg = "https://i.imgur.com/8QO9yC2.png";
+                
+                if (currGame.assets && currGame.assets.large_image) {
+                    if (currGame.assets.large_image.startsWith("mp:external")) {
+                        gameImg = \`https://media.discordapp.net/external/\${currGame.assets.large_image.split("mp:external/")[1]}\`;
+                    } else {
+                        gameImg = \`https://cdn.discordapp.com/app-assets/\${currGame.application_id}/\${currGame.assets.large_image}.png\`;
+                    }
+                } else {
+                    gameImg = \`https://api.dicebear.com/7.x/initials/svg?seed=\${encodeURIComponent(currGame.name)}&backgroundColor=121212\`;
+                }
 
                 html += \`
                 <div class="card-item">
                     <span class="material-icons ps-badge">videogame_asset</span>
                     <img src="\${gameImg}" class="game-img" onerror="this.src='https://i.imgur.com/8QO9yC2.png'">
                     <div style="flex:1; text-align:left;">
-                        <div style="font-size:9px; font-weight:900; color:var(--accent); letter-spacing:1px;">\${gActive ? 'PLAYSTATION' : 'GEÇMİŞ'}</div>
-                        <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
-                        <div style="font-size:10px; opacity:0.5;">\${gActive ? 'Oynuyor' : 'Çevrimdışı'}</div>
+                        <div style="font-size:9px; font-weight:900; color:var(--accent); letter-spacing:1px;">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
+                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${currGame.name}</div>
+                        <div style="font-size:10px; opacity:0.5;">\${gActive ? 'PlayStation 5' : 'Çevrimdışı'}</div>
                     </div>
                     <i class="fa-brands fa-playstation fa-xl" style="opacity:0.8;"></i>
                 </div>\`;
@@ -214,7 +216,7 @@ app.get("/", (req, res) => {
                     <img src="\${spot.album_art_url}" class="game-img" style="border-radius:50%; animation: spin 10s linear infinite;">
                     <div style="flex:1; text-align:left;">
                         <div style="font-size:9px; font-weight:900; color:#1db954;">SPOTIFY</div>
-                        <div style="font-size:13px; font-weight:800;">\${spot.song}</div>
+                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
                         <div style="font-size:10px; opacity:0.5;">\${spot.artist}</div>
                     </div>
                     <i class="fa-brands fa-spotify fa-xl" style="color:#1db954;"></i>
@@ -254,7 +256,6 @@ app.get("/", (req, res) => {
             const h = document.documentElement;
             const icon = document.getElementById("theme-icon");
             const isDark = h.getAttribute("data-theme") === "dark";
-            
             icon.style.transform = "rotate(180deg) scale(0)";
             setTimeout(() => {
                 h.setAttribute("data-theme", isDark ? "light" : "dark");
