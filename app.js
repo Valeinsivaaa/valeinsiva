@@ -34,7 +34,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Aesthetic Update", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Aesthetic & Spotify Timer Update", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -55,11 +55,12 @@ syncWithGithub();
 app.get("/api/stats", (req, res) => res.json({ views: db.views, likes: db.likes }));
 app.get("/api/like", async (req, res) => { db.likes++; await syncWithGithub(true); res.json({ success: true, likes: db.likes }); });
 
-// Geliştirilmiş View API (Seni saymayan sistem)
+// Geliştirilmiş View API (Kesin Çözüm: Admin Kontrolü)
 app.get("/api/view", async (req, res) => {
     const userAgent = req.headers['user-agent'] || "";
-    // Kendi cihazından (Xiaomi 13T Pro) geliyorsan sayacı artırma
-    if (userAgent.includes(ADMIN_UA_KEY)) {
+    const isAdminQuery = req.query.admin === 'true';
+    
+    if (userAgent.includes(ADMIN_UA_KEY) || isAdminQuery) {
         return res.json({ success: true, admin: true, views: db.views });
     }
     db.views++;
@@ -97,64 +98,39 @@ app.get("/", (req, res) => {
             margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); 
             transition: background 0.5s ease; display:flex; flex-direction:column; align-items:center; 
             min-height:100vh; overflow-x:hidden; position: relative;
-            text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
         }
 
-        .bg-wrap { position: fixed; inset: 0; z-index: -1; pointer-events: none; will-change: transform; }
-        .orb { 
-            position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.12; 
-            background: var(--accent); animation: float 20s infinite alternate linear; 
-            transform: translateZ(0); 
-        }
-        @keyframes float { 
-            0% { transform: translate(-5%, -5%) rotate(0deg); } 
-            100% { transform: translate(30%, 20%) rotate(10deg); } 
-        }
+        .bg-wrap { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.12; background: var(--accent); animation: float 20s infinite alternate linear; }
+        @keyframes float { 0% { transform: translate(-5%, -5%); } 100% { transform: translate(30%, 20%); } }
 
         .wrapper { width:100%; max-width:400px; padding:80px 15px 40px; box-sizing:border-box; z-index: 10; }
-        
-        .glass-card { 
-            background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; margin-bottom: 25px;
-            transform: translateZ(0);
-        }
+        .glass-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; margin-bottom: 25px; }
         
         .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
-        .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
-        
         .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); }
-        .online { background:#23a55a; box-shadow: 0 0 10px #23a55a; } 
-        .idle { background:#f0b232; box-shadow: 0 0 10px #f0b232; } 
-        .dnd { background:#f23f43; box-shadow: 0 0 10px #f23f43; } 
-        .offline { background:#80848e; }
+        .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
 
         .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); }
-        .s-bar-bg { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
-        .s-bar-fill { height:100%; background:#1db954; width:0%; transition: width 1s linear; }
+        .s-bar-bg { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; position: relative; }
+        .s-bar-fill { height:100%; background:#1db954; width:0%; transition: width 0.5s linear; }
+
+        .timer-row { display: flex; justify-content: space-between; font-size: 9px; font-weight: 800; margin-top: 4px; opacity: 0.6; font-variant-numeric: tabular-nums; }
 
         .msg-bubble { background: rgba(114, 137, 218, 0.05); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; }
-        .msg-time { font-size: 9px; opacity: 0.5; font-weight: 800; text-transform: uppercase; }
+        .msg-time { font-size: 9px; opacity: 0.5; font-weight: 800; }
 
         .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
 
-        .nav-btn { 
-            position:fixed; top:25px; width:50px; height:50px; background:var(--card); 
-            border-radius:50%; display:flex; align-items:center; justify-content:center; 
-            border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.4s; 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        }
-
-        #btn-theme i { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
+        .nav-btn { position:fixed; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.4s; }
+        #btn-theme i { transition: 0.6s; }
         .theme-spin { transform: rotate(360deg) scale(0); opacity: 0; }
-
         .nav-btn.liked { color: #ff4757 !important; border-color: #ff4757; }
     </style>
 </head>
 <body>
     <div class="bg-wrap" id="orb-container"></div>
-    
     <div class="nav-btn" id="btn-like" style="left:20px;"><i class="fa-solid fa-heart"></i></div>
     <div class="nav-btn" id="btn-theme" style="right:20px;"><i id="theme-icon" class="fa-solid fa-moon"></i></div>
 
@@ -164,7 +140,6 @@ app.get("/", (req, res) => {
             <div style="padding:0 25px 25px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
-                    <img id="u-decor" class="decor-img" style="display:none;">
                     <div id="u-status" class="status-badge offline"></div>
                 </div>
                 <h2 id="u-nick" style="margin:0; font-weight:800; font-size:26px; letter-spacing:-1px;">Valeinsiva</h2>
@@ -187,7 +162,6 @@ app.get("/", (req, res) => {
         </div>
 
         <div class="glass-card" style="padding:25px;">
-            <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:1.5px;">Gelen Kutusu</h4>
             <div id="msg-feed"></div>
             <div id="msg-form-area" style="margin-top:15px;">
                 <input id="in-user" class="in-style" maxlength="15" placeholder="İsminiz">
@@ -211,28 +185,21 @@ app.get("/", (req, res) => {
         function fmt(ms) {
             if(!ms || ms < 0) return "00:00";
             const s = Math.floor(ms / 1000);
-            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
+            const m = Math.floor(s / 60);
+            return m.toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
         }
 
         socket.on("presence", data => {
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
-            
-            const decor = document.getElementById("u-decor");
-            if(u.avatar_decoration_data) {
-                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
-                decor.style.display="block";
-            } else decor.style.display="none";
-            
             document.getElementById("u-status").className = "status-badge " + data.discord_status;
 
-            const isOnline = data.discord_status !== "offline";
             let html = "";
             const game = data.activities.find(a => a.type === 0);
             const currGame = game || data.lastGame;
             if(currGame) {
-                gActive = !!game && isOnline;
+                gActive = !!game && data.discord_status !== "offline";
                 gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
                 html += \`
                 <div class="card-item">
@@ -248,17 +215,22 @@ app.get("/", (req, res) => {
 
             const spot = data.spotify || data.lastSpotify;
             if(spot) {
-                sActive = !!data.spotify && isOnline;
-                if(!sRef || sRef.track_id !== spot.track_id) sRef = spot;
+                sActive = !!data.spotify && data.discord_status !== "offline";
+                sRef = spot;
                 html += \`
                 <div class="card-item">
-                    <img src="\${spot.album_art_url}" style="width:45px; height:45px; border-radius:10px;">
+                    <img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
                     <div style="flex:1; overflow:hidden; text-align:left;">
                         <div style="font-size:9px; font-weight:900; color:#1db954;">\${sActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div>
                         <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
+                        <div style="font-size:11px; opacity:0.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.artist}</div>
                         \${sActive ? \`
                             <div class="s-bar-bg"><div id="s-fill" class="s-bar-fill"></div></div>
-                        \` : '<div style="font-size:11px; opacity:0.5;">' + spot.artist + '</div>'}
+                            <div class="timer-row">
+                                <span id="s-current">00:00</span>
+                                <span id="s-end">00:00</span>
+                            </div>
+                        \` : ''}
                     </div>
                     <i class="fa-brands fa-spotify fa-xl" style="color:#1db954; opacity:0.8; margin-right:5px;"></i>
                 </div>\`;
@@ -268,16 +240,21 @@ app.get("/", (req, res) => {
 
         function engine() {
             if(gActive && gStart) {
-                const elapsed = Date.now() - gStart;
-                const gTimeEl = document.getElementById("g-time");
-                if(gTimeEl) gTimeEl.innerText = fmt(elapsed) + " süredir";
+                const el = document.getElementById("g-time");
+                if(el) el.innerText = fmt(Date.now() - gStart) + " süredir";
             }
             if(sActive && sRef) {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
                 const elapsed = Date.now() - sRef.timestamps.start;
                 const pct = Math.min((elapsed / total) * 100, 100);
+                
                 const fill = document.getElementById("s-fill");
+                const cur = document.getElementById("s-current");
+                const end = document.getElementById("s-end");
+                
                 if(fill) fill.style.width = pct + "%";
+                if(cur) cur.innerText = fmt(elapsed);
+                if(end) end.innerText = fmt(total);
             }
             requestAnimationFrame(engine);
         }
@@ -328,12 +305,21 @@ app.get("/", (req, res) => {
         };
 
         window.onload = () => {
+            // Kesin Admin Tanıma: İlk girişte admin etiketi koyar
+            const userAgent = navigator.userAgent;
+            if(userAgent.includes("${ADMIN_UA_KEY}")) {
+                localStorage.setItem('isAdmin', 'true');
+            }
+            
+            const isAdm = localStorage.getItem('isAdmin') === 'true';
             fetch('/api/stats').then(r=>r.json()).then(d => {
                 document.getElementById("like-txt").innerText = d.likes;
                 document.getElementById("view-txt").innerText = d.views;
             });
-            // Seni saymaması için UA check API'sini tetikle
-            fetch('/api/view');
+            
+            // Eğer admin ise view sayacını artırmayan parametreyle istek atar
+            fetch('/api/view' + (isAdm ? '?admin=true' : ''));
+            
             if(localStorage.getItem('L')) document.getElementById('btn-like').classList.add('liked');
             
             const container = document.getElementById('orb-container');
