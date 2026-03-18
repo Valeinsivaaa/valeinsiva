@@ -1,5 +1,5 @@
 {
-  "views": 273,
+  "views": 274,
   "likes": 20,
   "messages": [
     {
@@ -34,14 +34,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yeraltı Edebiyatı",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27339367660107b68d2a587efc7",
-    "artist": "Gazapizm",
-    "song": "Yeraltı Edebiyatı",
+    "album": "Dost Merhaba",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f9824843d1f09705e138213c",
+    "artist": "Selda Bağcan; Ahmet Kaya",
+    "song": "Öyle Bir Yerdeyim ki",
     "timestamps": {
-      "end": 1773865404684,
-      "start": 1773865208387
+      "end": 1773866008086,
+      "start": 1773865699086
     },
-    "track_id": "40fqDPv4drwaKnX047hxY6"
+    "track_id": "2lN6njvQIWp5ZSFzmAME5k"
   }
 }
