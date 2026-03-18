@@ -1,5 +1,5 @@
 {
-  "views": 266,
+  "views": 267,
   "likes": 20,
   "messages": [
     {
@@ -34,14 +34,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Çıkmaz Bir Sokakta",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732e6586bb10b0fa201939c7bc",
-    "artist": "Semicenk",
-    "song": "Çıkmaz Bir Sokakta",
+    "album": "Yaralı",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734d3eb479c97ddc630e2d2fa9",
+    "artist": "Murat Göğebakan",
+    "song": "Diğer Yarım",
     "timestamps": {
-      "end": 1773864503806,
-      "start": 1773864341061
+      "end": 1773864959860,
+      "start": 1773864782127
     },
-    "track_id": "4SJjMPowhsrYSWgxM61yxm"
+    "track_id": "4FXjHbm5lm43v2ID0cPGNn"
   }
 }
