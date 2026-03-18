@@ -1,7 +1,12 @@
 {
-  "views": 272,
+  "views": 271,
   "likes": 20,
   "messages": [
+    {
+      "user": "deneme",
+      "text": "denmee",
+      "time": 1773865261137
+    },
     {
       "user": "Cimiaow",
       "text": "Kral adam",
@@ -34,14 +39,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yaralı",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734d3eb479c97ddc630e2d2fa9",
-    "artist": "Murat Göğebakan",
-    "song": "Diğer Yarım",
+    "album": "Yeraltı Edebiyatı",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27339367660107b68d2a587efc7",
+    "artist": "Gazapizm",
+    "song": "Yeraltı Edebiyatı",
     "timestamps": {
-      "end": 1773864959860,
-      "start": 1773864782127
+      "end": 1773865404684,
+      "start": 1773865208387
     },
-    "track_id": "4FXjHbm5lm43v2ID0cPGNn"
+    "track_id": "40fqDPv4drwaKnX047hxY6"
   }
 }
