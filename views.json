@@ -1,5 +1,5 @@
 {
-  "views": 253,
+  "views": 254,
   "likes": 20,
   "messages": [
     {
@@ -34,14 +34,14 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Umutlarımı Sattım",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27345d8d2be6192f4107b5eeea2",
-    "artist": "Enes Kurt",
-    "song": "Umutlarımı Sattım",
+    "album": "Çıkmaz Bir Sokakta",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732e6586bb10b0fa201939c7bc",
+    "artist": "Semicenk",
+    "song": "Çıkmaz Bir Sokakta",
     "timestamps": {
-      "end": 1773864237550,
-      "start": 1773864098883
+      "end": 1773864503806,
+      "start": 1773864341061
     },
-    "track_id": "7lRhu5mml7UtZnVCvCVtbT"
+    "track_id": "4SJjMPowhsrYSWgxM61yxm"
   }
 }
