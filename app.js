@@ -34,7 +34,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Admin & Spotify Timer Fixed", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Fix: Admin, Decor, Messages & Timers", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -55,10 +55,9 @@ syncWithGithub();
 app.get("/api/stats", (req, res) => res.json({ views: db.views, likes: db.likes }));
 app.get("/api/like", async (req, res) => { db.likes++; await syncWithGithub(true); res.json({ success: true, likes: db.likes }); });
 
-// --- KESİN ÇÖZÜM: SENİ ASLA SAYMAYAN VİEW API ---
 app.get("/api/view", async (req, res) => {
     const userAgent = req.headers['user-agent'] || "";
-    // Query'den gelen admin=true veya User-Agent'daki model kodu varsa artırma
+    // SENİ SAYMAMA: UA kontrolü veya URL'den gelen admin parametresi
     if (userAgent.includes(ADMIN_UA_KEY) || req.query.admin === 'true') {
         return res.json({ success: true, admin: true, views: db.views });
     }
@@ -103,17 +102,22 @@ app.get("/", (req, res) => {
         
         .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
-        .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); }
+        .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
+        .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); z-index:12; }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
 
-        .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); position: relative; }
+        .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); }
         .s-bar-bg { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
         .s-bar-fill { height:100%; background:#1db954; width:0%; transition: width 0.5s linear; }
 
-        .timer-row { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; margin-top: 5px; opacity: 0.6; font-family: monospace; }
+        .timer-row { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; margin-top: 5px; opacity: 0.6; }
+
+        .msg-bubble { background: rgba(114, 137, 218, 0.05); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; text-align: left; }
+        .msg-time { font-size: 9px; opacity: 0.5; font-weight: 800; text-transform: uppercase; }
+
+        .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
 
         .nav-btn { position:fixed; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition:0.4s; }
-        #theme-icon { transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         .theme-spin { transform: rotate(360deg) scale(0); opacity: 0; }
         .liked { color: #ff4757 !important; border-color: #ff4757 !important; }
     </style>
@@ -129,16 +133,20 @@ app.get("/", (req, res) => {
             <div style="padding:0 25px 25px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
+                    <img id="u-decor" class="decor-img" style="display:none;">
                     <div id="u-status" class="status-badge offline"></div>
                 </div>
                 <h2 id="u-nick" style="margin:0; font-weight:800; font-size:26px;">Valeinsiva</h2>
                 <div style="font-size:12px; opacity:0.4; margin-bottom:20px;">@valeinsiva</div>
+
                 <div id="activity-stack"></div>
-                <div style="display:flex; justify-content:space-around; margin:25px 0; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08);">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="color:inherit;"><i class="fa-brands fa-discord fa-xl"></i></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" style="color:inherit;"><i class="fa-brands fa-instagram fa-xl"></i></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" style="color:inherit;"><i class="fa-solid fa-terminal fa-xl"></i></a>
+
+                <div style="display:flex; justify-content:space-between; margin:25px 0; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08);">
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-discord fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Discord</span></a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-instagram fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Instagram</span></a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-solid fa-terminal fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Bot Hub</span></a>
                 </div>
+
                 <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:900; opacity:0.3;">
                     <span><i class="fa-solid fa-eye"></i> <span id="view-txt">0</span></span>
                     <span><i class="fa-solid fa-heart"></i> <span id="like-txt">0</span></span>
@@ -146,12 +154,28 @@ app.get("/", (req, res) => {
                 </div>
             </div>
         </div>
-        <div class="glass-card" style="padding:25px;"><div id="msg-feed"></div></div>
+
+        <div class="glass-card" style="padding:25px;">
+            <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:1.5px;">Gelen Kutusu</h4>
+            <div id="msg-feed"></div>
+            <div id="msg-form-area" style="margin-top:15px;">
+                <input id="in-user" class="in-style" maxlength="15" placeholder="İsminiz">
+                <textarea id="in-text" class="in-style" maxlength="80" style="height:70px; resize:none;" placeholder="Bir mesaj bırak..."></textarea>
+                <button onclick="sendMsg()" style="width:100%; background:var(--accent); color:white; border:none; padding:15px; border-radius:18px; cursor:pointer; font-weight:800;">GÖNDER</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const socket = io();
-        let sActive = false, sRef = null;
+        let gActive = false, gStart = null, sActive = false, sRef = null;
+
+        function getTimeAgo(ts) {
+            const s = Math.floor((Date.now() - ts) / 1000);
+            if (s < 60) return 'az önce';
+            if (s < 3600) return Math.floor(s/60) + 'dk önce';
+            return Math.floor(s/3600) + 'sa önce';
+        }
 
         function fmt(ms) {
             if(!ms || ms < 0) return "00:00";
@@ -163,19 +187,29 @@ app.get("/", (req, res) => {
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
+            
+            // DEKOR GERİ GELDİ
+            const decor = document.getElementById("u-decor");
+            if(u.avatar_decoration_data) {
+                decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
+                decor.style.display="block";
+            } else decor.style.display="none";
+
             document.getElementById("u-status").className = "status-badge " + data.discord_status;
 
             let html = "";
             const game = data.activities.find(a => a.type === 0);
             const currGame = game || data.lastGame;
             if(currGame) {
-                const isActive = !!game && data.discord_status !== "offline";
+                gActive = !!game && data.discord_status !== "offline";
+                gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
                 html += \`
                 <div class="card-item">
                     <div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div>
                     <div style="flex:1; text-align:left;">
-                        <div style="font-size:9px; font-weight:900; color:var(--accent);">\${isActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
+                        <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
                         <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
+                        <div id="g-time" style="font-size:10px; opacity:0.5;">00:00</div>
                     </div>
                     <i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i>
                 </div>\`;
@@ -202,7 +236,12 @@ app.get("/", (req, res) => {
             document.getElementById("activity-stack").innerHTML = html;
         });
 
+        // BAĞIMSIZ ÇALIŞAN ZAMANLAYICILAR
         function engine() {
+            if(gActive && gStart) {
+                const gEl = document.getElementById("g-time");
+                if(gEl) gEl.innerText = fmt(Date.now() - gStart) + " süredir";
+            }
             if(sActive && sRef) {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
                 const elapsed = Date.now() - sRef.timestamps.start;
@@ -215,6 +254,29 @@ app.get("/", (req, res) => {
             requestAnimationFrame(engine);
         }
         engine();
+
+        function sendMsg() {
+            if(sessionStorage.getItem('sent')) return;
+            const u = document.getElementById('in-user').value, t = document.getElementById('in-text').value;
+            if(u && t) {
+                socket.emit('send_msg', {user:u, text:t});
+                sessionStorage.setItem('sent', '1');
+                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; opacity:0.5; font-weight:800;'>Mesajın başarıyla iletildi!</p>";
+            }
+        }
+
+        socket.on('init_messages', renderMsgs);
+        socket.on('new_msg', renderMsgs);
+        function renderMsgs(m) {
+            document.getElementById("msg-feed").innerHTML = m.map(x => \`
+                <div class="msg-bubble">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
+                        <span class="msg-time">\${getTimeAgo(x.time)}</span>
+                    </div>
+                    <div style="font-size:13px; opacity:0.9;">\${x.text}</div>
+                </div>\`).join('');
+        }
 
         document.getElementById("btn-theme").onclick = function() {
             const h = document.documentElement;
@@ -230,10 +292,8 @@ app.get("/", (req, res) => {
         };
 
         window.onload = () => {
-            // Xiaomi 13T Pro için kesin engelleme
-            if(navigator.userAgent.includes("${ADMIN_UA_KEY}")) {
-                localStorage.setItem('isAdmin', 'true');
-            }
+            // Xiaomi 13T Pro Koruması
+            if(navigator.userAgent.includes("${ADMIN_UA_KEY}")) { localStorage.setItem('isAdmin', 'true'); }
             const isAdm = localStorage.getItem('isAdmin') === 'true';
             
             fetch('/api/stats').then(r=>r.json()).then(d => {
@@ -241,11 +301,18 @@ app.get("/", (req, res) => {
                 document.getElementById("view-txt").innerText = d.views;
             });
             
-            // Eğer admin ise sayacı artırmayan istek atar
+            // Eğer adminsen sayacı asla artırmayacak şekilde API çağırır
             fetch('/api/view' + (isAdm ? '?admin=true' : ''));
             
             if(localStorage.getItem('L')) document.getElementById('btn-like').classList.add('liked');
-            
+            document.getElementById("btn-like").onclick = function() {
+                if(localStorage.getItem('L')) return;
+                fetch('/api/like').then(r=>r.json()).then(d => {
+                    document.getElementById("like-txt").innerText = d.likes;
+                    this.classList.add('liked'); localStorage.setItem('L', '1');
+                });
+            };
+
             const container = document.getElementById('orb-container');
             for(let i=0; i<2; i++) {
                 const o = document.createElement('div');
