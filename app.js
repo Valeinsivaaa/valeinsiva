@@ -17,9 +17,9 @@ const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/14
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
-const ADMIN_UA_KEY = "23078PND5G"; 
+const ADMIN_UA_KEY = "23078PND5G";
 
-let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null };
+let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00" };
 
 async function syncWithGithub(isUpdate = false) {
     try {
@@ -28,12 +28,12 @@ async function syncWithGithub(isUpdate = false) {
         const getRes = await axios.get(url, { headers }).catch(() => null);
         if (getRes) {
             const remoteDb = JSON.parse(Buffer.from(getRes.data.content, 'base64').toString());
-            if (!isUpdate) { db = remoteDb; return; }
+            if (!isUpdate) { db = { ...db, ...remoteDb }; return; }
         }
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Time Format & Stability Update", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Game Time Fix & Persistence", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -44,10 +44,27 @@ setInterval(async () => {
         const data = r.data.data;
         if (data.spotify) db.lastSpotify = data.spotify;
         const game = data.activities.find(a => a.type === 0);
-        if (game) db.lastGame = game;
-        io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame });
+        
+        if (game) {
+            db.lastGame = game;
+            // Oyun aktifken süreyi hesapla ve formatla
+            const start = game.timestamps?.start || Date.now();
+            db.lastGameTime = fmtFull(Date.now() - start);
+        }
+        
+        io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame, lastGameTime: db.lastGameTime });
     } catch (e) {}
 }, 4000);
+
+// Saniye hassasiyeti için uzun format (saat:dakika:saniye)
+function fmtFull(ms) {
+    if(!ms || ms < 0) return "00:00:00";
+    const s = Math.floor(ms / 1000);
+    const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+    const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const secs = (s % 60).toString().padStart(2, '0');
+    return `${hrs}:${mins}:${secs}`;
+}
 
 syncWithGithub();
 
@@ -91,7 +108,6 @@ app.get("/", (req, res) => {
         [data-theme="light"] { --bg: #f5f7fa; --card: rgba(255, 255, 255, 0.85); --text: #1a1a1a; }
         
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: background 0.5s ease; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; position: relative; }
-        
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         ::selection { background: transparent; }
 
@@ -182,10 +198,14 @@ app.get("/", (req, res) => {
             return Math.floor(s/86400) + 'gün önce';
         }
 
-        function fmt(ms) {
-            if(!ms || ms < 0) return "00:00";
+        // Ön tarafta da saniye formatını kullan
+        function fmtFull(ms) {
+            if(!ms || ms < 0) return "00:00:00";
             const s = Math.floor(ms / 1000);
-            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
+            const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+            const secs = (s % 60).toString().padStart(2, '0');
+            return \`\${hrs}:\${mins}:\${secs}\`;
         }
 
         socket.on("presence", data => {
@@ -202,20 +222,25 @@ app.get("/", (req, res) => {
             let html = "";
             const game = data.activities.find(a => a.type === 0);
             const currGame = game || data.lastGame;
+            
             if(currGame) {
                 gActive = !!game && data.discord_status !== "offline";
                 gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
+                // Oyun kapalıysa sunucudan gelen son süreyi kullan
+                const displayTime = gActive ? fmtFull(Date.now() - gStart) : (data.lastGameTime || "00:00:00");
+                
                 html += \`
                 <div class="card-item">
                     <div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div>
                     <div style="flex:1; text-align:left;">
                         <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
                         <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
-                        <div id="g-time" style="font-size:10px; opacity:0.5;">00:00</div>
+                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${displayTime} süredir</div>
                     </div>
                     <i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i>
                 </div>\`;
             }
+
             const spot = data.spotify || data.lastSpotify;
             if(spot) {
                 sActive = !!data.spotify && data.discord_status !== "offline";
@@ -237,7 +262,7 @@ app.get("/", (req, res) => {
         function engine() {
             if(gActive && gStart) {
                 const gEl = document.getElementById("g-time");
-                if(gEl) gEl.innerText = fmt(Date.now() - gStart) + " süredir";
+                if(gEl) gEl.innerText = fmtFull(Date.now() - gStart) + " süredir";
             }
             if(sActive && sRef) {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
@@ -245,8 +270,9 @@ app.get("/", (req, res) => {
                 const pct = Math.min((elapsed / total) * 100, 100);
                 const fill = document.getElementById("s-fill"), cur = document.getElementById("s-cur"), end = document.getElementById("s-end");
                 if(fill) fill.style.width = pct + "%";
-                if(cur) cur.innerText = fmt(elapsed);
-                if(end) end.innerText = fmt(total);
+                // Spotify için dk:sn yeterli
+                if(cur) cur.innerText = fmtFull(elapsed).split(':').slice(1).join(':');
+                if(end) end.innerText = fmtFull(total).split(':').slice(1).join(':');
             }
             requestAnimationFrame(engine);
         }
