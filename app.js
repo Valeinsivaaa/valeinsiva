@@ -9,17 +9,36 @@ const io = new Server(server);
 
 // --- AYARLAR ---
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
+const DISCORD_BOT_TOKEN = process.env.TOKEN; // Render'a eklemen gereken Bot Tokeni
 const REPO_OWNER = "Valeinsivaaa"; 
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/1483558000172990717/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69bb068e&is=69b9b50e&hm=49e2edec926aae5b8f73a686d89e4df9ef55fe48147ed53f53ae0b27bf70b8d6&";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
 const ADMIN_UA_KEY = "23078PND5G";
 
-let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00" };
+let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00", banner: "" };
+
+// --- BANNER ÇEKME FONKSİYONU ---
+async function getDiscordBanner(userId) {
+    if (!DISCORD_BOT_TOKEN) return "https://via.placeholder.com/600x240/121212/7289da?text=Banner+Yüklenemedi";
+    try {
+        const response = await axios.get(`https://discord.com/api/v9/users/${userId}`, { 
+            headers: { 'Authorization': `Bot ${DISCORD_BOT_TOKEN}` } 
+        });
+        const data = response.data;
+        if (!data.banner) {
+            const color = (data.banner_color || "#7289da").replace("#", "");
+            return `https://singlecolorimage.com/get/${color}/600x240`;
+        }
+        const ext = data.banner.startsWith('a_') ? 'gif' : 'png';
+        return `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.${ext}?size=1024`;
+    } catch (e) {
+        return "https://via.placeholder.com/600x240/121212/7289da?text=Valeinsiva";
+    }
+}
 
 async function syncWithGithub(isUpdate = false) {
     try {
@@ -33,7 +52,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Game Time Fix & Persistence", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Dynamic Banner & Persistence", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -42,21 +61,23 @@ setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         const data = r.data.data;
+        
+        // Banner'ı da güncelleyelim
+        db.banner = await getDiscordBanner(DISCORD_ID);
+
         if (data.spotify) db.lastSpotify = data.spotify;
         const game = data.activities.find(a => a.type === 0);
         
         if (game) {
             db.lastGame = game;
-            // Oyun aktifken süreyi hesapla ve formatla
             const start = game.timestamps?.start || Date.now();
             db.lastGameTime = fmtFull(Date.now() - start);
         }
         
-        io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame, lastGameTime: db.lastGameTime });
+        io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame, lastGameTime: db.lastGameTime, banner: db.banner });
     } catch (e) {}
 }, 4000);
 
-// Saniye hassasiyeti için uzun format (saat:dakika:saniye)
 function fmtFull(ms) {
     if(!ms || ms < 0) return "00:00:00";
     const s = Math.floor(ms / 1000);
@@ -152,7 +173,7 @@ app.get("/", (req, res) => {
 
     <div class="wrapper">
         <div class="glass-card">
-            <div style="height:140px;"><img src="${BANNER_URL}" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="height:140px;"><img id="u-banner" src="${db.banner}" style="width:100%; height:100%; object-fit:cover;"></div>
             <div style="padding:0 25px 25px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
@@ -198,7 +219,6 @@ app.get("/", (req, res) => {
             return Math.floor(s/86400) + 'gün önce';
         }
 
-        // Ön tarafta da saniye formatını kullan
         function fmtFull(ms) {
             if(!ms || ms < 0) return "00:00:00";
             const s = Math.floor(ms / 1000);
@@ -209,6 +229,8 @@ app.get("/", (req, res) => {
         }
 
         socket.on("presence", data => {
+            if(data.banner) document.getElementById("u-banner").src = data.banner;
+            
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
@@ -226,7 +248,6 @@ app.get("/", (req, res) => {
             if(currGame) {
                 gActive = !!game && data.discord_status !== "offline";
                 gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
-                // Oyun kapalıysa sunucudan gelen son süreyi kullan
                 const displayTime = gActive ? fmtFull(Date.now() - gStart) : (data.lastGameTime || "00:00:00");
                 
                 html += \`
@@ -270,7 +291,6 @@ app.get("/", (req, res) => {
                 const pct = Math.min((elapsed / total) * 100, 100);
                 const fill = document.getElementById("s-fill"), cur = document.getElementById("s-cur"), end = document.getElementById("s-end");
                 if(fill) fill.style.width = pct + "%";
-                // Spotify için dk:sn yeterli
                 if(cur) cur.innerText = fmtFull(elapsed).split(':').slice(1).join(':');
                 if(end) end.innerText = fmtFull(total).split(':').slice(1).join(':');
             }
