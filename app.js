@@ -1,4 +1,4 @@
-Const express = require("express");
+const express = require("express");
 const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -13,7 +13,7 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/1483558000172990717/ce03e0dbed5f30cd6d5efb6d3c9aa441.png?ex=69bb068e&is=69b9b50e&hm=49e2edec926aae5b8f73a686d89e4df9ef55fe48147ed53f53ae0b27bf70b8d6&";
+const BANNER_URL = "https://imgur.com/7JQ4EZS";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
@@ -344,6 +344,3 @@ app.get("/", (req, res) => {
 });
 
 server.listen(process.env.PORT || 3000);
-
-
-
