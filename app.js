@@ -21,32 +21,48 @@ const ADMIN_UA_KEY = "23078PND5G";
 
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00", banner: "" };
 
-// --- BANNER ÇEKME FONKSİYONU (GÜNCELLENDİ) ---
+// Banner'ı bellekte tutmak için değişken (Sürekli API'ye gitmemek için)
+let cachedBanner = "";
+let lastBannerUpdate = 0;
+
 async function getDiscordBanner(userId) {
+    // Eğer son 1 saat içinde banner çekildiyse, tekrar çekme (Rate limit koruması)
+    const now = Date.now();
+    if (cachedBanner && (now - lastBannerUpdate < 3600000)) {
+        return cachedBanner;
+    }
+
     if (!DISCORD_BOT_TOKEN) return "https://singlecolorimage.com/get/7289da/600x240";
+    
     try {
         const response = await axios.get(`https://discord.com/api/v10/users/${userId}`, { 
             headers: { 
                 'Authorization': `Bot ${DISCORD_BOT_TOKEN.trim()}`,
-                'User-Agent': 'DiscordBot (https://github.com/discordjs/discord.js, 14.14.1)'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             } 
         });
         const data = response.data;
         
+        let finalBanner = "";
         if (data.banner) {
             const ext = data.banner.startsWith('a_') ? 'gif' : 'png';
-            return `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.${ext}?size=1024`;
+            finalBanner = `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.${ext}?size=1024`;
         } else if (data.banner_color) {
-            return `https://singlecolorimage.com/get/${data.banner_color.replace("#", "")}/600x240`;
+            finalBanner = `https://singlecolorimage.com/get/${data.banner_color.replace("#", "")}/600x240`;
+        } else {
+            finalBanner = "https://singlecolorimage.com/get/7289da/600x240";
         }
-        return "https://singlecolorimage.com/get/7289da/600x240";
+
+        cachedBanner = finalBanner;
+        lastBannerUpdate = now;
+        return finalBanner;
     } catch (e) {
-        console.error("BANNER ÇEKİLEMEDİ! Sebep:", e.response ? `Kod: ${e.response.status} - ${JSON.stringify(e.response.data)}` : e.message);
-        return "https://singlecolorimage.com/get/121212/600x240";
+        // Hata aldığımızda (429 gibi) eski banner varsa onu döndür, yoksa siyah dön
+        console.error("BANNER ÇEKİLEMEDİ! Rate Limit olabilir.");
+        return cachedBanner || "https://singlecolorimage.com/get/121212/600x240";
     }
 }
 
-// --- SYNC VE DİĞER FONKSİYONLAR ---
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
@@ -59,18 +75,17 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Persistence Update", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Rate Limit Fix Update", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
 
-// Ana döngü
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         const data = r.data.data;
         
-        // Banner'ı da her seferinde değil, ara ara veya sadece değişince güncellemek mantıklı ama şimdilik kalsın
+        // ÖNEMLİ: Her 4 saniyede bir Discord API'yi yormuyoruz, cache kullanıyoruz
         db.banner = await getDiscordBanner(DISCORD_ID);
 
         if (data.spotify) db.lastSpotify = data.spotify;
@@ -93,10 +108,9 @@ function fmtFull(ms) {
     return `${hrs}:${mins}:${secs}`;
 }
 
-// Başlangıçta çalıştır
 (async () => {
     await syncWithGithub();
-    db.banner = await getDiscordBanner(DISCORD_ID); // Site açılır açılmaz banner hazır olsun
+    db.banner = await getDiscordBanner(DISCORD_ID);
 })();
 
 app.get("/api/stats", (req, res) => res.json({ views: db.views, likes: db.likes }));
@@ -151,7 +165,6 @@ app.get("/", (req, res) => {
         .msg-bubble { background: rgba(114, 137, 218, 0.05); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; text-align: left; }
         .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
         .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: pop 0.4s ease-out; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -197,14 +210,6 @@ app.get("/", (req, res) => {
     <script>
         const socket = io();
         let gActive = false, gStart = null, sActive = false, sRef = null;
-        function fmtFull(ms) {
-            if(!ms || ms < 0) return "00:00:00";
-            const s = Math.floor(ms / 1000);
-            const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
-            const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-            const secs = (s % 60).toString().padStart(2, '0');
-            return \`\${hrs}:\${mins}:\${secs}\`;
-        }
         socket.on("presence", data => {
             if(data.banner) document.getElementById("u-banner").src = data.banner;
             const u = data.discord_user;
@@ -222,6 +227,13 @@ app.get("/", (req, res) => {
             if(currGame) {
                 gActive = !!game && data.discord_status !== "offline";
                 gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
+                const fmtFull = (ms) => {
+                    const s = Math.floor(ms / 1000);
+                    const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+                    const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                    const secs = (s % 60).toString().padStart(2, '0');
+                    return \`\${hrs}:\${mins}:\${secs}\`;
+                };
                 const displayTime = gActive ? fmtFull(Date.now() - gStart) : (data.lastGameTime || "00:00:00");
                 html += \`<div class="card-item"><div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div><div style="flex:1; text-align:left;"><div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div><div style="font-size:13px; font-weight:800;">\${currGame.name}</div><div id="g-time" style="font-size:10px; opacity:0.5;">\${displayTime} süredir</div></div><i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i></div>\`;
             }
@@ -234,15 +246,30 @@ app.get("/", (req, res) => {
             document.getElementById("activity-stack").innerHTML = html;
         });
         function engine() {
-            if(gActive && gStart) { const gEl = document.getElementById("g-time"); if(gEl) gEl.innerText = fmtFull(Date.now() - gStart) + " süredir"; }
+            if(gActive && gStart) {
+                const gEl = document.getElementById("g-time");
+                if(gEl) {
+                    const s = Math.floor((Date.now() - gStart) / 1000);
+                    const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+                    const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                    const secs = (s % 60).toString().padStart(2, '0');
+                    gEl.innerText = \`\${hrs}:\${mins}:\${secs} süredir\`;
+                }
+            }
             if(sActive && sRef) {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
                 const elapsed = Date.now() - sRef.timestamps.start;
                 const pct = Math.min((elapsed / total) * 100, 100);
                 const fill = document.getElementById("s-fill"), cur = document.getElementById("s-cur"), end = document.getElementById("s-end");
                 if(fill) fill.style.width = pct + "%";
-                if(cur) cur.innerText = fmtFull(elapsed).split(':').slice(1).join(':');
-                if(end) end.innerText = fmtFull(total).split(':').slice(1).join(':');
+                if(cur) {
+                    const s = Math.floor(elapsed / 1000);
+                    cur.innerText = \`\${Math.floor(s/60).toString().padStart(2,'0')}:\${(s%60).toString().padStart(2,'0')}\`;
+                }
+                if(end) {
+                    const s = Math.floor(total / 1000);
+                    end.innerText = \`\${Math.floor(s/60).toString().padStart(2,'0')}:\${(s%60).toString().padStart(2,'0')}\`;
+                }
             }
             requestAnimationFrame(engine);
         }
