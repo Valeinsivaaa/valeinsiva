@@ -1,4 +1,4 @@
-const express = require("express");
+Const express = require("express");
 const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -17,7 +17,6 @@ const BANNER_URL = "https://cdn.discordapp.com/attachments/995368673172799618/14
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
-// Senin telefon modelin: 23078PND5G
 const ADMIN_UA_KEY = "23078PND5G";
 
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00" };
@@ -34,7 +33,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Admin & Time Fix", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Game Time Fix & Persistence", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
@@ -45,15 +44,19 @@ setInterval(async () => {
         const data = r.data.data;
         if (data.spotify) db.lastSpotify = data.spotify;
         const game = data.activities.find(a => a.type === 0);
+        
         if (game) {
             db.lastGame = game;
+            // Oyun aktifken süreyi hesapla ve formatla
             const start = game.timestamps?.start || Date.now();
             db.lastGameTime = fmtFull(Date.now() - start);
         }
+        
         io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame, lastGameTime: db.lastGameTime });
     } catch (e) {}
 }, 4000);
 
+// Saniye hassasiyeti için uzun format (saat:dakika:saniye)
 function fmtFull(ms) {
     if(!ms || ms < 0) return "00:00:00";
     const s = Math.floor(ms / 1000);
@@ -70,7 +73,6 @@ app.get("/api/like", async (req, res) => { db.likes++; await syncWithGithub(true
 
 app.get("/api/view", async (req, res) => {
     const userAgent = req.headers['user-agent'] || "";
-    // Telefon modelin UA içinde geçiyorsa veya admin parametresi varsa admin say
     if (userAgent.includes(ADMIN_UA_KEY) || req.query.admin === 'true') {
         return res.json({ success: true, admin: true, views: db.views });
     }
@@ -83,21 +85,10 @@ io.on("connection", (socket) => {
     socket.emit("init_messages", db.messages);
     socket.on("send_msg", async (data) => {
         if(!data.user || !data.text || data.text.length > 80) return;
-        const msgId = Date.now();
-        db.messages.unshift({ id: msgId, user: data.user.substring(0,15), text: data.text, time: Date.now(), liked: false, reply: null });
-        db.messages = db.messages.slice(0, 10);
+        db.messages.unshift({ user: data.user.substring(0,15), text: data.text, time: Date.now() });
+        db.messages = db.messages.slice(0, 5);
         io.emit("new_msg", db.messages);
         await syncWithGithub(true);
-    });
-
-    socket.on("admin_like", async (id) => {
-        const m = db.messages.find(x => x.id === id);
-        if(m) { m.liked = true; io.emit("new_msg", db.messages); io.emit("action_notif", {id, type:'like'}); await syncWithGithub(true); }
-    });
-
-    socket.on("admin_reply", async (d) => {
-        const m = db.messages.find(x => x.id === d.id);
-        if(m) { m.reply = d.text; io.emit("new_msg", db.messages); io.emit("action_notif", {id:d.id, type:'reply'}); await syncWithGithub(true); }
     });
 });
 
@@ -117,7 +108,8 @@ app.get("/", (req, res) => {
         [data-theme="light"] { --bg: #f5f7fa; --card: rgba(255, 255, 255, 0.85); --text: #1a1a1a; }
         
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: background 0.5s ease; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; position: relative; }
-        * { -webkit-tap-highlight-color: transparent; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+        ::selection { background: transparent; }
 
         .bg-wrap { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .orb { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.12; background: var(--accent); animation: float 20s infinite alternate linear; }
@@ -126,10 +118,15 @@ app.get("/", (req, res) => {
         .wrapper { width:100%; max-width:400px; padding:110px 15px 40px; box-sizing:border-box; z-index: 10; }
         .glass-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; margin-bottom: 25px; }
         
-        .nav-btn { position:absolute; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; }
-        #theme-icon { font-size: 20px; transition: 0.6s; }
+        .nav-btn { position:absolute; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-btn:active { transform: scale(0.9); }
+
+        #theme-icon { font-size: 20px; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; }
         .rotate-out { transform: rotate(180deg) scale(0); opacity: 0; }
 
+        .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: pop 0.4s ease-out; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+        
         .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
         .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
@@ -140,36 +137,14 @@ app.get("/", (req, res) => {
         .s-bar-bg { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
         .s-bar-fill { height:100%; background:#1db954; width:0%; transition: width 0.5s linear; }
 
-        .msg-bubble { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; position: relative; }
+        .timer-row { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; margin-top: 5px; opacity: 0.6; }
+        .msg-bubble { background: rgba(114, 137, 218, 0.05); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; text-align: left; }
         .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
-        
-        .reply-box { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); display:flex; gap:8px; align-items:center; }
-        .admin-mini-pfp { width:22px; height:22px; border-radius:50%; border:1px solid var(--accent); }
-        .admin-heart { position:absolute; top:12px; right:12px; color:#ff4757; font-size:12px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.3);} }
-
-        /* Bildirim Toast */
-        #admin-toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 320px; background: rgba(114, 137, 218, 0.3); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 20px; z-index: 10000; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 12px; }
-        #admin-toast.active { top: 25px; }
-        .toast-pfp { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--accent); }
-
-        /* Uçan Kalpler */
-        .floating-heart { position: fixed; bottom: -50px; color: #ff4757; font-size: 24px; z-index: 9999; pointer-events: none; animation: floatUp 3s forwards ease-in; opacity: 0.8; }
-        @keyframes floatUp { 0% { bottom: -50px; transform: translateX(0); opacity: 1; } 100% { bottom: 110vh; transform: translateX(var(--rx)); opacity: 0; } }
-        
-        .adm-btn { font-size:9px; padding:4px 8px; border-radius:6px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer; margin-top:5px; margin-right:5px; font-weight: 800; }
     </style>
 </head>
 <body>
-    <div id="admin-toast">
-        <img id="toast-img" class="toast-pfp" src="">
-        <div style="flex:1">
-            <div id="toast-name" style="font-size:11px; font-weight:800; color:var(--accent);"></div>
-            <div id="toast-msg" style="font-size:13px; font-weight:600;"></div>
-        </div>
-    </div>
-
     <div class="bg-wrap" id="orb-container"></div>
+    
     <div style="position:absolute; width:100%; max-width:400px; height:0;">
         <div class="nav-btn" id="btn-like" style="left:20px;"><i class="fa-solid fa-heart"></i></div>
         <div class="nav-btn" id="btn-theme" style="right:20px;"><i id="theme-icon" class="fa-solid fa-moon"></i></div>
@@ -182,24 +157,26 @@ app.get("/", (req, res) => {
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
                     <img id="u-decor" class="decor-img" style="display:none;">
-                    <div id="u-status" class="status-badge offline" onclick="tryAdmin()"></div>
+                    <div id="u-status" class="status-badge offline"></div>
                 </div>
                 <h2 id="u-nick" style="margin:0; font-weight:800; font-size:26px;">Valeinsiva</h2>
+                <div style="font-size:12px; opacity:0.4; margin-bottom:20px;">@valeinsiva</div>
                 <div id="activity-stack"></div>
                 <div style="display:flex; justify-content:space-between; margin:25px 0; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08);">
-                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-discord fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Discord</span></a>
-                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-instagram fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Instagram</span></a>
-                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-solid fa-terminal fa-xl"></i><br><span style="font-size:10px; opacity:0.6;">Bot Hub</span></a>
+                    <a href="https://discord.com/users/${DISCORD_ID}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-discord fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Discord</span></a>
+                    <a href="${INSTAGRAM_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-brands fa-instagram fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Instagram</span></a>
+                    <a href="${BOT_PANEL_LINK}" target="_blank" style="text-decoration:none; color:inherit; flex:1;"><i class="fa-solid fa-terminal fa-xl"></i><br><span style="font-size:10px; opacity:0.6; font-weight:800; margin-top:5px; display:block;">Bot Hub</span></a>
                 </div>
                 <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:900; opacity:0.3;">
                     <span><i class="fa-solid fa-eye"></i> <span id="view-txt">0</span></span>
                     <span><i class="fa-solid fa-heart"></i> <span id="like-txt">0</span></span>
+                    <span><i class="fa-solid fa-location-dot"></i> TURKEY</span>
                 </div>
             </div>
         </div>
 
         <div class="glass-card" style="padding:25px;">
-            <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase;">Gelen Kutusu</h4>
+            <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:1.5px;">Gelen Kutusu</h4>
             <div id="msg-feed"></div>
             <div id="msg-form-area" style="margin-top:15px;">
                 <input id="in-user" class="in-style" maxlength="15" placeholder="İsminiz">
@@ -212,41 +189,29 @@ app.get("/", (req, res) => {
     <script>
         const socket = io();
         let gActive = false, gStart = null, sActive = false, sRef = null;
-        let myMsgs = JSON.parse(localStorage.getItem('myMsgs') || '[]');
-        
-        // ADMIN KONTROLÜ (Geliştirilmiş)
-        let isAdmin = navigator.userAgent.includes("${ADMIN_UA_KEY}") || localStorage.getItem('isValeinsiva') === 'true';
-
-        // Eğer admin butonları gelmezse, durum simgesine (online/offline olan küçük yuvarlak) 5 kere hızlıca basınca şifre sorar.
-        let clickCount = 0;
-        function tryAdmin() {
-            clickCount++;
-            if(clickCount >= 5) {
-                const pass = prompt("Admin Key?");
-                if(pass === "${ADMIN_UA_KEY}") {
-                    localStorage.setItem('isValeinsiva', 'true');
-                    location.reload();
-                }
-                clickCount = 0;
-            }
-        }
 
         function getTimeAgo(ts) {
             const s = Math.floor((Date.now() - ts) / 1000);
             if (s < 60) return 'az önce';
-            if (s < 3600) return Math.floor(s/60) + ' dakika önce';
-            if (s < 86400) return Math.floor(s/3600) + ' saat önce';
-            return Math.floor(s/86400) + ' gün önce';
+            if (s < 3600) return Math.floor(s/60) + 'dk önce';
+            if (s < 86400) return Math.floor(s/3600) + 'sa önce';
+            return Math.floor(s/86400) + 'gün önce';
+        }
+
+        // Ön tarafta da saniye formatını kullan
+        function fmtFull(ms) {
+            if(!ms || ms < 0) return "00:00:00";
+            const s = Math.floor(ms / 1000);
+            const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+            const secs = (s % 60).toString().padStart(2, '0');
+            return \`\${hrs}:\${mins}:\${secs}\`;
         }
 
         socket.on("presence", data => {
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
-            const pfp = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
-            document.getElementById("u-avatar").src = pfp;
-            document.getElementById("toast-img").src = pfp;
-            document.getElementById("toast-name").innerText = u.global_name || u.username;
-            
+            document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
             const decor = document.getElementById("u-decor");
             if(u.avatar_decoration_data) {
                 decor.src = \`https://cdn.discordapp.com/avatar-decoration-presets/\${u.avatar_decoration_data.asset}.png\`;
@@ -256,73 +221,62 @@ app.get("/", (req, res) => {
 
             let html = "";
             const game = data.activities.find(a => a.type === 0);
-            if(game || data.lastGame) {
-                const g = game || data.lastGame;
+            const currGame = game || data.lastGame;
+            
+            if(currGame) {
                 gActive = !!game && data.discord_status !== "offline";
-                gStart = gActive ? (g.timestamps?.start || Date.now()) : null;
+                gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
+                // Oyun kapalıysa sunucudan gelen son süreyi kullan
+                const displayTime = gActive ? fmtFull(Date.now() - gStart) : (data.lastGameTime || "00:00:00");
+                
                 html += \`
                 <div class="card-item">
                     <div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div>
                     <div style="flex:1; text-align:left;">
                         <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
-                        <div style="font-size:13px; font-weight:800;">\${g.name}</div>
-                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${gActive ? '00:00:00' : (data.lastGameTime || '00:00:00')} süredir</div>
+                        <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
+                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${displayTime} süredir</div>
                     </div>
+                    <i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i>
+                </div>\`;
+            }
+
+            const spot = data.spotify || data.lastSpotify;
+            if(spot) {
+                sActive = !!data.spotify && data.discord_status !== "offline";
+                sRef = spot;
+                html += \`
+                <div class="card-item">
+                    <img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
+                    <div style="flex:1; text-align:left; overflow:hidden;">
+                        <div style="font-size:9px; font-weight:900; color:#1db954;">\${sActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div>
+                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
+                        \${sActive ? \`<div class="s-bar-bg"><div id="s-fill" class="s-bar-fill"></div></div><div class="timer-row"><span id="s-cur">00:00</span><span id="s-end">00:00</span></div>\` : \`<div style="font-size:11px; opacity:0.5;">\${spot.artist}</div>\`}
+                    </div>
+                    <i class="fa-brands fa-spotify fa-xl" style="color:#1db954; opacity:0.8; margin-right:5px;"></i>
                 </div>\`;
             }
             document.getElementById("activity-stack").innerHTML = html;
         });
 
-        socket.on("action_notif", d => {
-            if(myMsgs.includes(d.id)) {
-                // Kalp yağmuru
-                for(let i=0; i<15; i++) {
-                    setTimeout(() => {
-                        const h = document.createElement('i');
-                        h.className = 'fa-solid fa-heart floating-heart';
-                        h.style.left = Math.random() * 100 + 'vw';
-                        h.style.setProperty('--rx', (Math.random() * 200 - 100) + 'px');
-                        document.body.appendChild(h);
-                        setTimeout(() => h.remove(), 3000);
-                    }, i * 150);
-                }
-                // Bildirim paneli
-                const t = document.getElementById('admin-toast');
-                document.getElementById('toast-msg').innerText = d.type === 'like' ? 'Mesajınızı beğendi!' : 'Mesajınıza yanıt verdi!';
-                t.classList.add('active');
-                setTimeout(() => t.classList.remove('active'), 5000);
+        function engine() {
+            if(gActive && gStart) {
+                const gEl = document.getElementById("g-time");
+                if(gEl) gEl.innerText = fmtFull(Date.now() - gStart) + " süredir";
             }
-        });
-
-        function sendMsg() {
-            const u = document.getElementById('in-user').value, t = document.getElementById('in-text').value;
-            if(u && t) {
-                const tempId = Date.now();
-                myMsgs.push(tempId);
-                localStorage.setItem('myMsgs', JSON.stringify(myMsgs));
-                socket.emit('send_msg', {user:u, text:t});
-                document.getElementById('in-text').value = "";
+            if(sActive && sRef) {
+                const total = sRef.timestamps.end - sRef.timestamps.start;
+                const elapsed = Date.now() - sRef.timestamps.start;
+                const pct = Math.min((elapsed / total) * 100, 100);
+                const fill = document.getElementById("s-fill"), cur = document.getElementById("s-cur"), end = document.getElementById("s-end");
+                if(fill) fill.style.width = pct + "%";
+                // Spotify için dk:sn yeterli
+                if(cur) cur.innerText = fmtFull(elapsed).split(':').slice(1).join(':');
+                if(end) end.innerText = fmtFull(total).split(':').slice(1).join(':');
             }
+            requestAnimationFrame(engine);
         }
-
-        socket.on('init_messages', renderMsgs);
-        socket.on('new_msg', renderMsgs);
-        function renderMsgs(m) {
-            document.getElementById("msg-feed").innerHTML = m.map(x => \`
-                <div class="msg-bubble">
-                    \${x.liked ? '<i class="fa-solid fa-heart admin-heart"></i>' : ''}
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                        <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
-                        <span style="font-size:9px; opacity:0.5;">\${getTimeAgo(x.time)}</span>
-                    </div>
-                    <div style="font-size:13px; opacity:0.9;">\${x.text}</div>
-                    \${x.reply ? \`<div class="reply-box"><img src="\${document.getElementById('u-avatar').src}" class="admin-mini-pfp"><div style="font-size:11px; opacity:0.7;">\${x.reply}</div></div>\` : ''}
-                    \${isAdmin ? \`<div>
-                        <button class="adm-btn" onclick="socket.emit('admin_like', \${x.id})">Beğen</button>
-                        <button class="adm-btn" onclick="const r=prompt('Yanıt:'); if(r) socket.emit('admin_reply',{id:\${x.id}, text:r})">Yanıtla</button>
-                    </div>\` : ''}
-                </div>\`).join('');
-        }
+        engine();
 
         document.getElementById("btn-theme").onclick = function() {
             const h = document.documentElement;
@@ -332,16 +286,27 @@ app.get("/", (req, res) => {
             setTimeout(() => {
                 h.setAttribute("data-theme", isDark ? "light" : "dark");
                 icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+                icon.style.color = isDark ? "#f1c40f" : "inherit";
                 icon.classList.remove("rotate-out");
             }, 300);
         };
 
         window.onload = () => {
+            if(navigator.userAgent.includes("${ADMIN_UA_KEY}")) localStorage.setItem('isAdmin', 'true');
+            const isAdm = localStorage.getItem('isAdmin') === 'true';
             fetch('/api/stats').then(r=>r.json()).then(d => {
                 document.getElementById("like-txt").innerText = d.likes;
                 document.getElementById("view-txt").innerText = d.views;
             });
-            fetch('/api/view' + (isAdmin ? '?admin=true' : ''));
+            fetch('/api/view' + (isAdm ? '?admin=true' : ''));
+            if(localStorage.getItem('L')) document.getElementById('btn-like').classList.add('liked');
+            document.getElementById("btn-like").onclick = function() {
+                if(localStorage.getItem('L')) return;
+                fetch('/api/like').then(r=>r.json()).then(d => {
+                    document.getElementById("like-txt").innerText = d.likes;
+                    this.classList.add('liked'); localStorage.setItem('L', '1');
+                });
+            };
             const container = document.getElementById('orb-container');
             for(let i=0; i<2; i++) {
                 const o = document.createElement('div');
@@ -351,20 +316,27 @@ app.get("/", (req, res) => {
             }
         };
 
-        function engine() {
-            if(gActive && gStart) {
-                const gEl = document.getElementById("g-time");
-                if(gEl) {
-                    const s = Math.floor((Date.now() - gStart) / 1000);
-                    const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
-                    const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-                    const secs = (s % 60).toString().padStart(2, '0');
-                    gEl.innerText = \`\${hrs}:\${mins}:\${secs} süredir\`;
-                }
+        function sendMsg() {
+            if(sessionStorage.getItem('sent')) return;
+            const u = document.getElementById('in-user').value, t = document.getElementById('in-text').value;
+            if(u && t) {
+                socket.emit('send_msg', {user:u, text:t});
+                sessionStorage.setItem('sent', '1');
+                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; opacity:0.5; font-weight:800;'>İletildi!</p>";
             }
-            requestAnimationFrame(engine);
         }
-        engine();
+        socket.on('init_messages', renderMsgs);
+        socket.on('new_msg', renderMsgs);
+        function renderMsgs(m) {
+            document.getElementById("msg-feed").innerHTML = m.map(x => \`
+                <div class="msg-bubble">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
+                        <span style="font-size:9px; opacity:0.5; font-weight:800;">\${getTimeAgo(x.time)}</span>
+                    </div>
+                    <div style="font-size:13px; opacity:0.9;">\${x.text}</div>
+                </div>\`).join('');
+        }
     </script>
 </body>
 </html>
@@ -372,3 +344,6 @@ app.get("/", (req, res) => {
 });
 
 server.listen(process.env.PORT || 3000);
+
+
+
