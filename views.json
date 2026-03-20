@@ -1,56 +1,22 @@
 {
-  "views": 320,
-  "likes": 22,
-  "messages": [
-    {
-      "user": "articim",
-      "text": "bu adam yapıyor yaa",
-      "time": 1774002988352
-    },
-    {
-      "user": "Cimiaow",
-      "text": "Kral adam",
-      "time": 1773779755566
-    },
-    {
-      "user": "Wes",
-      "text": "Babus ",
-      "time": 1773777362459
-    },
-    {
-      "user": "vCripton",
-      "text": "Selamün aleyküm ",
-      "time": 1773777362459
-    }
-  ],
+  "views": 1,
+  "likes": 0,
+  "messages": [],
   "lastGame": {
     "assets": {
-      "small_image": "mp:external/z5GyoGYssiXTO0nRZ4MpXJhl5jjVSx73Izhovqvk86Q/https/image.api.playstation.com/gs2-sec/appkgo/prod/CUSA00332_00/9/i_b4ab994c09b02424ff625b3c273b01a9075bef01a882fba6852c29db0295b4c9/i/icon0.png"
+      "small_image": "mp:external/fcd1_DpoCDYXzI5h5jk8AUojOqI40tssIpQEZ7Ya3PE/https/image.api.playstation.com/vulcan/ap/rnd/202202/1517/UyPJCxbE3EoeLtUxjoFBnsD4.png"
     },
-    "created_at": 1773928424214,
+    "created_at": 1774033202369,
     "flags": 192,
-    "id": "87d350afa7773275",
-    "name": "Pure Pool™",
+    "id": "c55c3aa5b476017",
+    "name": "Cyberpunk 2077",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1773928424214
+      "start": 1774033202369
     },
     "type": 0
   },
-  "lastSpotify": {
-    "album": "Dost Merhaba",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f9824843d1f09705e138213c",
-    "artist": "Selda Bağcan; Ahmet Kaya",
-    "song": "Öyle Bir Yerdeyim ki",
-    "timestamps": {
-      "end": 1773866008086,
-      "start": 1773865699086
-    },
-    "track_id": "2lN6njvQIWp5ZSFzmAME5k"
-  },
-  "lastGameTime": "00:19:52",
-  "bannerUrl": "https://i.imgur.com/7JQ4EZS.jpg",
-  "accentColor": "#7289da",
-  "banner": "https://singlecolorimage.com/get/121212/600x240"
+  "lastSpotify": null,
+  "lastGameTime": "01:10:27"
 }
