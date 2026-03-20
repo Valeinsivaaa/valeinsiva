@@ -13,7 +13,7 @@ const REPO_OWNER = "Valeinsivaaa";
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
-const BANNER_URL = "https://imgur.com/7JQ4EZS";
+const BANNER_URL = "https://imgur.com/7JQ4EZS.jpg";
 const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
