@@ -9,7 +9,7 @@ const io = new Server(server);
 
 // --- AYARLAR ---
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
-const DISCORD_BOT_TOKEN = process.env.TOKEN; // Render'a eklemen gereken Bot Tokeni
+const DISCORD_BOT_TOKEN = process.env.TOKEN; 
 const REPO_OWNER = "Valeinsivaaa"; 
 const REPO_NAME = "valeinsiva"; 
 const FILE_PATH = "views.json";
@@ -21,25 +21,32 @@ const ADMIN_UA_KEY = "23078PND5G";
 
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00", banner: "" };
 
-// --- BANNER ÇEKME FONKSİYONU ---
+// --- BANNER ÇEKME FONKSİYONU (GÜNCELLENDİ) ---
 async function getDiscordBanner(userId) {
-    if (!DISCORD_BOT_TOKEN) return "https://via.placeholder.com/600x240/121212/7289da?text=Banner+Yüklenemedi";
+    if (!DISCORD_BOT_TOKEN) return "https://singlecolorimage.com/get/7289da/600x240";
     try {
-        const response = await axios.get(`https://discord.com/api/v9/users/${userId}`, { 
-            headers: { 'Authorization': `Bot ${DISCORD_BOT_TOKEN}` } 
+        const response = await axios.get(`https://discord.com/api/v10/users/${userId}`, { 
+            headers: { 
+                'Authorization': `Bot ${DISCORD_BOT_TOKEN.trim()}`,
+                'User-Agent': 'DiscordBot (https://github.com/discordjs/discord.js, 14.14.1)'
+            } 
         });
         const data = response.data;
-        if (!data.banner) {
-            const color = (data.banner_color || "#7289da").replace("#", "");
-            return `https://singlecolorimage.com/get/${color}/600x240`;
+        
+        if (data.banner) {
+            const ext = data.banner.startsWith('a_') ? 'gif' : 'png';
+            return `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.${ext}?size=1024`;
+        } else if (data.banner_color) {
+            return `https://singlecolorimage.com/get/${data.banner_color.replace("#", "")}/600x240`;
         }
-        const ext = data.banner.startsWith('a_') ? 'gif' : 'png';
-        return `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.${ext}?size=1024`;
+        return "https://singlecolorimage.com/get/7289da/600x240";
     } catch (e) {
-        return "https://via.placeholder.com/600x240/121212/7289da?text=Valeinsiva";
+        console.error("BANNER ÇEKİLEMEDİ! Sebep:", e.response ? `Kod: ${e.response.status} - ${JSON.stringify(e.response.data)}` : e.message);
+        return "https://singlecolorimage.com/get/121212/600x240";
     }
 }
 
+// --- SYNC VE DİĞER FONKSİYONLAR ---
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
@@ -52,28 +59,27 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Dynamic Banner & Persistence", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "💎 Persistence Update", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
 
+// Ana döngü
 setInterval(async () => {
     try {
         const r = await axios.get(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
         const data = r.data.data;
         
-        // Banner'ı da güncelleyelim
+        // Banner'ı da her seferinde değil, ara ara veya sadece değişince güncellemek mantıklı ama şimdilik kalsın
         db.banner = await getDiscordBanner(DISCORD_ID);
 
         if (data.spotify) db.lastSpotify = data.spotify;
         const game = data.activities.find(a => a.type === 0);
-        
         if (game) {
             db.lastGame = game;
             const start = game.timestamps?.start || Date.now();
             db.lastGameTime = fmtFull(Date.now() - start);
         }
-        
         io.emit("presence", { ...data, lastSpotify: db.lastSpotify, lastGame: db.lastGame, lastGameTime: db.lastGameTime, banner: db.banner });
     } catch (e) {}
 }, 4000);
@@ -87,18 +93,18 @@ function fmtFull(ms) {
     return `${hrs}:${mins}:${secs}`;
 }
 
-syncWithGithub();
+// Başlangıçta çalıştır
+(async () => {
+    await syncWithGithub();
+    db.banner = await getDiscordBanner(DISCORD_ID); // Site açılır açılmaz banner hazır olsun
+})();
 
 app.get("/api/stats", (req, res) => res.json({ views: db.views, likes: db.likes }));
 app.get("/api/like", async (req, res) => { db.likes++; await syncWithGithub(true); res.json({ success: true, likes: db.likes }); });
-
 app.get("/api/view", async (req, res) => {
     const userAgent = req.headers['user-agent'] || "";
-    if (userAgent.includes(ADMIN_UA_KEY) || req.query.admin === 'true') {
-        return res.json({ success: true, admin: true, views: db.views });
-    }
-    db.views++;
-    await syncWithGithub(true);
+    if (userAgent.includes(ADMIN_UA_KEY) || req.query.admin === 'true') return res.json({ success: true, admin: true, views: db.views });
+    db.views++; await syncWithGithub(true);
     res.json({ success: true, views: db.views });
 });
 
@@ -108,8 +114,7 @@ io.on("connection", (socket) => {
         if(!data.user || !data.text || data.text.length > 80) return;
         db.messages.unshift({ user: data.user.substring(0,15), text: data.text, time: Date.now() });
         db.messages = db.messages.slice(0, 5);
-        io.emit("new_msg", db.messages);
-        await syncWithGithub(true);
+        io.emit("new_msg", db.messages); await syncWithGithub(true);
     });
 });
 
@@ -127,53 +132,37 @@ app.get("/", (req, res) => {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         :root { --accent: #7289da; --bg: #050505; --card: rgba(18, 18, 18, 0.75); --text: #fff; }
         [data-theme="light"] { --bg: #f5f7fa; --card: rgba(255, 255, 255, 0.85); --text: #1a1a1a; }
-        
         body { margin:0; font-family:'Plus Jakarta Sans', sans-serif; background:var(--bg); color:var(--text); transition: background 0.5s ease; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; position: relative; }
-        * { -webkit-tap-highlight-color: transparent; outline: none; }
-        ::selection { background: transparent; }
-
         .bg-wrap { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .orb { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.12; background: var(--accent); animation: float 20s infinite alternate linear; }
         @keyframes float { 0% { transform: translate(-5%, -5%); } 100% { transform: translate(30%, 20%); } }
-
         .wrapper { width:100%; max-width:400px; padding:110px 15px 40px; box-sizing:border-box; z-index: 10; }
         .glass-card { background:var(--card); border-radius:35px; border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; margin-bottom: 25px; }
-        
         .nav-btn { position:absolute; top:25px; width:50px; height:50px; background:var(--card); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); cursor:pointer; z-index:1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .nav-btn:active { transform: scale(0.9); }
-
-        #theme-icon { font-size: 20px; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; }
-        .rotate-out { transform: rotate(180deg) scale(0); opacity: 0; }
-
-        .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: pop 0.4s ease-out; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
-        
         .avatar-area { position:relative; width:100px; height:100px; margin:-50px auto 15px; }
         .avatar { width:100%; height:100%; border-radius:50%; border:4px solid var(--card); object-fit: cover; }
         .decor-img { position:absolute; inset:-12%; width:124%; z-index:11; pointer-events:none; }
         .status-badge { position:absolute; bottom:5px; right:5px; width:18px; height:18px; border-radius:50%; border:3px solid var(--card); z-index:12; }
         .online { background:#23a55a; } .idle { background:#f0b232; } .dnd { background:#f23f43; } .offline { background:#80848e; }
-
         .card-item { background:rgba(255,255,255,0.03); border-radius:22px; padding:15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.05); }
         .s-bar-bg { height:6px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:8px; overflow:hidden; }
         .s-bar-fill { height:100%; background:#1db954; width:0%; transition: width 0.5s linear; }
-
         .timer-row { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; margin-top: 5px; opacity: 0.6; }
         .msg-bubble { background: rgba(114, 137, 218, 0.05); border: 1px solid rgba(255, 255, 255, 0.05); padding: 14px; border-radius: 20px; margin-bottom: 12px; text-align: left; }
         .in-style { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; color:var(--text); margin-bottom:10px; outline:none; font-family:inherit; box-sizing:border-box; }
+        .liked { color: #ff4757 !important; border-color: #ff4757 !important; animation: pop 0.4s ease-out; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
     <div class="bg-wrap" id="orb-container"></div>
-    
     <div style="position:absolute; width:100%; max-width:400px; height:0;">
         <div class="nav-btn" id="btn-like" style="left:20px;"><i class="fa-solid fa-heart"></i></div>
         <div class="nav-btn" id="btn-theme" style="right:20px;"><i id="theme-icon" class="fa-solid fa-moon"></i></div>
     </div>
-
     <div class="wrapper">
         <div class="glass-card">
-            <div style="height:140px;"><img id="u-banner" src="${db.banner}" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="height:140px;"><img id="u-banner" src="${db.banner || ''}" style="width:100%; height:100%; object-fit:cover;"></div>
             <div style="padding:0 25px 25px; text-align:center;">
                 <div class="avatar-area">
                     <img id="u-avatar" class="avatar" src="">
@@ -195,7 +184,6 @@ app.get("/", (req, res) => {
                 </div>
             </div>
         </div>
-
         <div class="glass-card" style="padding:25px;">
             <h4 style="margin:0 0 18px 0; font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:1.5px;">Gelen Kutusu</h4>
             <div id="msg-feed"></div>
@@ -206,19 +194,9 @@ app.get("/", (req, res) => {
             </div>
         </div>
     </div>
-
     <script>
         const socket = io();
         let gActive = false, gStart = null, sActive = false, sRef = null;
-
-        function getTimeAgo(ts) {
-            const s = Math.floor((Date.now() - ts) / 1000);
-            if (s < 60) return 'az önce';
-            if (s < 3600) return Math.floor(s/60) + 'dk önce';
-            if (s < 86400) return Math.floor(s/3600) + 'sa önce';
-            return Math.floor(s/86400) + 'gün önce';
-        }
-
         function fmtFull(ms) {
             if(!ms || ms < 0) return "00:00:00";
             const s = Math.floor(ms / 1000);
@@ -227,10 +205,8 @@ app.get("/", (req, res) => {
             const secs = (s % 60).toString().padStart(2, '0');
             return \`\${hrs}:\${mins}:\${secs}\`;
         }
-
         socket.on("presence", data => {
             if(data.banner) document.getElementById("u-banner").src = data.banner;
-            
             const u = data.discord_user;
             document.getElementById("u-nick").innerText = u.global_name || u.username;
             document.getElementById("u-avatar").src = \`https://cdn.discordapp.com/avatars/\${u.id}/\${u.avatar}.png?size=256\`;
@@ -240,51 +216,25 @@ app.get("/", (req, res) => {
                 decor.style.display="block";
             } else decor.style.display="none";
             document.getElementById("u-status").className = "status-badge " + data.discord_status;
-
             let html = "";
             const game = data.activities.find(a => a.type === 0);
             const currGame = game || data.lastGame;
-            
             if(currGame) {
                 gActive = !!game && data.discord_status !== "offline";
                 gStart = gActive ? (currGame.timestamps?.start || Date.now()) : null;
                 const displayTime = gActive ? fmtFull(Date.now() - gStart) : (data.lastGameTime || "00:00:00");
-                
-                html += \`
-                <div class="card-item">
-                    <div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div>
-                    <div style="flex:1; text-align:left;">
-                        <div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div>
-                        <div style="font-size:13px; font-weight:800;">\${currGame.name}</div>
-                        <div id="g-time" style="font-size:10px; opacity:0.5;">\${displayTime} süredir</div>
-                    </div>
-                    <i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i>
-                </div>\`;
+                html += \`<div class="card-item"><div style="width:40px; height:40px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-gamepad"></i></div><div style="flex:1; text-align:left;"><div style="font-size:9px; font-weight:900; color:var(--accent);">\${gActive ? 'OYNANIYOR' : 'GEÇMİŞ'}</div><div style="font-size:13px; font-weight:800;">\${currGame.name}</div><div id="g-time" style="font-size:10px; opacity:0.5;">\${displayTime} süredir</div></div><i class="fa-brands fa-playstation fa-xl" style="opacity:0.6; margin-right:5px;"></i></div>\`;
             }
-
             const spot = data.spotify || data.lastSpotify;
             if(spot) {
                 sActive = !!data.spotify && data.discord_status !== "offline";
                 sRef = spot;
-                html += \`
-                <div class="card-item">
-                    <img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;">
-                    <div style="flex:1; text-align:left; overflow:hidden;">
-                        <div style="font-size:9px; font-weight:900; color:#1db954;">\${sActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div>
-                        <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>
-                        \${sActive ? \`<div class="s-bar-bg"><div id="s-fill" class="s-bar-fill"></div></div><div class="timer-row"><span id="s-cur">00:00</span><span id="s-end">00:00</span></div>\` : \`<div style="font-size:11px; opacity:0.5;">\${spot.artist}</div>\`}
-                    </div>
-                    <i class="fa-brands fa-spotify fa-xl" style="color:#1db954; opacity:0.8; margin-right:5px;"></i>
-                </div>\`;
+                html += \`<div class="card-item"><img src="\${spot.album_art_url}" style="width:50px; height:50px; border-radius:12px;"><div style="flex:1; text-align:left; overflow:hidden;"><div style="font-size:9px; font-weight:900; color:#1db954;">\${sActive ? 'SPOTIFY' : 'SON DİNLENEN'}</div><div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${spot.song}</div>\${sActive ? \`<div class="s-bar-bg"><div id="s-fill" class="s-bar-fill"></div></div><div class="timer-row"><span id="s-cur">00:00</span><span id="s-end">00:00</span></div>\` : \`<div style="font-size:11px; opacity:0.5;">\${spot.artist}</div>\`}</div><i class="fa-brands fa-spotify fa-xl" style="color:#1db954; opacity:0.8; margin-right:5px;"></i></div>\`;
             }
             document.getElementById("activity-stack").innerHTML = html;
         });
-
         function engine() {
-            if(gActive && gStart) {
-                const gEl = document.getElementById("g-time");
-                if(gEl) gEl.innerText = fmtFull(Date.now() - gStart) + " süredir";
-            }
+            if(gActive && gStart) { const gEl = document.getElementById("g-time"); if(gEl) gEl.innerText = fmtFull(Date.now() - gStart) + " süredir"; }
             if(sActive && sRef) {
                 const total = sRef.timestamps.end - sRef.timestamps.start;
                 const elapsed = Date.now() - sRef.timestamps.start;
@@ -297,65 +247,20 @@ app.get("/", (req, res) => {
             requestAnimationFrame(engine);
         }
         engine();
-
-        document.getElementById("btn-theme").onclick = function() {
-            const h = document.documentElement;
-            const icon = document.getElementById("theme-icon");
-            const isDark = h.getAttribute("data-theme") === "dark";
-            icon.classList.add("rotate-out");
-            setTimeout(() => {
-                h.setAttribute("data-theme", isDark ? "light" : "dark");
-                icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-                icon.style.color = isDark ? "#f1c40f" : "inherit";
-                icon.classList.remove("rotate-out");
-            }, 300);
-        };
-
         window.onload = () => {
-            if(navigator.userAgent.includes("${ADMIN_UA_KEY}")) localStorage.setItem('isAdmin', 'true');
-            const isAdm = localStorage.getItem('isAdmin') === 'true';
-            fetch('/api/stats').then(r=>r.json()).then(d => {
-                document.getElementById("like-txt").innerText = d.likes;
-                document.getElementById("view-txt").innerText = d.views;
-            });
-            fetch('/api/view' + (isAdm ? '?admin=true' : ''));
-            if(localStorage.getItem('L')) document.getElementById('btn-like').classList.add('liked');
-            document.getElementById("btn-like").onclick = function() {
-                if(localStorage.getItem('L')) return;
-                fetch('/api/like').then(r=>r.json()).then(d => {
-                    document.getElementById("like-txt").innerText = d.likes;
-                    this.classList.add('liked'); localStorage.setItem('L', '1');
-                });
-            };
+            fetch('/api/stats').then(r=>r.json()).then(d => { document.getElementById("like-txt").innerText = d.likes; document.getElementById("view-txt").innerText = d.views; });
+            fetch('/api/view');
             const container = document.getElementById('orb-container');
-            for(let i=0; i<2; i++) {
-                const o = document.createElement('div');
-                o.className = 'orb'; o.style.width = '250px'; o.style.height = '250px';
-                o.style.left = (i*50) + '%'; o.style.top = (i*30) + '%';
-                container.appendChild(o);
-            }
+            for(let i=0; i<2; i++) { const o = document.createElement('div'); o.className = 'orb'; o.style.width = '250px'; o.style.height = '250px'; o.style.left = (i*50) + '%'; o.style.top = (i*30) + '%'; container.appendChild(o); }
         };
-
         function sendMsg() {
-            if(sessionStorage.getItem('sent')) return;
             const u = document.getElementById('in-user').value, t = document.getElementById('in-text').value;
-            if(u && t) {
-                socket.emit('send_msg', {user:u, text:t});
-                sessionStorage.setItem('sent', '1');
-                document.getElementById('msg-form-area').innerHTML = "<p style='font-size:11px; opacity:0.5; font-weight:800;'>İletildi!</p>";
-            }
+            if(u && t) { socket.emit('send_msg', {user:u, text:t}); document.getElementById('msg-form-area').innerHTML = "<p>İletildi!</p>"; }
         }
         socket.on('init_messages', renderMsgs);
         socket.on('new_msg', renderMsgs);
         function renderMsgs(m) {
-            document.getElementById("msg-feed").innerHTML = m.map(x => \`
-                <div class="msg-bubble">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                        <b style="color:var(--accent); font-size:12px;">\${x.user}</b>
-                        <span style="font-size:9px; opacity:0.5; font-weight:800;">\${getTimeAgo(x.time)}</span>
-                    </div>
-                    <div style="font-size:13px; opacity:0.9;">\${x.text}</div>
-                </div>\`).join('');
+            document.getElementById("msg-feed").innerHTML = m.map(x => \`<div class="msg-bubble"><div style="display:flex; justify-content:space-between; margin-bottom:4px;"><b style="color:var(--accent); font-size:12px;">\${x.user}</b></div><div style="font-size:13px; opacity:0.9;">\${x.text}</div></div>\`).join('');
         }
     </script>
 </body>
