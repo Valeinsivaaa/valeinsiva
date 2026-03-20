@@ -1,5 +1,5 @@
 {
-  "views": 307,
+  "views": 308,
   "likes": 21,
   "messages": [
     {
@@ -50,5 +50,7 @@
     "track_id": "2lN6njvQIWp5ZSFzmAME5k"
   },
   "lastGameTime": "00:19:52",
+  "bannerUrl": "https://i.imgur.com/7JQ4EZS.jpg",
+  "accentColor": "#7289da",
   "banner": "https://singlecolorimage.com/get/121212/600x240"
 }
