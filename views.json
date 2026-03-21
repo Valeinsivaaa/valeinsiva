@@ -1,5 +1,5 @@
 {
-  "views": 304,
+  "views": 305,
   "likes": 22,
   "messages": [
     {
@@ -27,27 +27,27 @@
     "assets": {
       "small_image": "mp:external/fcd1_DpoCDYXzI5h5jk8AUojOqI40tssIpQEZ7Ya3PE/https/image.api.playstation.com/vulcan/ap/rnd/202202/1517/UyPJCxbE3EoeLtUxjoFBnsD4.png"
     },
-    "created_at": 1774033202369,
+    "created_at": 1774087120646,
     "flags": 192,
     "id": "c55c3aa5b476017",
     "name": "Cyberpunk 2077",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1774033202369
+      "start": 1774087120646
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yeraltı Edebiyatı",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27339367660107b68d2a587efc7",
-    "artist": "Gazapizm",
-    "song": "Yeraltı Edebiyatı",
+    "album": "En Derine",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27393cb6f2f54a77d7a5dd47346",
+    "artist": "WTSOUNDS; WTFRANK",
+    "song": "En Derine",
     "timestamps": {
-      "end": 1773865404684,
-      "start": 1773865208387
+      "end": 1774087245508,
+      "start": 1774087098101
     },
-    "track_id": "40fqDPv4drwaKnX047hxY6"
+    "track_id": "1Y0dPkNvAXzfWqhXknO8Ji"
   },
-  "lastGameTime": "03:57:48"
+  "lastGameTime": "00:00:03"
 }
