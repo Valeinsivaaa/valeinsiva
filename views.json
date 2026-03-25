@@ -1,5 +1,5 @@
 {
-  "views": 335,
+  "views": 336,
   "likes": 22,
   "messages": [
     {
@@ -25,29 +25,29 @@
   ],
   "lastGame": {
     "assets": {
-      "small_image": "mp:external/p6myHiQuLBWF3ICZ2K-DzlxS1GQhbZtAC5lF2z2tTOw/https/image.api.playstation.com/vulcan/ap/rnd/202202/2816/K6mmm89oNII1iI1aqaClO0wh.png"
+      "small_image": "mp:external/4ZV0l_d4J8owku2Q4WMdp-GBYhQWOBu4VeI0R0Z8fwU/https/image.api.playstation.com/vulcan/ap/rnd/202507/2511/19ad6574090b6a71c88f0e6152ae5a668cc85882d87c51b5.png"
     },
-    "created_at": 1774207676183,
+    "created_at": 1774460459968,
     "flags": 192,
-    "id": "aa103755dd991d5d",
-    "name": "Grand Theft Auto V",
+    "id": "a1bbe53f6d6f6faf",
+    "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1774207676183
+      "start": 1774460459968
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Бумер. Фильм второй",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27306a79495f87f28410e8ac998",
-    "artist": "Sergey Shnurov",
-    "song": "Почти любовь (Из к/ф \"Бумер. Фильм второй\")",
+    "album": "Freed from Desire (feat. Indiiana)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738aff128278ab461897fd75bb",
+    "artist": "Drenchill; Indiiana",
+    "song": "Freed from Desire (feat. Indiiana)",
     "timestamps": {
-      "end": 1774209153139,
-      "start": 1774209026837
+      "end": 1774458872670,
+      "start": 1774458711217
     },
-    "track_id": "2dR6jSMWih20bH3xZ4whrF"
+    "track_id": "1lr5prHQn7Q766Ix6eGRKK"
   },
-  "lastGameTime": "00:33:12"
+  "lastGameTime": "00:00:03"
 }
