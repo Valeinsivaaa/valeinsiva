@@ -1,5 +1,5 @@
 {
-  "views": 347,
+  "views": 348,
   "likes": 22,
   "messages": [
     {
@@ -39,15 +39,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Freed from Desire (feat. Indiiana)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738aff128278ab461897fd75bb",
-    "artist": "Drenchill; Indiiana",
-    "song": "Freed from Desire (feat. Indiiana)",
+    "album": "Mey (Hoodtrap)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732ac0ae7a0204ad2fdcd10970",
+    "artist": "JIMRO!",
+    "song": "Mey",
     "timestamps": {
-      "end": 1774458872670,
-      "start": 1774458711217
+      "end": 1774545335025,
+      "start": 1774545230900
     },
-    "track_id": "1lr5prHQn7Q766Ix6eGRKK"
+    "track_id": "7kEImFZ6BC6oohipIRy1Qr"
   },
-  "lastGameTime": "00:33:44"
+  "lastGameTime": "00:36:08"
 }
