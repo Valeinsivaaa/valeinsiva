@@ -21,6 +21,15 @@ const ADMIN_UA_KEY = "23078PND5G";
 
 let db = { views: 0, likes: 0, messages: [], lastGame: null, lastSpotify: null, lastGameTime: "00:00:00" };
 
+
+setInterval(() => {
+  axios.get('https://valeinsiva.com.tr')
+    .then(() => console.log('Self-ping başarılı.'))
+    .catch(err => console.error('Ping hatası:', err));
+}, 10 * 60 * 1000); // 10 dakikada bir çalışır
+
+
+
 async function syncWithGithub(isUpdate = false) {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
