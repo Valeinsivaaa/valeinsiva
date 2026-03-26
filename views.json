@@ -1,22 +1,54 @@
 {
-  "views": 4,
-  "likes": 0,
-  "messages": [],
+  "views": 339,
+  "likes": 22,
+  "messages": [
+    {
+      "user": "articim",
+      "text": "bu adam yapıyor ya",
+      "time": 1773865261137
+    },
+    {
+      "user": "Cimiaow",
+      "text": "Kral adam",
+      "time": 1773779755566
+    },
+    {
+      "user": "Wes",
+      "text": "Babus ",
+      "time": 1773777362459
+    },
+    {
+      "user": "vCripton",
+      "text": "Selamün aleyküm ",
+      "time": 1773777362459
+    }
+  ],
   "lastGame": {
     "assets": {
-      "small_image": "mp:external/p6myHiQuLBWF3ICZ2K-DzlxS1GQhbZtAC5lF2z2tTOw/https/image.api.playstation.com/vulcan/ap/rnd/202202/2816/K6mmm89oNII1iI1aqaClO0wh.png"
+      "small_image": "mp:external/4ZV0l_d4J8owku2Q4WMdp-GBYhQWOBu4VeI0R0Z8fwU/https/image.api.playstation.com/vulcan/ap/rnd/202507/2511/19ad6574090b6a71c88f0e6152ae5a668cc85882d87c51b5.png"
     },
-    "created_at": 1774521396441,
+    "created_at": 1774460459968,
     "flags": 192,
-    "id": "aa103755dd991d5d",
-    "name": "Grand Theft Auto V",
+    "id": "a1bbe53f6d6f6faf",
+    "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1774521396441
+      "start": 1774460459968
     },
     "type": 0
   },
-  "lastSpotify": null,
-  "lastGameTime": "01:01:14"
+  "lastSpotify": {
+    "album": "Freed from Desire (feat. Indiiana)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738aff128278ab461897fd75bb",
+    "artist": "Drenchill; Indiiana",
+    "song": "Freed from Desire (feat. Indiiana)",
+    "timestamps": {
+      "end": 1774458872670,
+      "start": 1774458711217
+    },
+    "track_id": "1lr5prHQn7Q766Ix6eGRKK"
+  },
+  "lastGameTime": "00:19:10"
+
 }
