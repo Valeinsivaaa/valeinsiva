@@ -1,5 +1,5 @@
 {
-  "views": 352,
+  "views": 353,
   "likes": 22,
   "messages": [
     {
@@ -27,27 +27,27 @@
     "assets": {
       "small_image": "mp:external/4ZV0l_d4J8owku2Q4WMdp-GBYhQWOBu4VeI0R0Z8fwU/https/image.api.playstation.com/vulcan/ap/rnd/202507/2511/19ad6574090b6a71c88f0e6152ae5a668cc85882d87c51b5.png"
     },
-    "created_at": 1774547449774,
+    "created_at": 1774629028920,
     "flags": 192,
     "id": "a1bbe53f6d6f6faf",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1774547449774
+      "start": 1774629028920
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Çıkmaz Bir Sokakta",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732e6586bb10b0fa201939c7bc",
-    "artist": "Semicenk; Büken",
-    "song": "Çıkmaz Bir Sokakta",
+    "album": "Güliz Ayla",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f98e4b67fbf11b81e6632e31",
+    "artist": "Güliz Ayla",
+    "song": "Bahsetmem Lazım",
     "timestamps": {
-      "end": 1774560211799,
-      "start": 1774560049054
+      "end": 1774628908275,
+      "start": 1774628709610
     },
-    "track_id": "4SJjMPowhsrYSWgxM61yxm"
+    "track_id": "0pRykJaHRomTCCGd89b5cX"
   },
-  "lastGameTime": "00:25:15"
+  "lastGameTime": "00:43:01"
 }
