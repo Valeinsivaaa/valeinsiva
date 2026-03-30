@@ -1,5 +1,5 @@
 {
-  "views": 360,
+  "views": 361,
   "likes": 22,
   "messages": [
     {
@@ -39,15 +39,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yorgun",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732678c8bde0e40652996da4b9",
-    "artist": "Ceren Sagu",
-    "song": "Yorgun",
+    "album": "Ceylan Gözlüm",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2733a6fdf25ab04a6e6a28671aa",
+    "artist": "Ersan Er",
+    "song": "Tanrım (Remix)",
     "timestamps": {
-      "end": 1774883914889,
-      "start": 1774883738047
+      "end": 1774885936951,
+      "start": 1774885711911
     },
-    "track_id": "7Ftiyuzj6KK7dfNW3v0IQ5"
+    "track_id": "1lTruWqpTWLNj4i0JIV95M"
   },
   "lastGameTime": "00:22:59"
 }
