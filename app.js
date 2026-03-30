@@ -42,7 +42,7 @@ async function syncWithGithub(isUpdate = false) {
         if (isUpdate) {
             const sha = getRes ? getRes.data.sha : null;
             const newContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
-            await axios.put(url, { message: "💎 Game Time Fix & Persistence", content: newContent, sha: sha }, { headers });
+            await axios.put(url, { message: "Update Valeinsiva Card", content: newContent, sha: sha }, { headers });
         }
     } catch (e) { console.error("Sync Error"); }
 }
