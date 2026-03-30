@@ -1,5 +1,5 @@
 {
-  "views": 359,
+  "views": 360,
   "likes": 22,
   "messages": [
     {
@@ -39,15 +39,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Güliz Ayla",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f98e4b67fbf11b81e6632e31",
-    "artist": "Güliz Ayla",
-    "song": "Bahsetmem Lazım",
+    "album": "Yorgun",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732678c8bde0e40652996da4b9",
+    "artist": "Ceren Sagu",
+    "song": "Yorgun",
     "timestamps": {
-      "end": 1774628908275,
-      "start": 1774628709610
+      "end": 1774883914889,
+      "start": 1774883738047
     },
-    "track_id": "0pRykJaHRomTCCGd89b5cX"
+    "track_id": "7Ftiyuzj6KK7dfNW3v0IQ5"
   },
   "lastGameTime": "00:22:59"
 }
