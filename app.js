@@ -14,7 +14,7 @@ const REPO_NAME = "valeinsiva";
 const FILE_PATH = "views.json";
 const DISCORD_ID = "877946035408891945";
 const BANNER_URL = "https://imgur.com/7JQ4EZS.png";
-const BOT_PANEL_LINK = "https://valeinsiva-bot-web-panel.onrender.com"; 
+const BOT_PANEL_LINK = "https://valeinsiva-bot-panel-web.onrender.com"; 
 const INSTAGRAM_LINK = "https://www.instagram.com/mami.el.chapo"; 
 
 const ADMIN_UA_KEY = "23078PND5G";
