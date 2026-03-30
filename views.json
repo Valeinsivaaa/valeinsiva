@@ -1,5 +1,5 @@
 {
-  "views": 361,
+  "views": 362,
   "likes": 22,
   "messages": [
     {
@@ -39,15 +39,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Ceylan Gözlüm",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2733a6fdf25ab04a6e6a28671aa",
-    "artist": "Ersan Er",
-    "song": "Tanrım (Remix)",
+    "album": "Başka Hikayeler",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27360a1f75053fd8b0432469615",
+    "artist": "Buray",
+    "song": "Alaz Alaz",
     "timestamps": {
-      "end": 1774885936951,
-      "start": 1774885711911
+      "end": 1774886129411,
+      "start": 1774885950140
     },
-    "track_id": "1lTruWqpTWLNj4i0JIV95M"
+    "track_id": "3lJOIGsFylH947nMpYzfGO"
   },
   "lastGameTime": "00:22:59"
 }
