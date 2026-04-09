@@ -1,5 +1,5 @@
 {
-  "views": 384,
+  "views": 385,
   "likes": 22,
   "messages": [
     {
@@ -39,15 +39,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Başka Hikayeler",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27360a1f75053fd8b0432469615",
-    "artist": "Buray",
-    "song": "Alaz Alaz",
+    "album": "Isırgan Otu",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2737a73bab28ba6390c5aab6651",
+    "artist": "Kıvırcık Ali",
+    "song": "Gülüm",
     "timestamps": {
-      "end": 1774886129411,
-      "start": 1774885950140
+      "end": 1775764618579,
+      "start": 1775764299419
     },
-    "track_id": "3lJOIGsFylH947nMpYzfGO"
+    "track_id": "1mSh2nXxPkiju81JxQLFt8"
   },
   "lastGameTime": "01:19:57"
 }
