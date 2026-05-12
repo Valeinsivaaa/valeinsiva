@@ -1,5 +1,5 @@
 {
-  "views": 418,
+  "views": 419,
   "likes": 22,
   "messages": [
     {
@@ -24,6 +24,7 @@
     }
   ],
   "lastGame": {
+    "application_id": "1421154726023532544",
     "assets": {
       "small_image": "mp:external/4ZV0l_d4J8owku2Q4WMdp-GBYhQWOBu4VeI0R0Z8fwU/https/image.api.playstation.com/vulcan/ap/rnd/202507/2511/19ad6574090b6a71c88f0e6152ae5a668cc85882d87c51b5.png"
     },
@@ -31,27 +32,27 @@
       "data": null,
       "loaded": true
     },
-    "created_at": 1777728336996,
+    "created_at": 1778349449362,
     "flags": 192,
-    "id": "a1bbe53f6d6f6faf",
+    "id": "1ea95b0508c44311",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1777728336996
+      "start": 1778349449362
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Hayatın Kollarında",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27301302db57891ec88ea05bf78",
-    "artist": "Samet Kardeşler; Sıla Şahin",
-    "song": "Hayatın Kollarında",
+    "album": "Yalnızlığın Çaresini Bulmuşlar",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2733bb4426ccba314d34d5445b4",
+    "artist": "Gripin",
+    "song": "Yalnızlığın Çaresini Bulmuşlar",
     "timestamps": {
-      "end": 1776626134940,
-      "start": 1776625951848
+      "end": 1778620750111,
+      "start": 1778620523343
     },
-    "track_id": "3Uccy6qcx6bMOppATmf44E"
+    "track_id": "3jW5r9FkxQuouF9sMSw2hb"
   },
-  "lastGameTime": "01:29:44"
+  "lastGameTime": "00:29:05"
 }
