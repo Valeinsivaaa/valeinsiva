@@ -1,5 +1,5 @@
 {
-  "views": 428,
+  "views": 429,
   "likes": 22,
   "messages": [
     {
@@ -32,27 +32,27 @@
       "data": null,
       "loaded": true
     },
-    "created_at": 1778349449362,
+    "created_at": 1778863614659,
     "flags": 192,
     "id": "1ea95b0508c44311",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1778349449362
+      "start": 1778863614659
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yalnızlığın Çaresini Bulmuşlar",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2733bb4426ccba314d34d5445b4",
-    "artist": "Gripin",
-    "song": "Yalnızlığın Çaresini Bulmuşlar",
+    "album": "Shatta Ting",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2737250feceaf809bd9d17c0b17",
+    "artist": "Blaiz Fayah; Maureen; Dj Glad",
+    "song": "Money Pull Up",
     "timestamps": {
-      "end": 1778620750111,
-      "start": 1778620523343
+      "end": 1778881718343,
+      "start": 1778881589944
     },
-    "track_id": "3jW5r9FkxQuouF9sMSw2hb"
+    "track_id": "7Lr0PGZVb4EzyIhCIETFlG"
   },
-  "lastGameTime": "00:29:05"
+  "lastGameTime": "05:01:20"
 }
