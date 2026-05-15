@@ -1,5 +1,5 @@
 {
-  "views": 429,
+  "views": 430,
   "likes": 22,
   "messages": [
     {
@@ -44,15 +44,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Shatta Ting",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2737250feceaf809bd9d17c0b17",
-    "artist": "Blaiz Fayah; Maureen; Dj Glad",
-    "song": "Money Pull Up",
+    "album": "Popular (Music from the HBO Original Series)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734c8f092adc59b4bf4212389d",
+    "artist": "The Weeknd; Playboi Carti; Madonna",
+    "song": "Popular (with Playboi Carti & Madonna) - From The Idol Vol. 1 (Music from the HBO Original Series)",
     "timestamps": {
-      "end": 1778881718343,
-      "start": 1778881589944
+      "end": 1778881932981,
+      "start": 1778881717515
     },
-    "track_id": "7Lr0PGZVb4EzyIhCIETFlG"
+    "track_id": "6WzRpISELf3YglGAh7TXcG"
   },
-  "lastGameTime": "05:01:20"
+  "lastGameTime": "05:02:08"
 }
