@@ -1,5 +1,5 @@
 {
-  "views": 433,
+  "views": 434,
   "likes": 23,
   "messages": [
     {
@@ -32,27 +32,27 @@
       "data": null,
       "loaded": true
     },
-    "created_at": 1778863614659,
+    "created_at": 1778968344943,
     "flags": 192,
     "id": "1ea95b0508c44311",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1778863614659
+      "start": 1778968344943
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Popular (Music from the HBO Original Series)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734c8f092adc59b4bf4212389d",
-    "artist": "The Weeknd; Playboi Carti; Madonna",
-    "song": "Popular (with Playboi Carti & Madonna) - From The Idol Vol. 1 (Music from the HBO Original Series)",
+    "album": "Smile",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2735ebe6cbd74a47a5e8ea88985",
+    "artist": "Katy Perry",
+    "song": "Harleys In Hawaii",
     "timestamps": {
-      "end": 1778881933543,
-      "start": 1778881718077
+      "end": 1778882102802,
+      "start": 1778881917322
     },
-    "track_id": "6WzRpISELf3YglGAh7TXcG"
+    "track_id": "3B4etxytImrRKQgV3XHjnR"
   },
-  "lastGameTime": "05:03:42"
+  "lastGameTime": "08:00:59"
 }
