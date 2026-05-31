@@ -1,5 +1,5 @@
 {
-  "views": 458,
+  "views": 459,
   "likes": 24,
   "messages": [
     {
@@ -37,27 +37,27 @@
       "data": null,
       "loaded": true
     },
-    "created_at": 1780086094292,
+    "created_at": 1780252134242,
     "flags": 192,
     "id": "1ea95b0508c44311",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1780086094292
+      "start": 1780252134242
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "İki Deli",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a0f15d4443e9411bcff179b8",
-    "artist": "Hande Yener",
-    "song": "Ya Ya Ya Ya",
+    "album": "Gülden'e Geldik X Ceren Sagu",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a0c8c44d87008f88604a5206",
+    "artist": "Gülden; Ceren Sagu",
+    "song": "Yemin Olsun",
     "timestamps": {
-      "end": 1779701352204,
-      "start": 1779701175498
+      "end": 1780222373429,
+      "start": 1780222175782
     },
-    "track_id": "2oxydxFcX0DQegWCEuhmC8"
+    "track_id": "2NxVwf7klFSMHr6Rhtjwwt"
   },
-  "lastGameTime": "01:25:42"
+  "lastGameTime": "00:00:33"
 }
