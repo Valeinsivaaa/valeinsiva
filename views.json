@@ -1,5 +1,5 @@
 {
-  "views": 462,
+  "views": 463,
   "likes": 24,
   "messages": [
     {
@@ -37,27 +37,27 @@
       "data": null,
       "loaded": true
     },
-    "created_at": 1780335932358,
+    "created_at": 1780515005780,
     "flags": 192,
     "id": "1ea95b0508c44311",
     "name": "EA SPORTS FC 26",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1780335932358
+      "start": 1780515005780
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Gülden'e Geldik X Ceren Sagu",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a0c8c44d87008f88604a5206",
-    "artist": "Gülden; Ceren Sagu",
-    "song": "Yemin Olsun",
+    "album": "Céu Aceso",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2736949823dd9b6b340bf8e2011",
+    "artist": "DJ VIVIANE",
+    "song": "Céu Aceso",
     "timestamps": {
-      "end": 1780222373429,
-      "start": 1780222175782
+      "end": 1780603600487,
+      "start": 1780603513607
     },
-    "track_id": "2NxVwf7klFSMHr6Rhtjwwt"
+    "track_id": "0yAsVULNjwJ7QQMWDSOLdr"
   },
-  "lastGameTime": "07:59:58"
+  "lastGameTime": "00:12:42"
 }
