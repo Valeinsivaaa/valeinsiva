@@ -1,5 +1,5 @@
 {
-  "views": 463,
+  "views": 464,
   "likes": 24,
   "messages": [
     {
@@ -49,15 +49,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Céu Aceso",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2736949823dd9b6b340bf8e2011",
-    "artist": "DJ VIVIANE",
-    "song": "Céu Aceso",
+    "album": "Onbir Bir İkibinonbir Veda",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ec670fc343bf23a304c07103",
+    "artist": "Kıvırcık Ali",
+    "song": "Felek",
     "timestamps": {
-      "end": 1780603600487,
-      "start": 1780603513607
+      "end": 1780607286874,
+      "start": 1780607062061
     },
-    "track_id": "0yAsVULNjwJ7QQMWDSOLdr"
+    "track_id": "3z0Zv4lVKHMkdOJpd0ExzB"
   },
   "lastGameTime": "00:12:42"
 }
