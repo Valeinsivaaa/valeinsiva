@@ -1,5 +1,5 @@
 {
-  "views": 466,
+  "views": 467,
   "likes": 24,
   "messages": [
     {
@@ -49,15 +49,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Onbir Bir İkibinonbir Veda",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ec670fc343bf23a304c07103",
-    "artist": "Kıvırcık Ali",
-    "song": "Felek",
+    "album": "Yarabesk",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273833c8261b2614e351f9ab01f",
+    "artist": "Tekir",
+    "song": "Ne Gereği Var",
     "timestamps": {
-      "end": 1780607286874,
-      "start": 1780607062061
+      "end": 1780679471331,
+      "start": 1780679340284
     },
-    "track_id": "3z0Zv4lVKHMkdOJpd0ExzB"
+    "track_id": "456UQyJGUoZ9YMCC7wpll9"
   },
   "lastGameTime": "00:12:42"
 }
