@@ -1,5 +1,5 @@
 {
-  "views": 467,
+  "views": 468,
   "likes": 24,
   "messages": [
     {
@@ -49,15 +49,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Yarabesk",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273833c8261b2614e351f9ab01f",
-    "artist": "Tekir",
-    "song": "Ne Gereği Var",
+    "album": "KADER SK.",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27355af94691bb920254312dc49",
+    "artist": "Yüzyüzeyken Konuşuruz",
+    "song": "Kaş II",
     "timestamps": {
-      "end": 1780679471331,
-      "start": 1780679340284
+      "end": 1780680739060,
+      "start": 1780680513029
     },
-    "track_id": "456UQyJGUoZ9YMCC7wpll9"
+    "track_id": "3FNiphAlqUntwM8kzI1jus"
   },
   "lastGameTime": "00:12:42"
 }
