@@ -3,6 +3,11 @@
   "likes": 25,
   "messages": [
     {
+      "user": "esi",
+      "text": "yazilim ogren dedik yazilimin babasi cikti adam",
+      "time": 1782264118073
+    },
+    {
       "user": "1c3forwin",
       "text": "tassakli adam vesselam",
       "time": 1779452318152
@@ -20,11 +25,6 @@
     {
       "user": "Wes",
       "text": "Babus ",
-      "time": 1773777362459
-    },
-    {
-      "user": "vCripton",
-      "text": "Selamün aleyküm ",
       "time": 1773777362459
     }
   ],
