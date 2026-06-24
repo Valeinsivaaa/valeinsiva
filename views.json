@@ -1,5 +1,5 @@
 {
-  "views": 475,
+  "views": 476,
   "likes": 25,
   "messages": [
     {
@@ -29,35 +29,35 @@
     }
   ],
   "lastGame": {
-    "application_id": "1421154726023532544",
+    "application_id": "1402418703554842694",
     "assets": {
-      "small_image": "mp:external/4ZV0l_d4J8owku2Q4WMdp-GBYhQWOBu4VeI0R0Z8fwU/https/image.api.playstation.com/vulcan/ap/rnd/202507/2511/19ad6574090b6a71c88f0e6152ae5a668cc85882d87c51b5.png"
+      "small_image": "mp:external/YIqJHHos6MV13GwnJr2As4pOJYnhyneLNoEW0Dynhag/https/image.api.playstation.com/vulcan/ap/rnd/202606/0223/2b45ffdc87a244071f01132ca6dbef90c4454e47aee7ca82.png"
     },
     "content_classification": {
       "data": null,
       "loaded": true
     },
-    "created_at": 1781877135166,
+    "created_at": 1782236081746,
     "flags": 192,
-    "id": "1ea95b0508c44311",
-    "name": "EA SPORTS FC 26",
+    "id": "d8f60b5806ac9e2d",
+    "name": "Fortnite",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1781877135166
+      "start": 1782236081746
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "не расслабляйся",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273857e4905e57fb3aa33ba5717",
-    "artist": "Skryptonite",
-    "song": "не расслабляйся",
+    "album": "Rock Grani",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2738e2ca35160ed7a9316b32565",
+    "artist": "Tamer Gezer",
+    "song": "Rock Grani",
     "timestamps": {
-      "end": 1781878055666,
-      "start": 1781877891357
+      "end": 1782056222280,
+      "start": 1782055953559
     },
-    "track_id": "6KBc9W1riUD5zXv29eIVop"
+    "track_id": "616Z4KqmS7nwbai0w3tfNa"
   },
-  "lastGameTime": "00:28:15"
+  "lastGameTime": "03:45:45"
 }
