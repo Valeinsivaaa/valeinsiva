@@ -1,5 +1,5 @@
 {
-  "views": 482,
+  "views": 483,
   "likes": 25,
   "messages": [
     {
@@ -48,27 +48,27 @@
       },
       "loaded": true
     },
-    "created_at": 1783793945256,
+    "created_at": 1784056312039,
     "flags": 192,
     "id": "d8f60b5806ac9e2d",
     "name": "Fortnite",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1783793945256
+      "start": 1784056312039
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Popular (Music from the HBO Original Series)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734c8f092adc59b4bf4212389d",
-    "artist": "The Weeknd; Playboi Carti; Madonna",
-    "song": "Popular (with Playboi Carti & Madonna) - From The Idol Vol. 1 (Music from the HBO Original Series)",
+    "album": "Toca Toca (Remixes)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27308415ac82c630195babf6a2a",
+    "artist": "Fly Project",
+    "song": "Toca Toca",
     "timestamps": {
-      "end": 1783794007909,
-      "start": 1783793792443
+      "end": 1784056353741,
+      "start": 1784056188136
     },
-    "track_id": "6WzRpISELf3YglGAh7TXcG"
+    "track_id": "3HUDCgZgaY3ZVWohToy4LJ"
   },
-  "lastGameTime": "00:42:45"
+  "lastGameTime": "01:57:30"
 }
