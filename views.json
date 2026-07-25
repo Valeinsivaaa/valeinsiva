@@ -1,5 +1,5 @@
 {
-  "views": 609,
+  "views": 610,
   "likes": 30,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Bam Bam Grani",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2739dc4175769c646147cbc9c2b",
-    "artist": "Şahin Gündere",
-    "song": "Bam Bam Grani",
+    "album": "Şevko",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2739107205743b6ed643e3b3b01",
+    "artist": "Burhan Toprak",
+    "song": "Şevko",
     "timestamps": {
-      "end": 1784989157691,
-      "start": 1784989026383
+      "end": 1784990113908,
+      "start": 1784989771515
     },
-    "track_id": "46EgwH7HO7rjhSZIyeUuLL"
+    "track_id": "066tMx60zUeDFSzN97bpVV"
   },
-  "lastGameTime": "00:13:55"
+  "lastGameTime": "00:24:23"
 }
