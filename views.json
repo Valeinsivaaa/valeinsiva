@@ -1,5 +1,5 @@
 {
-  "views": 613,
+  "views": 614,
   "likes": 30,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Toycular",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273edf7133affe722a128d17846",
-    "artist": "Nezir Kara; S.U.K.O",
-    "song": "Toycular",
+    "album": "Dinle",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273d1e1250c89dc4b5e5a7adadd",
+    "artist": "Mahsun Kırmızıgül",
+    "song": "Dinle",
     "timestamps": {
-      "end": 1784998604212,
-      "start": 1784998406212
+      "end": 1784999016024,
+      "start": 1784998792558
     },
-    "track_id": "1fVzMc5S4BgNmADgR8mP4G"
+    "track_id": "0fk8G1Qw6yzajlmWUZEEFA"
   },
-  "lastGameTime": "00:06:37"
+  "lastGameTime": "00:09:01"
 }
