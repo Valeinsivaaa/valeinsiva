@@ -1,5 +1,5 @@
 {
-  "views": 624,
+  "views": 625,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Rakkas (Shake It)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2731f98c011e7672d3c28ddade0",
-    "artist": "Ilkay Sencan",
-    "song": "Rakkas (Shake It)",
+    "album": "İki Tas Çorba (Mustafa Sandal Saygı 1)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273df5b131c2dc3e3a4f3f8e825",
+    "artist": "Mela Bedel; Mustafa Sandal",
+    "song": "İki Tas Çorba - Mustafa Sandal Saygı 1",
     "timestamps": {
-      "end": 1784999366902,
-      "start": 1784999217344
+      "end": 1784999705597,
+      "start": 1784999514518
     },
-    "track_id": "02fngo9MpVUlOGy2fxdfBk"
+    "track_id": "0icmYnuVBefqsouoU3uRMl"
   },
-  "lastGameTime": "00:15:26"
+  "lastGameTime": "00:19:50"
 }
