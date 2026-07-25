@@ -1,6 +1,6 @@
 {
   "views": 619,
-  "likes": 30,
+  "likes": 31,
   "messages": [
     {
       "user": "esi",
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Müjgan",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2730fe1c29868a13e9c2f704643",
-    "artist": "Aylin Demir",
-    "song": "Müjgan",
+    "album": "Esmer Sen Güzelsin",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e3e6f7817de3526d009314d5",
+    "artist": "BORA",
+    "song": "Esmer Sen Güzelsin",
     "timestamps": {
-      "end": 1784999332904,
-      "start": 1784999027330
+      "end": 1784999201650,
+      "start": 1784999052150
     },
-    "track_id": "4M63f6sb5HkGcxNAteTP6r"
+    "track_id": "5GyUDDJ0NRuxBJQU4l4uWe"
   },
-  "lastGameTime": "00:12:26"
+  "lastGameTime": "00:12:34"
 }
