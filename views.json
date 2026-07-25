@@ -1,5 +1,5 @@
 {
-  "views": 623,
+  "views": 624,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Esmer Sen Güzelsin",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e3e6f7817de3526d009314d5",
-    "artist": "BORA",
-    "song": "Esmer Sen Güzelsin",
+    "album": "Rakkas (Shake It)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2731f98c011e7672d3c28ddade0",
+    "artist": "Ilkay Sencan",
+    "song": "Rakkas (Shake It)",
     "timestamps": {
-      "end": 1784999201650,
-      "start": 1784999052150
+      "end": 1784999366902,
+      "start": 1784999217344
     },
-    "track_id": "5GyUDDJ0NRuxBJQU4l4uWe"
+    "track_id": "02fngo9MpVUlOGy2fxdfBk"
   },
-  "lastGameTime": "00:13:47"
+  "lastGameTime": "00:15:26"
 }
