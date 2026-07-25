@@ -1,5 +1,5 @@
 {
-  "views": 616,
+  "views": 617,
   "likes": 30,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Dinle",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273d1e1250c89dc4b5e5a7adadd",
-    "artist": "Mahsun Kırmızıgül",
-    "song": "Dinle",
+    "album": "Gulê Dersîme (Kurdish Drill)",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a4cbc2fd821c039538611aa5",
+    "artist": "Renas Miran; Dersim Kurda",
+    "song": "Gulê Dersîme (Kurdish Drill)",
     "timestamps": {
-      "end": 1784999016024,
-      "start": 1784998792558
+      "end": 1784999026725,
+      "start": 1784998867339
     },
-    "track_id": "0fk8G1Qw6yzajlmWUZEEFA"
+    "track_id": "5Q2xYthrYNABmxfW6FUpRd"
   },
-  "lastGameTime": "00:09:59"
+  "lastGameTime": "00:11:01"
 }
