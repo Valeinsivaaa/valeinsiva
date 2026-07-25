@@ -1,5 +1,5 @@
 {
-  "views": 617,
+  "views": 618,
   "likes": 30,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Gulê Dersîme (Kurdish Drill)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a4cbc2fd821c039538611aa5",
-    "artist": "Renas Miran; Dersim Kurda",
-    "song": "Gulê Dersîme (Kurdish Drill)",
+    "album": "Müjgan",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2730fe1c29868a13e9c2f704643",
+    "artist": "Aylin Demir",
+    "song": "Müjgan",
     "timestamps": {
-      "end": 1784999026725,
-      "start": 1784998867339
+      "end": 1784999332904,
+      "start": 1784999027330
     },
-    "track_id": "5Q2xYthrYNABmxfW6FUpRd"
+    "track_id": "4M63f6sb5HkGcxNAteTP6r"
   },
-  "lastGameTime": "00:11:01"
+  "lastGameTime": "00:11:38"
 }
