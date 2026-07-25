@@ -1,5 +1,5 @@
 {
-  "views": 627,
+  "views": 628,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "İki Tas Çorba (Mustafa Sandal Saygı 1)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273df5b131c2dc3e3a4f3f8e825",
-    "artist": "Mela Bedel; Mustafa Sandal",
-    "song": "İki Tas Çorba - Mustafa Sandal Saygı 1",
+    "album": "Ayrı Gitme",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e0242dad9021163a6272e0c7",
+    "artist": "Aleyna Tilki",
+    "song": "Ayrı Gitme",
     "timestamps": {
-      "end": 1784999703319,
-      "start": 1784999512240
+      "end": 1784999963766,
+      "start": 1784999808018
     },
-    "track_id": "0icmYnuVBefqsouoU3uRMl"
+    "track_id": "6dqkb11C20YDLZNhNAzWxz"
   },
-  "lastGameTime": "00:20:14"
+  "lastGameTime": "00:25:27"
 }
