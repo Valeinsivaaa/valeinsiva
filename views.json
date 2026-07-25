@@ -1,5 +1,5 @@
 {
-  "views": 612,
+  "views": 613,
   "likes": 30,
   "messages": [
     {
@@ -57,27 +57,27 @@
       },
       "loaded": true
     },
-    "created_at": 1784988485376,
+    "created_at": 1784998334310,
     "flags": 192,
     "id": "90e9409d4012ecbc",
     "name": "Grand Theft Auto V",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1784988485376
+      "start": 1784998334310
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Şevko",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2739107205743b6ed643e3b3b01",
-    "artist": "Burhan Toprak",
-    "song": "Şevko",
+    "album": "Toycular",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273edf7133affe722a128d17846",
+    "artist": "Nezir Kara; S.U.K.O",
+    "song": "Toycular",
     "timestamps": {
-      "end": 1784990113908,
-      "start": 1784989771515
+      "end": 1784998604212,
+      "start": 1784998406212
     },
-    "track_id": "066tMx60zUeDFSzN97bpVV"
+    "track_id": "1fVzMc5S4BgNmADgR8mP4G"
   },
-  "lastGameTime": "00:24:31"
+  "lastGameTime": "00:06:37"
 }
