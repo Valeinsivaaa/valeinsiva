@@ -1,5 +1,5 @@
 {
-  "views": 651,
+  "views": 652,
   "likes": 32,
   "messages": [
     {
@@ -57,27 +57,27 @@
       },
       "loaded": true
     },
-    "created_at": 1784998334310,
+    "created_at": 1785054334063,
     "flags": 192,
     "id": "90e9409d4012ecbc",
     "name": "Grand Theft Auto V",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1784998334310
+      "start": 1785054334063
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Tüm Halaylar 1",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27315cc90513d9a6741f60ec1dd",
-    "artist": "HGS Güngör",
-    "song": "Tello Tello Can",
+    "album": "Bu Gece Karakolluk Olabilirim",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273c1133c99c4febd265b60a5b4",
+    "artist": "Heijan; Azer Bülbül",
+    "song": "Bu Gece Karakolluk Olabilirim",
     "timestamps": {
-      "end": 1785007225788,
-      "start": 1785007049652
+      "end": 1785056931843,
+      "start": 1785056756491
     },
-    "track_id": "0XCt8gSV61BViM06foPSwx"
+    "track_id": "4pgtoDRqfpu4IIcY4ZXILO"
   },
-  "lastGameTime": "08:09:29"
+  "lastGameTime": "02:02:20"
 }
