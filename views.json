@@ -1,5 +1,5 @@
 {
-  "views": 649,
+  "views": 650,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Ayrı Gitme",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273e0242dad9021163a6272e0c7",
-    "artist": "Aleyna Tilki",
-    "song": "Ayrı Gitme",
+    "album": "Tüm Halaylar 1",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27315cc90513d9a6741f60ec1dd",
+    "artist": "HGS Güngör",
+    "song": "Tello Tello Can",
     "timestamps": {
-      "end": 1784999963766,
-      "start": 1784999808018
+      "end": 1785007225788,
+      "start": 1785007049652
     },
-    "track_id": "6dqkb11C20YDLZNhNAzWxz"
+    "track_id": "0XCt8gSV61BViM06foPSwx"
   },
-  "lastGameTime": "01:51:12"
+  "lastGameTime": "08:09:29"
 }
