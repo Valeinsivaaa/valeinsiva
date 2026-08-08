@@ -1,5 +1,5 @@
 {
-  "views": 669,
+  "views": 670,
   "likes": 32,
   "messages": [
     {
@@ -57,27 +57,27 @@
       },
       "loaded": true
     },
-    "created_at": 1785601597434,
+    "created_at": 1786129128141,
     "flags": 192,
     "id": "90e9409d4012ecbc",
     "name": "Grand Theft Auto V",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1785601597434
+      "start": 1786129128141
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Gamzende Uyut Beni",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f90fbc7afd776ad7e93a54e5",
-    "artist": "Fundyy",
-    "song": "Gamzende Uyut Beni",
+    "album": "OBSESIF",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27324d60e8a761684a09973719f",
+    "artist": "BLOK3",
+    "song": "SEVMEYİ DENEMEDİN",
     "timestamps": {
-      "end": 1785445636764,
-      "start": 1785445455751
+      "end": 1786199095732,
+      "start": 1786198922832
     },
-    "track_id": "5GArn6p1bwTD35cKIYcHsz"
+    "track_id": "3ff93VTp2DBbNnDEsAW8Cm"
   },
-  "lastGameTime": "07:59:57"
+  "lastGameTime": "07:59:56"
 }
