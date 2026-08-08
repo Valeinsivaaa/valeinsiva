@@ -3,6 +3,11 @@
   "likes": 32,
   "messages": [
     {
+      "user": "Cemsit",
+      "text": "Erkan anahtarlar koltuğun altında kalik beni ara",
+      "time": 1786213051748
+    },
+    {
       "user": ".",
       "text": "Burası ne mk",
       "time": 1785272034324
@@ -21,11 +26,6 @@
       "user": "articim",
       "text": "bu adam yapıyor ya",
       "time": 1773865261137
-    },
-    {
-      "user": "Cimiaow",
-      "text": "Kral adam",
-      "time": 1773779755566
     }
   ],
   "lastGame": {
