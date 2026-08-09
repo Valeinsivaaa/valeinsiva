@@ -1,5 +1,5 @@
 {
-  "views": 670,
+  "views": 671,
   "likes": 32,
   "messages": [
     {
@@ -57,27 +57,27 @@
       },
       "loaded": true
     },
-    "created_at": 1786129128141,
+    "created_at": 1786261773291,
     "flags": 192,
     "id": "90e9409d4012ecbc",
     "name": "Grand Theft Auto V",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1786129128141
+      "start": 1786261773291
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "OBSESIF",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27324d60e8a761684a09973719f",
-    "artist": "BLOK3",
-    "song": "SEVMEYİ DENEMEDİN",
+    "album": "Köşe Bucak",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273502b6b7f8e909c497eb98931",
+    "artist": "EFO; Mehmet Elmas",
+    "song": "Köşe Bucak",
     "timestamps": {
-      "end": 1786199095732,
-      "start": 1786198922832
+      "end": 1786265622297,
+      "start": 1786265483631
     },
-    "track_id": "3ff93VTp2DBbNnDEsAW8Cm"
+    "track_id": "1m8Mmaq9lUc7CKUg4xrxv1"
   },
-  "lastGameTime": "07:59:56"
+  "lastGameTime": "02:55:11"
 }
