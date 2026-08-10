@@ -1,5 +1,5 @@
 {
-  "views": 671,
+  "views": 672,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Köşe Bucak",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273502b6b7f8e909c497eb98931",
-    "artist": "EFO; Mehmet Elmas",
-    "song": "Köşe Bucak",
+    "album": "Ciğerparem",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ae75423a6e09d1ac1fe259bf",
+    "artist": "Özgür Çalışkan",
+    "song": "Ciğerparem",
     "timestamps": {
-      "end": 1786265622297,
-      "start": 1786265483631
+      "end": 1786397039681,
+      "start": 1786396849249
     },
-    "track_id": "1m8Mmaq9lUc7CKUg4xrxv1"
+    "track_id": "3it8n2WNAFZwNP2G2rvD3P"
   },
-  "lastGameTime": "02:55:11"
+  "lastGameTime": "07:59:58"
 }
