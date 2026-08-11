@@ -1,5 +1,5 @@
 {
-  "views": 672,
+  "views": 673,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Ciğerparem",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ae75423a6e09d1ac1fe259bf",
-    "artist": "Özgür Çalışkan",
-    "song": "Ciğerparem",
+    "album": "Aşk En Büyüktür Her Zaman",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27331e2e45dfc9c177345232b08",
+    "artist": "İzel",
+    "song": "Düşer O",
     "timestamps": {
-      "end": 1786397039681,
-      "start": 1786396849249
+      "end": 1786476198137,
+      "start": 1786475898890
     },
-    "track_id": "3it8n2WNAFZwNP2G2rvD3P"
+    "track_id": "1GE3xJtdEZ5V17JTKnpQBK"
   },
   "lastGameTime": "07:59:58"
 }
