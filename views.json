@@ -1,5 +1,5 @@
 {
-  "views": 673,
+  "views": 674,
   "likes": 32,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Aşk En Büyüktür Her Zaman",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27331e2e45dfc9c177345232b08",
-    "artist": "İzel",
-    "song": "Düşer O",
+    "album": "Na-Mükemmel",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27359f5aaff53c6a635b235d151",
+    "artist": "Ahmet Aslan",
+    "song": "Şu Kanlı Zalimin Ettiği İşler",
     "timestamps": {
-      "end": 1786476198137,
-      "start": 1786475898890
+      "end": 1786564983252,
+      "start": 1786564714785
     },
-    "track_id": "1GE3xJtdEZ5V17JTKnpQBK"
+    "track_id": "2Qvdi3adxxWMOJISey2EL4"
   },
   "lastGameTime": "07:59:58"
 }
