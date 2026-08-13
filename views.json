@@ -3,6 +3,11 @@
   "likes": 32,
   "messages": [
     {
+      "user": "klaous",
+      "text": "bu adamı sevdım",
+      "time": 1786642104709
+    },
+    {
       "user": "ALLAH(C.C)",
       "text": "felak olacan gardas",
       "time": 1786398435170
@@ -21,11 +26,6 @@
       "user": "esi",
       "text": "yazilim ogren dedik yazilimin babasi cikti adam",
       "time": 1782264118073
-    },
-    {
-      "user": "1c3forwin",
-      "text": "tassakli adam vesselam",
-      "time": 1779452318152
     }
   ],
   "lastGame": {
