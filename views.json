@@ -1,5 +1,5 @@
 {
-  "views": 680,
+  "views": 681,
   "likes": 34,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "DÖNMEK İÇİN EVE",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2739037ec510ab732691fbcc8b7",
-    "artist": "Gazapizm",
-    "song": "Yaşatmadın Dünya",
+    "album": "Unutacağım",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a6d171324a48786be46c4f31",
+    "artist": "Serkan Nişancı",
+    "song": "Unutacağım",
     "timestamps": {
-      "end": 1786738244716,
-      "start": 1786738017116
+      "end": 1786740505455,
+      "start": 1786740345702
     },
-    "track_id": "5xXpYA0jxGyyM2bV7I3pl1"
+    "track_id": "6ZB2MjZFsNukr71joHmwQd"
   },
   "lastGameTime": "07:59:58"
 }
