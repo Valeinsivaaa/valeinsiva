@@ -1,5 +1,5 @@
 {
-  "views": 679,
+  "views": 680,
   "likes": 34,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Na-Mükemmel",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27359f5aaff53c6a635b235d151",
-    "artist": "Ahmet Aslan",
-    "song": "Şu Kanlı Zalimin Ettiği İşler",
+    "album": "DÖNMEK İÇİN EVE",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2739037ec510ab732691fbcc8b7",
+    "artist": "Gazapizm",
+    "song": "Yaşatmadın Dünya",
     "timestamps": {
-      "end": 1786564983252,
-      "start": 1786564714785
+      "end": 1786738244716,
+      "start": 1786738017116
     },
-    "track_id": "2Qvdi3adxxWMOJISey2EL4"
+    "track_id": "5xXpYA0jxGyyM2bV7I3pl1"
   },
   "lastGameTime": "07:59:58"
 }
