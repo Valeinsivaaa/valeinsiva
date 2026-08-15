@@ -1,5 +1,5 @@
 {
-  "views": 681,
+  "views": 682,
   "likes": 34,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Unutacağım",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a6d171324a48786be46c4f31",
-    "artist": "Serkan Nişancı",
-    "song": "Unutacağım",
+    "album": "Allahtan Dileklerim Var",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ebc1decdebc49fe201eb824e",
+    "artist": "rash; Cano; M4RLON INC.",
+    "song": "Allahtan Dileklerim Var",
     "timestamps": {
-      "end": 1786740505455,
-      "start": 1786740345702
+      "end": 1786741526214,
+      "start": 1786741403258
     },
-    "track_id": "6ZB2MjZFsNukr71joHmwQd"
+    "track_id": "2mYJo3wLaaNGeeFQhuDAoM"
   },
   "lastGameTime": "07:59:58"
 }
