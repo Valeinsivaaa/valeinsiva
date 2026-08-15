@@ -1,5 +1,5 @@
 {
-  "views": 684,
+  "views": 685,
   "likes": 36,
   "messages": [
     {
@@ -69,15 +69,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Allahtan Dileklerim Var",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ebc1decdebc49fe201eb824e",
-    "artist": "rash; Cano; M4RLON INC.",
-    "song": "Allahtan Dileklerim Var",
+    "album": "Maya",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ce11b6aa0971b9bc60946b3a",
+    "artist": "Mabel Matiz",
+    "song": "A Canım",
     "timestamps": {
-      "end": 1786741526214,
-      "start": 1786741403258
+      "end": 1786811219261,
+      "start": 1786810955462
     },
-    "track_id": "2mYJo3wLaaNGeeFQhuDAoM"
+    "track_id": "50SocgmOJdl1UPjOcFLSCm"
   },
   "lastGameTime": "07:59:58"
 }
