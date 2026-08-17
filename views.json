@@ -1,5 +1,5 @@
 {
-  "views": 692,
+  "views": 693,
   "likes": 38,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "GEL GEL GEL",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f79d417fbcb6bcda4bdd00c5",
-    "artist": "Lvbel C5; DYSTINCT",
-    "song": "GEL GEL GEL",
+    "album": "İşi Koydum",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273fa00ba4fc4303105c528fed8",
+    "artist": "alariya",
+    "song": "İşi Koydum",
     "timestamps": {
-      "end": 1786880209993,
-      "start": 1786880049906
+      "end": 1786893168974,
+      "start": 1786893013519
     },
-    "track_id": "2tni0FShSW5lPlCGyhy6xR"
+    "track_id": "2c5Gfz9RE68Dzk7Q2QGSSK"
   },
-  "lastGameTime": "00:18:54"
+  "lastGameTime": "07:59:56"
 }
