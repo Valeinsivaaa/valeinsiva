@@ -1,5 +1,5 @@
 {
-  "views": 695,
+  "views": 696,
   "likes": 38,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Bela Olurum",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273989eee09930fb91c420c62b3",
-    "artist": "Uygar Doğanay; Özgür Ata",
-    "song": "Bela Olurum",
+    "album": "D.H.S.",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2734f673d3a253a4f88e00ca83c",
+    "artist": "melfete",
+    "song": "D.H.S.",
     "timestamps": {
-      "end": 1786998252925,
-      "start": 1786997908161
+      "end": 1787051141441,
+      "start": 1787050973201
     },
-    "track_id": "6WCRtWmNt83kTAgM63yYQK"
+    "track_id": "06Q1eCQIJT2ycdk9DT2ZpA"
   },
   "lastGameTime": "07:59:56"
 }
