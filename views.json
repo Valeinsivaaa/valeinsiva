@@ -1,5 +1,5 @@
 {
-  "views": 693,
+  "views": 694,
   "likes": 38,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "İşi Koydum",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273fa00ba4fc4303105c528fed8",
-    "artist": "alariya",
-    "song": "İşi Koydum",
+    "album": "Bela Olurum",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273989eee09930fb91c420c62b3",
+    "artist": "Uygar Doğanay; Özgür Ata",
+    "song": "Bela Olurum",
     "timestamps": {
-      "end": 1786893168974,
-      "start": 1786893013519
+      "end": 1786998252925,
+      "start": 1786997908161
     },
-    "track_id": "2c5Gfz9RE68Dzk7Q2QGSSK"
+    "track_id": "6WCRtWmNt83kTAgM63yYQK"
   },
   "lastGameTime": "07:59:56"
 }
