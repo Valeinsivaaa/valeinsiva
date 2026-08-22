@@ -1,5 +1,5 @@
 {
-  "views": 697,
+  "views": 698,
   "likes": 38,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Hermano",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273965a9c2c41ab5c84477f3606",
-    "artist": "Heijan; Muti",
-    "song": "Birader",
+    "album": "Allahtan Dileklerim Var",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ebc1decdebc49fe201eb824e",
+    "artist": "rash; Cano; M4RLON INC.",
+    "song": "Allahtan Dileklerim Var",
     "timestamps": {
-      "end": 1787144538419,
-      "start": 1787144333866
+      "end": 1787256999638,
+      "start": 1787256876682
     },
-    "track_id": "0TlFhkgfCMnTEHWA3c4jBU"
+    "track_id": "2mYJo3wLaaNGeeFQhuDAoM"
   },
   "lastGameTime": "02:23:01"
 }
