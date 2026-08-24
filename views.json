@@ -1,5 +1,5 @@
 {
-  "views": 701,
+  "views": 702,
   "likes": 39,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Dabke Dance Party (DaTi Remix)",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2732f47ee2cf3c1fa8146d49054",
-    "artist": "DaTi Music; DaTi",
-    "song": "Dabke Dance Party - DaTi Remix",
+    "album": "Beni Bağışla",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273974aa2dd645e8b6b4c8eb7ab",
+    "artist": "Mehmet Elmas",
+    "song": "Beni Bağışla",
     "timestamps": {
-      "end": 1787500879683,
-      "start": 1787500678282
+      "end": 1787600007542,
+      "start": 1787599812543
     },
-    "track_id": "5vX1GXYz76E2INY6xbXsrK"
+    "track_id": "6LcohoK0fNKrXXRaraVFsH"
   },
   "lastGameTime": "07:59:56"
 }
