@@ -1,5 +1,5 @@
 {
-  "views": 707,
+  "views": 708,
   "likes": 39,
   "messages": [
     {
@@ -53,27 +53,27 @@
       },
       "loaded": true
     },
-    "created_at": 1787500579499,
+    "created_at": 1788087281035,
     "flags": 192,
     "id": "90e9409d4012ecbc",
     "name": "Grand Theft Auto V",
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1787500579499
+      "start": 1788087281035
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "Beni Bağışla",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273974aa2dd645e8b6b4c8eb7ab",
-    "artist": "Mehmet Elmas",
-    "song": "Beni Bağışla",
+    "album": "Hediye",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27320c5db3f28033ce439b693ca",
+    "artist": "Hakan Altun",
+    "song": "Sen de Ağla",
     "timestamps": {
-      "end": 1787600007542,
-      "start": 1787599812543
+      "end": 1788212077781,
+      "start": 1788211804035
     },
-    "track_id": "6LcohoK0fNKrXXRaraVFsH"
+    "track_id": "4Cx0ryQiY64TXyNWs4yAW2"
   },
-  "lastGameTime": "07:59:56"
+  "lastGameTime": "02:59:54"
 }
