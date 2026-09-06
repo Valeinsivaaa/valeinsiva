@@ -1,5 +1,5 @@
 {
-  "views": 708,
+  "views": 709,
   "likes": 39,
   "messages": [
     {
@@ -65,15 +65,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Hediye",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b27320c5db3f28033ce439b693ca",
-    "artist": "Hakan Altun",
-    "song": "Sen de Ağla",
+    "album": "Onbir Bir İkibinonbir Veda",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ec670fc343bf23a304c07103",
+    "artist": "Kıvırcık Ali",
+    "song": "Felek",
     "timestamps": {
-      "end": 1788212077781,
-      "start": 1788211804035
+      "end": 1788530927340,
+      "start": 1788530702527
     },
-    "track_id": "4Cx0ryQiY64TXyNWs4yAW2"
+    "track_id": "3z0Zv4lVKHMkdOJpd0ExzB"
   },
   "lastGameTime": "02:59:54"
 }
