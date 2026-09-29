@@ -1,5 +1,5 @@
 {
-  "views": 719,
+  "views": 720,
   "likes": 39,
   "messages": [
     {
@@ -29,35 +29,47 @@
     }
   ],
   "lastGame": {
+    "application_id": "1421154726023532544",
     "assets": {
-      "small_image": "mp:external/I05zFSGJ3whseNnB0djloqYmhFTOcgzy15Qw_4BUX4c/https/image.api.playstation.com/vulcan/ap/rnd/202407/0316/51b683f8a89f65bf8a3204eb43c46aba5741620709d4bdfa.png"
+      "large_image": "mp:external/-L2wTgAMjpxM19eAj5E23qwki7BoaDDMpsoI2mE1VUQ/https/image.api.playstation.com/vulcan/ap/rnd/202608/0314/5217c783f0198d437a0e0e97848d0a3a61c4af84262fd5f2.png"
     },
     "content_classification": {
-      "data": null,
+      "data": {
+        "agency_ratings": {
+          "esrb": {
+            "descriptors": [],
+            "rating": 1
+          },
+          "pegi": {
+            "descriptors": [],
+            "rating": 1
+          }
+        }
+      },
       "loaded": true
     },
-    "created_at": 1790080141530,
+    "created_at": 1790516268148,
     "flags": 192,
-    "id": "b9ca4cf523c2eafd",
-    "name": "Call of Duty® Modern Warfare 3",
+    "id": "1ea95b0508c44311",
+    "name": "EA SPORTS FC 26",
     "official_game_id": null,
     "platform": "ps5",
     "session_id": "playstation:877946035408891945",
     "timestamps": {
-      "start": 1790080141530
+      "start": 1790516268148
     },
     "type": 0
   },
   "lastSpotify": {
-    "album": "GEL GEL GEL",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273f79d417fbcb6bcda4bdd00c5",
-    "artist": "Lvbel C5; DYSTINCT",
-    "song": "GEL GEL GEL",
+    "album": "Mîrê Botan",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2735438b66d69d15f9275d0a6e2",
+    "artist": "Renas Miran; Axîn",
+    "song": "Mîrê Botan",
     "timestamps": {
-      "end": 1789301376746,
-      "start": 1789301216659
+      "end": 1790440071128,
+      "start": 1790439916328
     },
-    "track_id": "2tni0FShSW5lPlCGyhy6xR"
+    "track_id": "7mXaE09W76Op9kTgwi5GVD"
   },
-  "lastGameTime": "00:36:39"
+  "lastGameTime": "02:12:17"
 }
