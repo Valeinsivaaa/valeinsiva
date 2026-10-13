@@ -1,5 +1,5 @@
 {
-  "views": 737,
+  "views": 738,
   "likes": 41,
   "messages": [
     {
@@ -61,15 +61,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Mîrê Botan",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2735438b66d69d15f9275d0a6e2",
-    "artist": "Renas Miran; Axîn",
-    "song": "Mîrê Botan",
+    "album": "Üçüncü Gurbet",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2735c0e4d02ec7587cea0042047",
+    "artist": "Kıvırcık Ali",
+    "song": "Diyardan Diyara",
     "timestamps": {
-      "end": 1790440071128,
-      "start": 1790439916328
+      "end": 1791914353305,
+      "start": 1791914023492
     },
-    "track_id": "7mXaE09W76Op9kTgwi5GVD"
+    "track_id": "52gG4H6LKZTaTb8l9TnlGa"
   },
   "lastGameTime": "00:07:58"
 }
