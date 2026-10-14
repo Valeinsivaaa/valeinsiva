@@ -1,5 +1,5 @@
 {
-  "views": 738,
+  "views": 739,
   "likes": 41,
   "messages": [
     {
@@ -61,15 +61,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Üçüncü Gurbet",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2735c0e4d02ec7587cea0042047",
+    "album": "Onbir Bir İkibinonbir Veda",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ec670fc343bf23a304c07103",
     "artist": "Kıvırcık Ali",
-    "song": "Diyardan Diyara",
+    "song": "Anlatamadım",
     "timestamps": {
-      "end": 1791914353305,
-      "start": 1791914023492
+      "end": 1791914637361,
+      "start": 1791914356601
     },
-    "track_id": "52gG4H6LKZTaTb8l9TnlGa"
+    "track_id": "1WDnsAMoSfFqam8oebgouN"
   },
   "lastGameTime": "00:07:58"
 }
