@@ -1,5 +1,5 @@
 {
-  "views": 743,
+  "views": 744,
   "likes": 41,
   "messages": [
     {
@@ -61,15 +61,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Onbir Bir İkibinonbir Veda",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273ec670fc343bf23a304c07103",
-    "artist": "Kıvırcık Ali",
-    "song": "Anlatamadım",
+    "album": "Dert Edition",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2730b4bb597b265ec0aad795f9e",
+    "artist": "Boranbeatz",
+    "song": "Kopamam Senden",
     "timestamps": {
-      "end": 1791914637361,
-      "start": 1791914356601
+      "end": 1792324268672,
+      "start": 1792324119669
     },
-    "track_id": "1WDnsAMoSfFqam8oebgouN"
+    "track_id": "1V9ctbIZxG0ufDXWJ4utwL"
   },
   "lastGameTime": "00:07:58"
 }
