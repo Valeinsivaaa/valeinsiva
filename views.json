@@ -3,6 +3,11 @@
   "likes": 41,
   "messages": [
     {
+      "user": "Fatih",
+      "text": "Gel",
+      "time": 1792850289537
+    },
+    {
       "user": "klaous",
       "text": "bu adamı sevdım",
       "time": 1786642104709
@@ -21,11 +26,6 @@
       "user": ".",
       "text": "Burası ne mk",
       "time": 1785272034324
-    },
-    {
-      "user": "esi",
-      "text": "yazilim ogren dedik yazilimin babasi cikti adam",
-      "time": 1782264118073
     }
   ],
   "lastGame": {
