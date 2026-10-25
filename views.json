@@ -1,5 +1,5 @@
 {
-  "views": 756,
+  "views": 757,
   "likes": 41,
   "messages": [
     {
@@ -61,15 +61,15 @@
     "type": 0
   },
   "lastSpotify": {
-    "album": "Dert Edition",
-    "album_art_url": "https://i.scdn.co/image/ab67616d0000b2730b4bb597b265ec0aad795f9e",
-    "artist": "Boranbeatz",
-    "song": "Kopamam Senden",
+    "album": "Ahir",
+    "album_art_url": "https://i.scdn.co/image/ab67616d0000b273a4eec87d832282aa5bd02d24",
+    "artist": "Ender Balkır",
+    "song": "Yollar Seni Gide Gide Usandım",
     "timestamps": {
-      "end": 1792324268672,
-      "start": 1792324119669
+      "end": 1792958115281,
+      "start": 1792957882521
     },
-    "track_id": "1V9ctbIZxG0ufDXWJ4utwL"
+    "track_id": "3ofyRdjzfID5ftyaEu8YTp"
   },
   "lastGameTime": "00:07:58"
 }
