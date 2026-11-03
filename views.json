@@ -3,6 +3,11 @@
   "likes": 41,
   "messages": [
     {
+      "user": "Camus",
+      "text": "Abi 2. Kez geldim izim olsun diye",
+      "time": 1793667557306
+    },
+    {
       "user": "ZEROX",
       "text": "DEXTER ADAMSAN GEL AMK ",
       "time": 1792879952236
@@ -21,11 +26,6 @@
       "user": "klaous",
       "text": "bu adamı sevdım",
       "time": 1786642104709
-    },
-    {
-      "user": "ALLAH(C.C)",
-      "text": "felak olacan gardas",
-      "time": 1786398435170
     }
   ],
   "lastGame": {
