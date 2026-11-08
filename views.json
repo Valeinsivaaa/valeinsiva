@@ -3,6 +3,11 @@
   "likes": 41,
   "messages": [
     {
+      "user": "Semsemsem",
+      "text": "Jajahaha",
+      "time": 1794180935055
+    },
+    {
       "user": "Camus",
       "text": "Abi 2. Kez geldim izim olsun diye",
       "time": 1793667557306
@@ -21,11 +26,6 @@
       "user": "Fatih",
       "text": "Gel",
       "time": 1792850289537
-    },
-    {
-      "user": "klaous",
-      "text": "bu adamı sevdım",
-      "time": 1786642104709
     }
   ],
   "lastGame": {
